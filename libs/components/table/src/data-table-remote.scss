@@ -1,0 +1,9 @@
+/* A remote source's parts, drawn in the table's places (see data-table-remote.html). */
+
+/* A block a remote source failed to deliver: said once, with its retry beside it. */
+.pct-data-table__failed {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pct-table-padding-x);
+}

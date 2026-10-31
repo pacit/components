@@ -905,3 +905,135 @@ test.describe('PctTablePage — registers from a server, a page at a time', () =
     await expect(firstRow(page)).toContainText('Lamp');
   });
 });
+
+test.describe('PctTableRemote — a million registers from a server, a block at a time', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const remote = (page: Page) => page.getByTestId('table-remote');
+  const frame = (page: Page) => remote(page).locator('pct-table-frame');
+  const asked = (page: Page) => page.getByTestId('remote-asked');
+  /** How many blocks the server was asked for, as the demo counts them. */
+  const askedCount = async (page: Page) =>
+    Number(/asked for (\d+)/.exec(await asked(page).innerText())?.[1]);
+  const firstRow = (page: Page) =>
+    remote(page)
+      .locator('tbody tr[aria-rowindex]:not([data-pct-part])')
+      .first();
+  /** Scrolls the frame to the row `at` of the million, in the window's scaled space. */
+  const scrollToRow = (page: Page, at: number) =>
+    frame(page).evaluate((element, row) => {
+      element.scrollTop =
+        ((element.scrollHeight - element.clientHeight) * row) / 1_000_000;
+    }, at);
+
+  test('counts every row the server holds from its first answer', async ({
+    page,
+  }) => {
+    await expect(remote(page).locator('table')).toHaveAttribute(
+      'aria-rowcount',
+      '1000001',
+    );
+    await expect(firstRow(page)).toContainText('40001');
+    await expect(asked(page)).toContainText('1000000 registers');
+  });
+
+  test('asks for the few blocks in view far down, and draws them where the scroll stands', async ({
+    page,
+  }) => {
+    await expect(firstRow(page)).toContainText('40001');
+    const before = await askedCount(page);
+    await scrollToRow(page, 500_000);
+    const top = await frame(page).evaluate((element) => element.scrollTop);
+    // Holes first, then the rows of the blocks they stand in.
+    await expect(
+      remote(page).locator('tbody tr[aria-rowindex]:not([data-pct-part])'),
+    ).not.toHaveCount(0);
+    await expect(
+      remote(page).locator('tr[data-pct-part="hole"][aria-busy]'),
+    ).toHaveCount(0);
+    const row = await firstRow(page).getAttribute('aria-rowindex');
+    expect(Number(row)).toBeGreaterThan(450_000);
+    expect(Number(row)).toBeLessThan(550_000);
+    expect((await askedCount(page)) - before).toBeLessThanOrEqual(3);
+    // The rows that came are measured in place of their holes: the scroll moves by what a
+    // row and a hole differ in above the view, which keeps the view where it was — no more.
+    const after = await frame(page).evaluate((element) => element.scrollTop);
+    expect(Math.abs(after - top)).toBeLessThan(40);
+  });
+
+  test('starts again at the top under a new order', async ({ page }) => {
+    await expect(firstRow(page)).toContainText('40001');
+    await scrollToRow(page, 1_000);
+    await expect(firstRow(page)).not.toContainText('40001');
+    const header = remote(page).getByRole('button', {
+      name: 'Address',
+      exact: true,
+    });
+    await header.click();
+    await header.click();
+    await expect(
+      remote(page).getByRole('columnheader', { name: /Address/ }),
+    ).toHaveAttribute('aria-sort', 'descending');
+    expect(await frame(page).evaluate((element) => element.scrollTop)).toBe(0);
+    // The last register first: address 40,000 + a million.
+    await expect(firstRow(page)).toContainText('1040000');
+    await expect(firstRow(page)).toHaveAttribute('aria-rowindex', '2');
+  });
+
+  test('counts the matches of a question the server answered', async ({
+    page,
+  }) => {
+    await page.getByTestId('remote-filter').fill('Lamp');
+    // A million registers name ten devices in turn: a hundred thousand lamps.
+    await expect(remote(page).locator('table')).toHaveAttribute(
+      'aria-rowcount',
+      '100001',
+    );
+    await expect(firstRow(page)).toContainText('Lamp');
+  });
+
+  test('says a block failed, and its retry asks for it alone', async ({
+    page,
+  }) => {
+    await expect(firstRow(page)).toContainText('40001');
+    // Rows 900 to 999 are the tenth block, which fails the first time.
+    await scrollToRow(page, 950);
+    const retry = remote(page).getByRole('button', { name: 'Retry' });
+    await expect(retry).toHaveCount(1);
+    await expect(remote(page)).toContainText('These rows could not be loaded.');
+    const before = await askedCount(page);
+    await retry.click();
+    await expect(retry).toHaveCount(0);
+    await expect(remote(page).locator('tr[data-pct-part="hole"]')).toHaveCount(
+      0,
+    );
+    await expect(asked(page)).toContainText(`asked for ${before + 1} blocks`);
+  });
+
+  test('refreshes the rows in view and leaves the scroll where it is', async ({
+    page,
+  }) => {
+    await expect(firstRow(page)).toContainText('40001');
+    await scrollToRow(page, 300);
+    await expect(remote(page).locator('tr[data-pct-part="hole"]')).toHaveCount(
+      0,
+    );
+    const top = await frame(page).evaluate((element) => element.scrollTop);
+    const before = await askedCount(page);
+    await page.getByTestId('remote-refresh').click();
+    await expect(remote(page).locator('tbody').first()).not.toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    expect(await askedCount(page)).toBeGreaterThan(before);
+    // The rows stayed while they were asked again: no hole stood in for them.
+    await expect(remote(page).locator('tr[data-pct-part="hole"]')).toHaveCount(
+      0,
+    );
+    expect(await frame(page).evaluate((element) => element.scrollTop)).toBe(
+      top,
+    );
+  });
+});

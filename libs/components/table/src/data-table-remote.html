@@ -1,0 +1,21 @@
+<!--
+  What a remote source's failure draws, in the places the table keeps for it: the first hole
+  drawn of a failed block, and the sentence of a table whose first block failed. Drawn by the
+  table, declared here, so a table that loads nothing from a server carries none of it (0097).
+-->
+<ng-template #failure let-block>
+  <span class="pct-data-table__failed">
+    {{ texts().tableLoadFailed }}
+    <button
+      pctButton
+      type="button"
+      variant="outline"
+      size="sm"
+      data-pct-part="retry"
+      [attr.aria-label]="texts().tableRetry"
+      (click)="retry(block)"
+    >
+      {{ texts().tableRetry }}
+    </button>
+  </span>
+</ng-template>

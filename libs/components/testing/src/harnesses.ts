@@ -970,10 +970,12 @@ export class PctDataTableHarness extends PctHarness<
   | 'error'
   | 'group'
   | 'hint'
+  | 'hole'
   | 'mark'
   | 'message'
   | 'place'
   | 'placeholder'
+  | 'retry'
   | 'select'
   | 'select-all'
   | 'warning'
@@ -985,10 +987,12 @@ export class PctDataTableHarness extends PctHarness<
     'error',
     'group',
     'hint',
+    'hole',
     'mark',
     'message',
     'place',
     'placeholder',
+    'retry',
     'select',
     'select-all',
     'warning',

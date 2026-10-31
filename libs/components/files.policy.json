@@ -36,6 +36,11 @@
       "file": "libs/components/time/src/lattice.ts",
       "type": "PctSpan",
       "reason": "An interval of seconds since midnight, both ends included — the bounds of a lattice cut into one piece, or two for a window across midnight. It is a field type of `PctLattice` and nothing else, so it is internal for the same reason and retires with it."
+    },
+    {
+      "file": "libs/components/table/src/model/blocks.ts",
+      "type": "PctBlock",
+      "reason": "One block of a remote source as `pctTableRemote` holds it — loading, failed or loaded, with the rows it had. No public signature carries it: the directive's public face is `total`, `loading` and `error`, and the rows reach the table through its feature as holes and rows. Publishing it would turn the directive's bookkeeping, which the next phase's cache may change, into a contract. The entry retires if a public API ever takes or returns a block."
     }
   ]
 }

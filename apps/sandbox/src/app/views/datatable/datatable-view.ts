@@ -22,6 +22,10 @@ import {
   PctTableDetails,
   PctTableGroups,
   PctTablePage,
+  type PctTableAnswer,
+  type PctTableLoad,
+  PctTableRemote,
+  type PctTableRequest,
   PctTableSelection,
   type PctTableSort,
   PctTableWindow,
@@ -125,7 +129,12 @@ const UNITS = ['°C', '%', 'Pa', 'kWh'];
  * column, so the list holds rows of two heights, as real lists do.
  */
 function registersOf(count: number): readonly Register[] {
-  return Array.from({ length: count }, (_, i) => ({
+  return Array.from({ length: count }, (_, i) => registerAt(i));
+}
+
+/** The register at `i`: the same each time it is made, so a server can make it on demand. */
+function registerAt(i: number): Register {
+  return {
     id: i + 1,
     address: 40_001 + i,
     name:
@@ -135,13 +144,16 @@ function registersOf(count: number): readonly Register[] {
     value: ((i * 7919) % 100_000) / 100,
     unit: UNITS[i % UNITS.length],
     enabled: i % 5 !== 2,
-  }));
+  };
 }
 
 const reg = pctColumnsOf<Register>();
 
 /** The registers' columns: every key but the id. */
 type RegisterColumn = Exclude<keyof Register, 'id'>;
+
+/** The remote demo's columns: the registers' without the switch. */
+type RemoteColumn = Exclude<RegisterColumn, 'enabled'>;
 
 /** What the page demo asks its server for: a page of registers in an order, matching words. */
 interface PageRequest {
@@ -201,6 +213,69 @@ function serve(request: PageRequest, abort: AbortSignal): Promise<PageAnswer> {
   });
 }
 
+/** How many registers the remote demo's server holds: a million, made as they are asked for. */
+const REMOTE_COUNT = 1_000_000;
+
+/** The places of the server's registers whose names hold every word, kept by the question. */
+const remoteMatches = new Map<string, Int32Array>();
+
+function remoteMatching(filter: string): Int32Array | null {
+  const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return null;
+  const key = words.join(' ');
+  let places = remoteMatches.get(key);
+  if (places === undefined) {
+    const found: number[] = [];
+    for (let i = 0; i < REMOTE_COUNT; i++) {
+      const name = registerAt(i).name.toLowerCase();
+      if (words.every((word) => name.includes(word))) found.push(i);
+    }
+    places = Int32Array.from(found);
+    remoteMatches.set(key, places);
+  }
+  return places;
+}
+
+/** The blocks that failed once, so the demo's server fails each of them a first time only. */
+const remoteFailed = new Set<string>();
+
+/**
+ * A server of a million registers, 300 ms away: it orders them by address either way, filters
+ * by the words of a name, and fails every tenth block the first time it is asked for, so the
+ * retry has something to do.
+ */
+function serveBlock(
+  request: PctTableRequest<RemoteColumn>,
+  abort: AbortSignal,
+): Promise<PctTableAnswer<Register>> {
+  const places = remoteMatching(request.filter);
+  const total = places === null ? REMOTE_COUNT : places.length;
+  const descending = request.sort[0]?.direction === 'descending';
+  const rows: Register[] = [];
+  for (let at = request.from; at < Math.min(request.to, total); at++) {
+    const place = descending ? total - 1 - at : at;
+    rows.push(registerAt(places === null ? place : places[place]));
+  }
+  const block = `${request.filter}|${descending}|${request.from}`;
+  const fails =
+    (request.from / (request.to - request.from)) % 10 === 9 &&
+    !remoteFailed.has(block);
+  if (fails) remoteFailed.add(block);
+  return new Promise((done, fail) => {
+    const timer = setTimeout(
+      () =>
+        fails
+          ? fail(new Error('The server did not answer'))
+          : done({ rows, total }),
+      300,
+    );
+    abort.addEventListener('abort', () => {
+      clearTimeout(timer);
+      fail(abort.reason);
+    });
+  });
+}
+
 /**
  * Data table: the first layer drawn from data. What is worth watching: the columns are a
  * typed list, so the switch's template reads `rule.enabled` as a boolean; the header order is
@@ -224,6 +299,7 @@ function serve(request: PageRequest, abort: AbortSignal): Promise<PageAnswer> {
     PctTableSelection,
     PctTableWindow,
     PctTablePage,
+    PctTableRemote,
     PctPagination,
     FormField,
   ],
@@ -381,6 +457,31 @@ export class DatatableView {
   protected readonly pageOffset = computed(
     () => ((this.answered()?.page ?? 1) - 1) * PAGE_SIZE,
   );
+
+  /** The remote demo's columns: the server orders by address, and by nothing else. */
+  protected readonly remoteColumns = reg.of([
+    reg.key('address', { header: 'Address', numeric: true }),
+    reg.key('name', { header: 'Name', sort: false }),
+    reg.key('value', {
+      header: 'Value',
+      kind: { number: { fractionDigits: 2 } },
+      sort: false,
+    }),
+    reg.key('unit', { header: 'Unit', sort: false }),
+  ]);
+  protected readonly remoteSort = signal<readonly PctTableSort<RemoteColumn>[]>(
+    [],
+  );
+  protected readonly remoteFilter = signal('');
+  /** How many blocks the server was asked for. */
+  protected readonly remoteAsked = signal(0);
+  protected readonly loadRegisters: PctTableLoad<Register, RemoteColumn> = (
+    request,
+    abort,
+  ) => {
+    this.remoteAsked.update((count) => count + 1);
+    return serveBlock(request, abort);
+  };
 
   /**
    * The rules to move, as a field of a form: at least one, and more than ten move slowly —
