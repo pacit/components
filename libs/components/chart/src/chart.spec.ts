@@ -2927,7 +2927,11 @@ describe('PctChart, its cursor', () => {
           } as unknown as CSSStyleDeclaration)
         : real(element, pseudo),
     );
-    // a module of its own, whose canvas is not made yet
+    // a module of its own, whose canvas is not made yet. The `test` target runs the spec
+    // files of a worker in ONE module registry (`@angular/build` sets `isolate: false`), so
+    // the module this makes is the one every later file imports — with THIS canvas cached
+    // in it, unless the registry is cleared again on the way out (`note.spec.ts` read
+    // 142 for 113.4 in CI).
     vi.resetModules();
     const fresh = await import('./chart');
     TestBed.configureTestingModule({
@@ -2945,11 +2949,15 @@ describe('PctChart, its cursor', () => {
       expect(fonts.length).toBeGreaterThan(0);
       return [...new Set(fonts)];
     };
-    expect(await measured('', '')).toEqual(['13px sans-serif']);
-    // the family alone changes
-    expect(await measured('', 'serif')).toEqual(['13px serif']);
-    expect(await measured('20px', '')).toEqual(['20px sans-serif']);
-    expect(getContext).toHaveBeenCalledTimes(1);
+    try {
+      expect(await measured('', '')).toEqual(['13px sans-serif']);
+      // the family alone changes
+      expect(await measured('', 'serif')).toEqual(['13px serif']);
+      expect(await measured('20px', '')).toEqual(['20px sans-serif']);
+      expect(getContext).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.resetModules();
+    }
   });
 });
 
