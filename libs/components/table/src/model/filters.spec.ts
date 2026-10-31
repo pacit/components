@@ -46,7 +46,7 @@ const fan: Device = {
 
 /** The text a table would show. */
 const shown = (column: PctAnyColumn<Device>) => (row: Device) =>
-  column.id === 'power' ? `7 899,7 kWh` : String(column.value(row));
+  column.id === 'power' ? `7\u00a0899,7\u00a0kWh` : String(column.value(row));
 
 /** Whether a row passes a column's filter; `null` stands for a filter that lets all through. */
 function passes(

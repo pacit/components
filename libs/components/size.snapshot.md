@@ -49,7 +49,7 @@ before an application ships them.
 ./badge 2357 - @angular/core
 ./breadcrumb 15097 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./button 17515 ./core @angular/core,@angular/forms/signals
-./chart 252406 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
+./chart 252421 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
 ./checkbox 23018 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 17249 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
@@ -75,7 +75,7 @@ before an application ships them.
 ./stepper 16617 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
 ./switch 22498 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./table 250396 ./button,./core,./date,./field,./icon,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./table 251171 ./button,./core,./date,./field,./icon,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./tabs 18431 ./core @angular/core,@angular/forms/signals
 ./testing 13384 - @angular/cdk/testing
 ./theme 518 - @angular/core
@@ -138,7 +138,7 @@ single number this file had ever moved.
 ```
 ./accordion PctAccordion 2 6289 17265
 ./breadcrumb PctBreadcrumb 3 6389 14935
-./chart PctArea 15 224414 249309
+./chart PctArea 15 224414 249324
 ./chips PctChip 2 17107 17110
 ./date PctCalendar 2 28703 47841
 ./field PctField 3 25791 35521
@@ -146,7 +146,7 @@ single number this file had ever moved.
 ./radio PctRadio 2 25380 25382
 ./select PctMultiSelect 2 53645 79832
 ./stepper PctStep 2 16474 16476
-./table PctDataTable 9 82559 247767
+./table PctDataTable 9 82676 248542
 ./tabs PctTab 2 18262 18265
 ./time PctTime 2 49599 49600
 ./tree PctTree 2 12783 12786
