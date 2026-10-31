@@ -297,10 +297,9 @@
 >
   <pct-switch
     data-testid="filters-row"
-    [checked]="filterRow()"
-    (checkedChange)="filterRow.set($event)"
-    >A row of filters</pct-switch
-  >
+    label="A row of filters"
+    [(checked)]="filterRow"
+  />
   <pct-data-table
     #filtered
     data-testid="table-filters"
