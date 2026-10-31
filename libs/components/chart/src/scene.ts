@@ -247,6 +247,31 @@ export abstract class PctChartScene {
   ): readonly (PctStacked | null)[] | null;
 
   /**
+   * Where a stacked area's series stands at each position of its stack: the positions every
+   * member of the stack has a reading at, in order, and the series' start and end at each —
+   * `NaN` where it has none and the ones above stand as on a zero (`pctStackColumns`). `null`
+   * for a series on no stack of the scene.
+   *
+   * @since next
+   */
+  abstract areaStackOf(
+    stack: string,
+    id: string,
+  ): {
+    readonly xs: Float64Array;
+    readonly from: Float64Array;
+    readonly to: Float64Array;
+  } | null;
+
+  /**
+   * Whether a stack of areas is drawn as shares of its total: so when any member asks for it
+   * (`PctMark.stacked`), and every member then stands in percent.
+   *
+   * @since next
+   */
+  abstract stackNormalized(stack: string): boolean;
+
+  /**
    * A value written as the axes and the tooltip write it: the number in the scene's locale
    * with its unit, `On` or `Off` for a boolean.
    *
@@ -375,6 +400,18 @@ export abstract class PctMark {
   } | null> = computed(() => null);
 
   /**
+   * The stack an area mark's series stands on, and whether the stack is drawn as shares of its
+   * total, or `null` for a mark that stacks no area. Marks naming one stack stand on each other
+   * in the order of their declaration, at the positions any of them has a reading at.
+   *
+   * @since next
+   */
+  readonly stacked: Signal<{
+    readonly stack: string;
+    readonly normalize: boolean;
+  } | null> = computed(() => null);
+
+  /**
    * A series' values, one per band of the scene, for the stacks: `null` where it has none.
    *
    * @since next
@@ -497,6 +534,45 @@ export abstract class PctMark {
    * @since next
    */
   textAt(id: string, x: number): string | null {
+    void id;
+    void x;
+    return null;
+  }
+
+  /**
+   * The series' own reading at `x` written by the mark, where a number with a unit does not
+   * say it: a range reads `3 °C – 11 °C`, and `bare` — for a cell of the table, whose header
+   * carries the unit — `3 – 11`. `null` hands the writing to the scene, which writes `valueAt`
+   * with the series' unit.
+   *
+   * @since next
+   */
+  readAt(id: string, x: number, bare = false): string | null {
+    void id;
+    void x;
+    void bare;
+    return null;
+  }
+
+  /**
+   * The value read off the series' own rows at `x`, as the mark draws it, before any stack or
+   * share: what a stack sums. `valueAt` by default; a normalized area, whose `valueAt` is its
+   * share, answers with the row's value here.
+   *
+   * @since next
+   */
+  rowValueAt(id: string, x: number): number | null {
+    return this.valueAt(id, x);
+  }
+
+  /**
+   * Where the series is drawn at `x`, in its unit, when that is not its value: the top of a
+   * stacked area, so the cursor's marker stands on the drawing. `null` puts the marker at the
+   * value.
+   *
+   * @since next
+   */
+  drawnAt(id: string, x: number): number | null {
     void id;
     void x;
     return null;

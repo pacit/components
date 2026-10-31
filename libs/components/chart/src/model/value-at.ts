@@ -1,4 +1,5 @@
 import type { PctColumns } from './columns';
+import { pctHermite, pctMonotoneTangents } from './monotone';
 
 /**
  * How a series passes from one reading to the next:
@@ -9,7 +10,8 @@ import type { PctColumns } from './columns';
  *
  * @since next
  */
-export type PctCurve = 'linear' | 'step' | 'step-before' | 'step-middle';
+export type PctCurve =
+  'linear' | 'step' | 'step-before' | 'step-middle' | 'monotone';
 
 /**
  * The index of the last reading at or before `x`, or `-1` before the first. A binary search:
@@ -77,5 +79,20 @@ export function pctValueAt(
   const a = ys[i];
   const b = ys[i + 1];
   if (Number.isNaN(a) || Number.isNaN(b)) return null;
+  if (curve === 'monotone') return monotoneAt(columns, i, x);
   return a + ((b - a) * (x - xs[i])) / (xs[i + 1] - xs[i]);
+}
+
+/**
+ * The monotone curve between readings `i` and `i + 1` at `x`: the tangents at the two depend
+ * on their neighbours in the run alone, so the four readings around the segment — fewer at a
+ * gap or an end, where the run ends — give the curve the path draws.
+ */
+function monotoneAt(columns: PctColumns, i: number, x: number): number {
+  const { xs, ys } = columns;
+  const from = i > 0 && !Number.isNaN(ys[i - 1]) ? i - 1 : i;
+  const to = i + 2 < columns.length && !Number.isNaN(ys[i + 2]) ? i + 3 : i + 2;
+  const m = pctMonotoneTangents(xs, ys, from, to);
+  const k = i - from;
+  return pctHermite(xs[i], ys[i], m[k], xs[i + 1], ys[i + 1], m[k + 1], x);
 }

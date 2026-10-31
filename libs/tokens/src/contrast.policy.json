@@ -2687,6 +2687,34 @@
       "severity": "warn"
     },
     {
+      "name": "UI: chart — a rising candle's body on surface",
+      "fg": "pct.chart.body-bg-rise",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a rising candle's body on surface-100",
+      "fg": "pct.chart.body-bg-rise",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a falling candle's body on surface",
+      "fg": "pct.chart.body-bg-fall",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a falling candle's body on surface-100",
+      "fg": "pct.chart.body-bg-fall",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
       "name": "UI: chart — the edge of the tooltip",
       "fg": "pct.chart.tooltip-border",
       "bg": "pct.surface",

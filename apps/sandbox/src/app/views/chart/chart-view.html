@@ -578,3 +578,222 @@
     />
   </div>
 </sbx-demo>
+
+<sbx-demo
+  heading="Stacked areas"
+  summary="pct-area draws a series from zero, or on a stack: areas naming one stack stand on each other, the sum the picture's top. A gap in one is a zero for the ones above it and a gap for itself; a hidden series leaves the stack. The tooltip reads each series' own value, and the marker stands on the drawing."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-area-stack"
+>
+  <pct-chart
+    #stacked
+    ariaLabel="Power by source on 25 October 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-area-stack"
+  >
+    <pct-area
+      [data]="sources"
+      x="at"
+      y="gas"
+      name="Gas boiler"
+      unit="kW"
+      stack="power"
+      curve="monotone"
+    />
+    <pct-area
+      [data]="sources"
+      x="at"
+      y="pump"
+      name="Heat pump"
+      unit="kW"
+      stack="power"
+      curve="monotone"
+    />
+    <pct-area
+      [data]="sources"
+      x="at"
+      y="solar"
+      name="Solar"
+      unit="kW"
+      stack="power"
+      curve="monotone"
+    />
+  </pct-chart>
+  <pct-chart-legend [chart]="stacked" data-testid="area-stack-legend" />
+</sbx-demo>
+
+<sbx-demo
+  heading="Shares of the whole"
+  summary="normalize on a stack draws each layer as its share of the position's total, in percent: the picture is a hundred tall wherever anything was drawn, and the tooltip reads the share with the value in brackets. A position whose total is nothing is a gap."
+  [reqs]="['req-api-templates']"
+  data-testid="demo-area-normalized"
+>
+  <pct-chart
+    ariaLabel="Share of the power by source on 25 October 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-area-normalized"
+  >
+    <pct-area
+      [data]="sources"
+      x="at"
+      y="gas"
+      name="Gas boiler"
+      unit="kW"
+      stack="share"
+      normalize
+    />
+    <pct-area
+      [data]="sources"
+      x="at"
+      y="pump"
+      name="Heat pump"
+      unit="kW"
+      stack="share"
+    />
+    <pct-area
+      [data]="sources"
+      x="at"
+      y="solar"
+      name="Solar"
+      unit="kW"
+      stack="share"
+    />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
+  heading="A monotone curve"
+  summary='curve="monotone" joins the readings with a cubic that never overshoots them (Fritsch and Carlson): between two readings the line stays between their values, and the tooltip reads the same curve. The charging curve of a battery, read smooth.'
+  [reqs]="['req-api-templates']"
+  data-testid="demo-monotone"
+>
+  <pct-chart
+    ariaLabel="State of charge against minutes, read smooth"
+    x="linear"
+    xUnit="min"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-monotone"
+  >
+    <pct-line
+      [data]="curve"
+      x="at"
+      y="value"
+      name="Charge"
+      unit="%"
+      curve="monotone"
+      area
+    />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
+  heading="A histogram"
+  summary="pctBin sorts values into bins — by Sturges' rule, by Freedman and Diaconis, by a count or by the edges given — on a nice step, and the bins are the categories of a band axis with pct-bars counting each: four hundred response times, most quick, a long tail."
+  [reqs]="['req-api-templates']"
+  data-testid="demo-histogram"
+>
+  <pct-chart
+    ariaLabel="Response times by bin"
+    x="band"
+    [categories]="binLabels"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-histogram"
+  >
+    <pct-bars [data]="binRows" x="bin" y="count" name="Requests" unit="" />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
+  heading="A range of two values"
+  summary="pct-range draws a band from a low to a high at each position — the day's temperatures — and the tooltip reads both as low – high; a line of the mean stands on it. A gap in either value is a gap in the band."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-range"
+>
+  <pct-chart
+    #ranged
+    ariaLabel="Temperatures outside in March 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-range"
+  >
+    <pct-range
+      [data]="march"
+      x="at"
+      low="low"
+      high="high"
+      name="Day's range"
+      unit="°C"
+      curve="monotone"
+    />
+    <pct-line
+      [data]="march"
+      x="at"
+      y="mean"
+      name="Mean"
+      unit="°C"
+      curve="monotone"
+      color="2"
+    />
+  </pct-chart>
+  <pct-chart-table [chart]="ranged" data-testid="range-table" />
+</sbx-demo>
+
+<sbx-demo
+  heading="Candles"
+  summary="pct-range with an open and a close draws candles: a wick from the low to the high, a body from the open to the close, in the skin's rise colour where the session closed at or above its open and its fall colour where under. The tooltip reads the close, with the open, the high and the low on lines of their own; the table has a row per candle."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-candles"
+>
+  <pct-chart
+    #candles
+    ariaLabel="PCT share in September 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-candles"
+  >
+    <pct-range
+      [data]="sessions"
+      x="at"
+      low="low"
+      high="high"
+      open="open"
+      close="close"
+      name="PCT"
+      unit="€"
+    />
+  </pct-chart>
+  <pct-chart-table [chart]="candles" data-testid="candles-table" />
+</sbx-demo>
+
+<sbx-demo
+  heading="Boxes"
+  summary="pct-box draws a distribution per position: the quartiles as the box, the median across it, whiskers to the farthest values within one and a half interquartile ranges, and every value past them as a point. Each hour's response times, read as a box; the tooltip and the table carry the five numbers and the outliers."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-box"
+>
+  <pct-chart
+    #boxed
+    ariaLabel="Response times by hour on 25 October 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-box"
+  >
+    <pct-box
+      [data]="hourly"
+      x="at"
+      values="times"
+      name="Response time"
+      unit="ms"
+    />
+  </pct-chart>
+  <pct-chart-table [chart]="boxed" data-testid="box-table" />
+</sbx-demo>

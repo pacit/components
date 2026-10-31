@@ -1,0 +1,40 @@
+<ng-template #drawing>
+  @if (!hidden()) {
+  <svg:path
+    data-pct-part="area"
+    [attr.d]="fill()"
+    [attr.data-pct-series]="place()"
+    [style.--_pct-chart-color]="custom()"
+  />
+  <svg:path
+    data-pct-part="series"
+    [attr.d]="edge()"
+    [attr.data-pct-series]="place()"
+    [style.--_pct-chart-color]="custom()"
+  />
+  }
+</ng-template>
+
+<!--
+  The series drawn small, where its name stands (0102): a tint under its edge for a legend, a
+  filled square for the cursor's line and the tooltip. The dash of the place is on the edge, the
+  second channel where the colours are gone.
+-->
+<ng-template #swatch let-series let-form="form">
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    [class.marker]="form === 'marker'"
+    [attr.viewBox]="form === 'marker' ? '0 0 12 12' : '0 0 24 12'"
+    [attr.data-pct-series]="series.place"
+    [style.--_pct-chart-color]="series.color"
+  >
+    @if (form === 'swatch') {
+    <svg:rect class="tint" x="1" y="4" width="22" height="7" />
+    <svg:line class="dash" x1="1" y1="4" x2="23" y2="4" />
+    } @else {
+    <svg:rect class="shape" x="2" y="2" width="8" height="8" />
+    }
+  </svg>
+</ng-template>

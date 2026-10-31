@@ -1,5 +1,5 @@
 import type { PctColumns } from './columns';
-import { pctAreaPath, pctLinePath } from './path';
+import { pctAreaPath, pctBandPath, pctLinePath } from './path';
 import { pctLinear, pctLog } from './scale';
 
 const of = (points: readonly (readonly [number, number])[]): PctColumns => ({
@@ -201,5 +201,98 @@ describe('pctAreaPath', () => {
 
   it('draws nothing for nothing', () => {
     expect(pctAreaPath(of([]), x, y, 'linear', 0)).toBe('');
+  });
+});
+
+describe('pctLinePath, monotone', () => {
+  it('draws a cubic through the readings whose tangents are the monotone ones', () => {
+    // Slopes -4 and 1 in pixels: a zero tangent at the middle, -6 and 1.5 at the ends.
+    expect(pctLinePath(three, x, y, 'monotone')).toBe(
+      'M10 80C13.33 60 16.67 40 20 40C26.67 40 33.33 50 40 60',
+    );
+  });
+
+  it('draws two readings as a line, and a lone one as a dot', () => {
+    expect(
+      pctLinePath(
+        of([
+          [10, 2],
+          [20, 6],
+        ]),
+        x,
+        y,
+        'monotone',
+      ),
+    ).toBe('M10 80L20 40');
+    expect(pctLinePath(of([[10, 2]]), x, y, 'monotone')).toBe('M10 80L10 80');
+  });
+
+  it('starts a new curve after a gap, each run with tangents of its own', () => {
+    const d = pctLinePath(
+      of([
+        [10, 2],
+        [20, 6],
+        [40, 4],
+        [50, NaN],
+        [60, 2],
+        [70, 6],
+        [90, 4],
+      ]),
+      x,
+      y,
+      'monotone',
+    );
+    expect(d).toBe(
+      'M10 80C13.33 60 16.67 40 20 40C26.67 40 33.33 50 40 60' +
+        'M60 80C63.33 60 66.67 40 70 40C76.67 40 83.33 50 90 60',
+    );
+  });
+
+  it('transposed, writes each control point as y x', () => {
+    expect(pctLinePath(three, x, y, 'monotone', { transpose: true })).toBe(
+      'M80 10C60 13.33 40 16.67 40 20C40 26.67 50 33.33 60 40',
+    );
+  });
+});
+
+describe('pctBandPath', () => {
+  const lows = Float64Array.from([1, 2, 3]);
+
+  it('closes the highs down along the lows, walked back', () => {
+    expect(pctBandPath(three, lows, x, y, 'linear')).toBe(
+      'M10 80L20 40L40 60L40 70L20 80L10 90Z',
+    );
+  });
+
+  it('follows the curve on both edges, the way back along the lows reversed', () => {
+    expect(pctBandPath(three, lows, x, y, 'monotone')).toBe(
+      'M10 80C13.33 60 16.67 40 20 40C26.67 40 33.33 50 40 60' +
+        'L40 70C33.33 72.22 26.67 74.44 20 80C16.67 82.78 13.33 86.39 10 90Z',
+    );
+    expect(pctBandPath(three, lows, x, y, 'step')).toBe(
+      'M10 80L20 80L20 40L40 40L40 60L40 70L40 80L20 80L20 90L10 90Z',
+    );
+  });
+
+  it('leaves a gap in either edge out of both, and draws a band per run', () => {
+    const highs = of([
+      [10, 2],
+      [20, 6],
+      [30, 5],
+      [40, 4],
+    ]);
+    expect(
+      pctBandPath(highs, Float64Array.from([1, NaN, 3, 3]), x, y, 'linear'),
+    ).toBe('M10 80L10 90ZM30 50L40 60L40 70L30 70Z');
+    expect(
+      pctBandPath(highs, Float64Array.from([1, 2, 3, 3]), x, y, 'linear'),
+    ).toBe('M10 80L20 40L30 50L40 60L40 70L30 70L20 80L10 90Z');
+  });
+
+  it('transposed, writes each point as y x, and draws nothing for nothing', () => {
+    expect(pctBandPath(three, lows, x, y, 'linear', { transpose: true })).toBe(
+      'M80 10L40 20L60 40L70 40L80 20L90 10Z',
+    );
+    expect(pctBandPath(of([]), new Float64Array(), x, y, 'linear')).toBe('');
   });
 });

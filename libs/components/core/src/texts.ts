@@ -277,6 +277,18 @@ export interface PctTexts {
   readonly chartBand: string;
   /** Chart: the name of a bubble's size in a tooltip and a table, when the consumer gives it none. */
   readonly chartSize: string;
+  /** Chart: a candle's opening value, in a tooltip and a table. */
+  readonly chartOpen: string;
+  /** Chart: the low of a range, a candle or a box, in a tooltip and a table. */
+  readonly chartLow: string;
+  /** Chart: the high of a range, a candle or a box, in a tooltip and a table. */
+  readonly chartHigh: string;
+  /** Chart: a box's lower quartile, in a tooltip and a table. */
+  readonly chartQuartile1: string;
+  /** Chart: a box's upper quartile, in a tooltip and a table. */
+  readonly chartQuartile3: string;
+  /** Chart: a box's values beyond its whiskers, in a tooltip and a table. */
+  readonly chartOutliers: string;
   /** Chart: the name of the legend's list of series. */
   readonly chartLegend: string;
   /** Chart: the legend's button that takes a series off the chart, named with the series. */
@@ -417,6 +429,12 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartNow: 'Now',
   chartBand: 'States',
   chartSize: 'Size',
+  chartOpen: 'Open',
+  chartLow: 'Low',
+  chartHigh: 'High',
+  chartQuartile1: 'Lower quartile',
+  chartQuartile3: 'Upper quartile',
+  chartOutliers: 'Outliers',
   chartLegend: 'Series',
   chartRemove: 'Remove',
   chartZoom: 'Zoom',

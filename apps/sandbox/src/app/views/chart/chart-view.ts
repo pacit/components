@@ -1,10 +1,13 @@
 import { Component, computed, signal } from '@angular/core';
 import { PctButton } from '@pacit/components/button';
 import {
+  PctArea,
   PctAxis,
   PctBand,
   type PctBandState,
   PctBars,
+  pctBin,
+  PctBox,
   PctChart,
   PctChartLegend,
   PctChartSync,
@@ -16,6 +19,7 @@ import {
   PctNow,
   type PctPick,
   PctPoints,
+  PctRange,
   PctReference,
   PctSpan,
   type PctThreshold,
@@ -231,6 +235,104 @@ function deviceWatts(): Reading[] {
   return rows;
 }
 
+/** Phase 10: a day's energy by source, every quarter of an hour, in kilowatts. */
+interface Sourced {
+  readonly at: number;
+  readonly gas: number | null;
+  readonly pump: number;
+  readonly solar: number;
+}
+
+function energyBySource(): Sourced[] {
+  const random = seeded(11);
+  const rows: Sourced[] = [];
+  for (let at = START; at <= START + 25 * HOUR; at += 15 * MINUTE) {
+    const hours = ((at - START) / HOUR + 22) % 24;
+    const sun = Math.max(0, Math.sin(((hours - 6) / 12) * Math.PI));
+    const cold = 1 + 0.5 * Math.cos(((hours - 4) / 24) * 2 * Math.PI);
+    rows.push({
+      at,
+      // the boiler's meter was offline for an hour in the afternoon
+      gas:
+        hours >= 14 && hours < 15
+          ? null
+          : Math.round((1.2 * cold + random() * 0.4) * 100) / 100,
+      pump: Math.round((0.8 * cold + random() * 0.3) * 100) / 100,
+      solar: Math.round(sun * (2.4 + random() * 0.6) * 100) / 100,
+    });
+  }
+  return rows;
+}
+
+/** Four hundred response times in milliseconds: most quick, a long tail. */
+function latencies(): number[] {
+  const random = seeded(17);
+  return Array.from({ length: 400 }, () => {
+    const base = 40 + random() * 60;
+    return Math.round(random() < 0.12 ? base + random() * 400 : base);
+  });
+}
+
+/** A day's temperatures outside, low and high, over March 2026, with the mean beside them. */
+interface DayRange {
+  readonly at: number;
+  readonly low: number;
+  readonly high: number;
+  readonly mean: number;
+}
+
+function marchRanges(): DayRange[] {
+  const random = seeded(29);
+  return Array.from({ length: 31 }, (_, i) => {
+    const at = Date.UTC(2026, 2, i + 1);
+    const trend = 2 + i * 0.25;
+    const low = Math.round((trend - 3 - random() * 3) * 10) / 10;
+    const high = Math.round((trend + 4 + random() * 4) * 10) / 10;
+    return { at, low, high, mean: Math.round(((low + high) / 2) * 10) / 10 };
+  });
+}
+
+/** Thirty sessions of a share: its open, high, low and close, in euro. */
+interface Session {
+  readonly at: number;
+  readonly open: number;
+  readonly high: number;
+  readonly low: number;
+  readonly close: number;
+}
+
+function sessions(): Session[] {
+  const random = seeded(31);
+  let close = 42;
+  return Array.from({ length: 30 }, (_, i) => {
+    const open = close;
+    close = Math.round((open + (random() - 0.48) * 3) * 100) / 100;
+    const high =
+      Math.round((Math.max(open, close) + random() * 1.5) * 100) / 100;
+    const low =
+      Math.round((Math.min(open, close) - random() * 1.5) * 100) / 100;
+    return { at: Date.UTC(2026, 8, 1 + i), open, high, low, close };
+  });
+}
+
+/** Each hour's response times of the day: a distribution per hour. */
+interface HourBatch {
+  readonly at: number;
+  readonly times: readonly number[];
+}
+
+function hourlyLatencies(): HourBatch[] {
+  const random = seeded(37);
+  return Array.from({ length: 24 }, (_, h) => {
+    const busy = h >= 9 && h <= 17 ? 1.6 : 1;
+    const times = Array.from({ length: 40 }, () => {
+      const base = (35 + random() * 50) * busy;
+      return Math.round(random() < 0.08 ? base + random() * 300 : base);
+    });
+    return { at: START + 2 * HOUR + h * HOUR, times };
+  });
+}
+
 const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
   at: i * 2.5,
   value: Math.round(100 * (1 - Math.exp(-i / 9)) * 10) / 10,
@@ -260,6 +362,9 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctNow,
     PctBand,
     PctPoints,
+    PctArea,
+    PctRange,
+    PctBox,
     PctButton,
   ],
   templateUrl: './chart-view.html',
@@ -329,6 +434,17 @@ export class ChartView {
     if (!pick) return 'Nothing picked.';
     return `Picked: ${pick.row.outdoor} °C outside, ${pick.row.power} kW drawn.`;
   });
+  /** Phase 10: stacked areas, a monotone curve, a histogram, a range, candles, boxes. */
+  protected readonly sources = energyBySource();
+  protected readonly bins = pctBin(latencies());
+  protected readonly binLabels = this.bins.map((b) => `${b.from}–${b.to} ms`);
+  protected readonly binRows = this.bins.map((b, i) => ({
+    bin: i,
+    count: b.count,
+  }));
+  protected readonly march = marchRanges();
+  protected readonly sessions = sessions();
+  protected readonly hourly = hourlyLatencies();
   protected readonly yWindow = signal<{ from: number; to: number } | null>(
     null,
   );

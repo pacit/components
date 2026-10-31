@@ -17,7 +17,7 @@ export type PctDomain = readonly [min: number, max: number];
  *
  * @since next
  */
-export type PctRange = readonly [start: number, end: number];
+export type PctScaleRange = readonly [start: number, end: number];
 
 /**
  * A continuous scale.
@@ -26,7 +26,7 @@ export type PctRange = readonly [start: number, end: number];
  */
 export interface PctScale {
   readonly domain: PctDomain;
-  readonly range: PctRange;
+  readonly range: PctScaleRange;
   /** The position of a value. Outside the domain it extrapolates, so a line leaves the plot at its edge. */
   map(value: number): number;
   /** The value at a position, the inverse of `map`. */
@@ -45,7 +45,7 @@ export interface PctScale {
  *
  * @since next
  */
-export function pctLinear(domain: PctDomain, range: PctRange): PctScale {
+export function pctLinear(domain: PctDomain, range: PctScaleRange): PctScale {
   const [d0, d1] = domain;
   const [r0, r1] = range;
   if (d0 === d1) {
@@ -67,7 +67,7 @@ export function pctLinear(domain: PctDomain, range: PctRange): PctScale {
  *
  * @since next
  */
-export function pctLog(domain: PctDomain, range: PctRange): PctScale {
+export function pctLog(domain: PctDomain, range: PctScaleRange): PctScale {
   const inner = pctLinear(
     [Math.log10(domain[0]), Math.log10(domain[1])],
     range,
@@ -88,13 +88,13 @@ export function pctLog(domain: PctDomain, range: PctRange): PctScale {
  */
 export interface PctBandScale {
   readonly count: number;
-  readonly range: PctRange;
+  readonly range: PctScaleRange;
   /** The width of one slot. Negative when the range runs backwards. */
   readonly step: number;
   /** The width of a band; negative, as the step is, when the range runs backwards. */
   readonly bandwidth: number;
   /** Where the band of category `index` starts and ends. */
-  band(index: number): PctRange;
+  band(index: number): PctScaleRange;
   /** The middle of the slot of category `index`. */
   middle(index: number): number;
   /** The category whose slot holds `position`, or `-1` outside every slot. */
@@ -114,7 +114,7 @@ export interface PctBandScale {
  */
 export function pctBand(
   count: number,
-  range: PctRange,
+  range: PctScaleRange,
   inner = 0.2,
 ): PctBandScale {
   const [r0, r1] = range;

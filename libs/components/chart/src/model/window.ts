@@ -78,3 +78,25 @@ export function pctWindowFollow(
   const by = now - before;
   return { from: window.from + by, to: window.to + by };
 }
+
+/**
+ * The indices of the ordered positions inside the window, widened by `margin` positions beyond
+ * each edge where there are any, as `[from, to)`: what a mark drawn reading by reading draws,
+ * so the stretch from the last reading before the window reaches into it.
+ *
+ * @example
+ * pctIndicesIn(Float64Array.of(0, 10, 20, 30), { from: 12, to: 18 }); // [1, 3]
+ *
+ * @since next
+ */
+export function pctIndicesIn(
+  xs: ArrayLike<number>,
+  window: PctWindow,
+  margin = 1,
+): readonly [number, number] {
+  let from = 0;
+  while (from < xs.length && xs[from] < window.from) from++;
+  let to = xs.length;
+  while (to > 0 && xs[to - 1] > window.to) to--;
+  return [Math.max(0, from - margin), Math.min(xs.length, to + margin)];
+}

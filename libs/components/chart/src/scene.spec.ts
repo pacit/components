@@ -80,5 +80,17 @@ describe('PctMark, what a mark that draws no bars answers', () => {
     expect(PctMark.prototype.pyramidOf.call(mark, 'Supply')).toBeNull();
     // the line itself keeps a pyramid, which the base's answer is not
     expect(mark.pyramidOf('Supply')).not.toBeNull();
+    // the members an area or a range override: no stack, no text or place of its own,
+    // and the row's value is the value
+    expect(mark.stacked()).toBeNull();
+    expect(PctMark.prototype.nearAt.call(mark, 10, 10)).toBeNull();
+    expect(PctMark.prototype.textAt.call(mark, 'Supply', T0)).toBeNull();
+    expect(PctMark.prototype.readAt.call(mark, 'Supply', T0)).toBeNull();
+    expect(PctMark.prototype.readAt.call(mark, 'Supply', T0, true)).toBeNull();
+    expect(PctMark.prototype.drawnAt.call(mark, 'Supply', T0)).toBeNull();
+    expect(PctMark.prototype.rowValueAt.call(mark, 'Supply', T0 + 12 * H)).toBe(
+      2,
+    );
+    expect(PctMark.prototype.rowValueAt.call(mark, 'Other', T0)).toBeNull();
   });
 });

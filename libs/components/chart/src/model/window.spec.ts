@@ -1,4 +1,4 @@
-import { pctWindowFollow, pctWindowTransform } from './window';
+import { pctIndicesIn, pctWindowFollow, pctWindowTransform } from './window';
 import {
   pctDecimal,
   pctForAll,
@@ -136,5 +136,27 @@ describe('pctWindowFollow', () => {
 
   it('leaves a window the reader moved into the past', () => {
     expect(pctWindowFollow(w(0, 99), 100, 130)).toEqual(w(0, 99));
+  });
+});
+
+describe('pctIndicesIn', () => {
+  const xs = Float64Array.of(0, 10, 20, 30);
+
+  it('finds the positions inside the window, and one beyond each edge', () => {
+    expect(pctIndicesIn(xs, w(12, 18))).toEqual([1, 3]);
+    expect(pctIndicesIn(xs, w(10, 20))).toEqual([0, 4]);
+    expect(pctIndicesIn(xs, w(-5, 35))).toEqual([0, 4]);
+  });
+
+  it('widens by the margin it is given, and no further than the ends', () => {
+    expect(pctIndicesIn(xs, w(12, 18), 0)).toEqual([2, 2]);
+    expect(pctIndicesIn(xs, w(10, 20), 0)).toEqual([1, 3]);
+    expect(pctIndicesIn(xs, w(12, 18), 5)).toEqual([0, 4]);
+  });
+
+  it('finds nothing but the neighbours past the ends, and nothing in nothing', () => {
+    expect(pctIndicesIn(xs, w(40, 50))).toEqual([3, 4]);
+    expect(pctIndicesIn(xs, w(-10, -5))).toEqual([0, 1]);
+    expect(pctIndicesIn(new Float64Array(), w(0, 1))).toEqual([0, 0]);
   });
 });

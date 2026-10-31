@@ -1,0 +1,61 @@
+<ng-template #drawing>
+  @if (!hidden()) { @for (drawn of drawn(); track drawn.x) {
+  <svg:g [attr.data-pct-series]="place()" [style.--_pct-chart-color]="custom()">
+    @for (whisker of drawn.whiskers; track $index) {
+    <svg:line
+      data-pct-part="whisker"
+      [attr.x1]="whisker.x1"
+      [attr.y1]="whisker.y1"
+      [attr.x2]="whisker.x2"
+      [attr.y2]="whisker.y2"
+    />
+    }
+    <svg:rect
+      data-pct-part="box"
+      [attr.x]="drawn.box.x"
+      [attr.y]="drawn.box.y"
+      [attr.width]="drawn.box.width"
+      [attr.height]="drawn.box.height"
+    />
+    <svg:line
+      data-pct-part="median"
+      [attr.x1]="drawn.median.x1"
+      [attr.y1]="drawn.median.y1"
+      [attr.x2]="drawn.median.x2"
+      [attr.y2]="drawn.median.y2"
+    />
+    @for (outlier of drawn.outliers; track $index) {
+    <svg:circle
+      data-pct-part="outlier"
+      r="2.5"
+      [attr.cx]="outlier.cx"
+      [attr.cy]="outlier.cy"
+    />
+    }
+  </svg:g>
+  } }
+</ng-template>
+
+<!--
+  The series drawn small, where its name stands (0102): a box with its median and whiskers for
+  a legend; a filled square for the cursor's line and the tooltip.
+-->
+<ng-template #swatch let-series let-form="form">
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    [class.marker]="form === 'marker'"
+    [attr.viewBox]="form === 'marker' ? '0 0 12 12' : '0 0 24 12'"
+    [attr.data-pct-series]="series.place"
+    [style.--_pct-chart-color]="series.color"
+  >
+    @if (form === 'marker') {
+    <svg:rect class="shape" x="2" y="2" width="8" height="8" />
+    } @else {
+    <svg:line class="line" x1="1" y1="6" x2="23" y2="6" />
+    <svg:rect class="tint" x="7" y="1.5" width="10" height="9" />
+    <svg:line class="line" x1="11" y1="1.5" x2="11" y2="10.5" />
+    }
+  </svg>
+</ng-template>

@@ -1,0 +1,62 @@
+<ng-template #drawing>
+  @if (!hidden()) { @if (candles()) { @for (candle of drawnCandles(); track
+  candle.x) {
+  <svg:g
+    data-pct-part="candle"
+    [class.rise]="candle.rise"
+    [class.fall]="!candle.rise"
+    [attr.data-pct-series]="place()"
+    [style.--_pct-chart-color]="custom()"
+  >
+    <svg:line
+      data-pct-part="wick"
+      [attr.x1]="candle.wick.x1"
+      [attr.y1]="candle.wick.y1"
+      [attr.x2]="candle.wick.x2"
+      [attr.y2]="candle.wick.y2"
+    />
+    <svg:rect
+      data-pct-part="body"
+      [attr.x]="candle.body.x"
+      [attr.y]="candle.body.y"
+      [attr.width]="candle.body.width"
+      [attr.height]="candle.body.height"
+    />
+  </svg:g>
+  } } @else {
+  <svg:path
+    data-pct-part="spread"
+    [attr.d]="bandPath()"
+    [attr.data-pct-series]="place()"
+    [style.--_pct-chart-color]="custom()"
+  />
+  } }
+</ng-template>
+
+<!--
+  The series drawn small, where its name stands (0102): a band's tint between two edges, or a
+  candle, for a legend; a filled square for the cursor's line and the tooltip.
+-->
+<ng-template #swatch let-series let-form="form">
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    [class.marker]="form === 'marker'"
+    [class.candle]="candles()"
+    [attr.viewBox]="form === 'marker' ? '0 0 12 12' : '0 0 24 12'"
+    [attr.data-pct-series]="series.place"
+    [style.--_pct-chart-color]="series.color"
+  >
+    @if (form === 'marker') {
+    <svg:rect class="shape" x="2" y="2" width="8" height="8" />
+    } @else if (candles()) {
+    <svg:line class="wick" x1="12" y1="0.5" x2="12" y2="11.5" />
+    <svg:rect class="body" x="8.5" y="3" width="7" height="6" />
+    } @else {
+    <svg:rect class="tint" x="1" y="3" width="22" height="6" />
+    <svg:line class="dash" x1="1" y1="3" x2="23" y2="3" />
+    <svg:line class="dash" x1="1" y1="9" x2="23" y2="9" />
+    }
+  </svg>
+</ng-template>

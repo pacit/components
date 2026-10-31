@@ -115,8 +115,11 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chart-bar-alpha dimension component public
 --pct-chart-bar-gap dimension component public
 --pct-chart-bar-radius dimension component public
+--pct-chart-body-bg-fall color component public
+--pct-chart-body-bg-rise color component public
 --pct-chart-bubble-alpha dimension component public
 --pct-chart-cursor-border color component public
+--pct-chart-edge-width dimension component public
 --pct-chart-font-size dimension component public
 --pct-chart-grid-border color component public
 --pct-chart-label-fg color component public

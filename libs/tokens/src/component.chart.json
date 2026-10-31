@@ -57,6 +57,21 @@
         "$value": "20%",
         "$description": "How much of the series colour fills the area under a line."
       },
+      "edge-width": {
+        "$type": "dimension",
+        "$value": "1.5px",
+        "$description": "Width of the top edge of an area, where two layers of a stack meet (0106)."
+      },
+      "body-bg-rise": {
+        "$type": "color",
+        "$value": "{pct.success}",
+        "$description": "A candle that closes above its open (0106)."
+      },
+      "body-bg-fall": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "A candle that closes under its open (0106)."
+      },
       "grid-border": {
         "$type": "color",
         "$value": "{pct.border}",

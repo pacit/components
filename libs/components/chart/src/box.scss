@@ -1,0 +1,118 @@
+// The element itself draws nothing: its drawing is stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// A box in the series' colour: its rectangle a tint with the colour's edge, its median and its
+// whiskers lines of the colour, its outliers points of it (0106).
+[data-pct-part='box'] {
+  stroke-width: 1px;
+}
+
+[data-pct-part='median'] {
+  stroke-width: var(--pct-chart-series-width);
+  stroke-linecap: butt;
+}
+
+[data-pct-part='whisker'] {
+  stroke-width: 1px;
+  stroke-linecap: butt;
+}
+
+[data-pct-part='outlier'] {
+  stroke: var(--pct-chart-marker-border);
+  stroke-width: 1px;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-series='#{$i}'] [data-pct-part='box'],
+  [data-pct-series='#{$i}'] .tint {
+    fill: color-mix(
+      in srgb,
+      var(--pct-chart-series-color-#{$i}) var(--pct-chart-area-alpha),
+      transparent
+    );
+    stroke: var(--pct-chart-series-color-#{$i});
+  }
+
+  [data-pct-series='#{$i}'] [data-pct-part='median'],
+  [data-pct-series='#{$i}'] [data-pct-part='whisker'],
+  [data-pct-series='#{$i}'] .line {
+    stroke: var(--pct-chart-series-color-#{$i});
+  }
+
+  [data-pct-series='#{$i}'] [data-pct-part='outlier'],
+  [data-pct-series='#{$i}'] .shape {
+    fill: var(--pct-chart-series-color-#{$i});
+  }
+}
+
+// The consumer's own colour, handed in as a private property.
+[data-pct-series='custom'] [data-pct-part='box'],
+[data-pct-series='custom'] .tint {
+  fill: color-mix(
+    in srgb,
+    var(--_pct-chart-color) var(--pct-chart-area-alpha),
+    transparent
+  );
+  stroke: var(--_pct-chart-color);
+}
+
+[data-pct-series='custom'] [data-pct-part='median'],
+[data-pct-series='custom'] [data-pct-part='whisker'],
+[data-pct-series='custom'] .line {
+  stroke: var(--_pct-chart-color);
+}
+
+[data-pct-series='custom'] [data-pct-part='outlier'],
+[data-pct-series='custom'] .shape {
+  fill: var(--_pct-chart-color);
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+[data-pct-part='swatch'].marker {
+  inline-size: var(--pct-chart-marker-size);
+  block-size: var(--pct-chart-marker-size);
+}
+
+.line {
+  stroke-width: 1.5px;
+  stroke-linecap: butt;
+}
+
+.tint {
+  stroke-width: 1px;
+}
+
+.shape {
+  stroke: var(--pct-chart-marker-border);
+  stroke-width: 2px;
+  paint-order: stroke;
+}
+
+// With the colours gone, the box is its outline and its lines, the outliers filled points.
+@media (forced-colors: active) {
+  [data-pct-series] [data-pct-part='box'],
+  [data-pct-series] .tint {
+    fill: none;
+    stroke: CanvasText;
+  }
+
+  [data-pct-series] [data-pct-part='median'],
+  [data-pct-series] [data-pct-part='whisker'],
+  [data-pct-series] .line {
+    stroke: CanvasText;
+  }
+
+  [data-pct-series] [data-pct-part='outlier'],
+  [data-pct-series] .shape {
+    fill: CanvasText;
+    stroke: Canvas;
+  }
+}

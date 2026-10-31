@@ -29,8 +29,8 @@ Escape — the row every card asking "what does a reader announce when this appe
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
 at — 5 of 595 here. 15 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2450
-phrases, and 2447 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2451
+phrases, and 2448 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
@@ -85,7 +85,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/field`
 
 ```
-arrive  a "Field"                                            leaving main content. · navigation · Sandbox views · List with 36 items · Field · visited link.
+arrive  a "Field"                                            leaving main content. · navigation · Sandbox views · List with 36 items · Field · link.
 enter   input                                                leaving list. · leaving navigation. · main content · E-mail · entry · john@example.com · required. · invalid entry. · A work address. · Focus mode
 tab 1   —                                                    Theme · panel · light · selected radio button. · Browse mode · alert. · The e-mail address is required
 ```
@@ -93,7 +93,7 @@ tab 1   —                                                    Theme · panel ·
 ### `/text`
 
 ```
-arrive  a "Text"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Text · link.
+arrive  a "Text"                                             leaving main content. · navigation · Sandbox views · List with 36 items · Text · visited link.
 enter   input                                                First name · entry · John. · Focus mode
 tab 1   input                                                E-mail · entry · john@example.com.
 tab 2   input                                                Password · password text.
@@ -414,7 +414,7 @@ the act: `Enter` on `[data-testid="actions-trigger"]`, to open a menu (the gestu
 ### `/drawer`
 
 ```
-arrive  a "Drawer"                                           leaving main content. · navigation · Sandbox views · List with 36 items · Drawer · link. · Browse mode
+arrive  a "Drawer"                                           leaving main content. · navigation · Sandbox views · List with 36 items · Drawer · visited link. · Browse mode
 enter   button "Sections"                                    Sections · collapsed button. · Focus mode
 tab 1   button "Sections, from further down"                 Sections, from further down · collapsed button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
@@ -540,7 +540,7 @@ tab 20  input[control]                                       leaving panel. · S
 tab 21  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 22  button "Open the settings"                           leaving panel. · Open the settings · button.
 tab 23  button "Open the settings"                           Toast · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Copy (a shorter clock)"                      main content · Copy (a shorter clock) · button. · Browse mode
+reach   button "Copy (a shorter clock)"                      main content · A message that arrives on top of the page. There is no   link to put in a template — · Browse mode · Copy (a shorter clock) · button.
 open    button "Copy (a shorter clock)"                      Notifications. Copied to the clipboard.
 close   button "Copy (a shorter clock)"                      (silence)
 ```
@@ -580,7 +580,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/progress`
 
 ```
-arrive  a "Progress"                                         leaving list. · leaving main content. · navigation · Sandbox views · List with 36 items · Progress · link.
+arrive  a "Progress"                                         leaving list. · leaving main content. · navigation · Sandbox views · List with 36 items · Progress · visited link.
 enter   button "−10"                                         −10 · button.
 tab 1   button "+10"                                         +10 · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -701,7 +701,7 @@ Tab moved nothing — focus had left the page.
 ### `/icon`
 
 ```
-arrive  a "Icon"                                             navigation · Sandbox views · List with 36 items · Icon · link. · Browse mode
+arrive  a "Icon"                                             navigation · Sandbox views · List with 36 items · Icon · visited link. · Browse mode
 enter   input[control]                                       Done · check box checked.
 tab 1   input[control]                                       Done · check box checked.
 tab 2   input[control]                                       Icon · @pacit/components · page tab. · JUGGLER <window>.
@@ -712,7 +712,7 @@ Tab moved nothing — focus had left the page.
 ### `/breadcrumb`
 
 ```
-arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 36 items · Breadcrumb · visited link. · Browse mode
+arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 36 items · Breadcrumb · link. · Browse mode
 enter   a "Home"                                             navigation · Breadcrumb · List with 3 items · Home · link.
 tab 1   a "Library"                                          Library · link.
 tab 2   a "Data"                                             Data · link. · (Current page)

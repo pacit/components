@@ -192,6 +192,14 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       key: 'points',
       load: () => import('./chart.points.demo').then((m) => m.ChartPointsDemo),
     },
+    {
+      key: 'areas',
+      load: () => import('./chart.areas.demo').then((m) => m.ChartAreasDemo),
+    },
+    {
+      key: 'ranges',
+      load: () => import('./chart.ranges.demo').then((m) => m.ChartRangesDemo),
+    },
   ],
   badge: [
     {

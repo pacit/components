@@ -80,6 +80,9 @@ const DATA_DRAWINGS = new Set([
   `${PROJECT}/chart/src/now.html`,
   `${PROJECT}/chart/src/band.html`,
   `${PROJECT}/chart/src/points.html`,
+  `${PROJECT}/chart/src/area.html`,
+  `${PROJECT}/chart/src/range.html`,
+  `${PROJECT}/chart/src/box.html`,
 ]);
 const PART = 'data-pct-part';
 
