@@ -29,7 +29,7 @@
     </caption>
     }
     <thead>
-      <tr [attr.aria-rowindex]="window() ? 1 : null">
+      <tr [attr.aria-rowindex]="rowCount() === null ? null : 1">
         @if (selection(); as selection) {
         <!-- The column of picks: what is in it is the selection's to draw. -->
         <th pctHeader scope="col" class="pct-data-table__pick">
