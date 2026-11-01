@@ -2463,6 +2463,29 @@
       "severity": "error"
     },
     {
+      "$comment": "A column's separator is a control, and its line is what shows it: held to the non-text floor on the header's surface it stands on.",
+      "name": "UI: table — a column's separator",
+      "fg": "pct.table.separator-fg",
+      "bg": "pct.table.heading-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "A pinned cell paints the page's surface where the rest of the row paints none, under the cell's own text and the row's number.",
+      "name": "table — the text of a pinned cell",
+      "fg": "pct.table.fg",
+      "bg": "pct.table.pinned-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "table — the number of a pinned row",
+      "fg": "pct.table.fg-muted",
+      "bg": "pct.table.pinned-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "AA: chart — reference label on surface",
       "fg": "pct.chart.reference-fg",
       "bg": "pct.surface",

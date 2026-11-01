@@ -1024,11 +1024,13 @@ export class PctDataTableHarness extends PctHarness<
   | 'hole'
   | 'mark'
   | 'message'
+  | 'options'
   | 'place'
   | 'placeholder'
   | 'retry'
   | 'select'
   | 'select-all'
+  | 'separator'
   | 'warning'
 > {
   static override hostSelector = 'pct-data-table';
@@ -1042,11 +1044,13 @@ export class PctDataTableHarness extends PctHarness<
     'hole',
     'mark',
     'message',
+    'options',
     'place',
     'placeholder',
     'retry',
     'select',
     'select-all',
+    'separator',
     'warning',
   ] as const;
 
@@ -1200,6 +1204,16 @@ export class PctDataTableHarness extends PctHarness<
       `${DATA_ROWS.replace('[data-pct-index]', `[data-pct-index="${line}"]`)} > td`,
     )();
   }
+}
+
+/**
+ * `pct-table-column-chooser` — `PctTableColumnChooser`.
+ *
+ * @since next
+ */
+export class PctTableColumnChooserHarness extends PctHarness<'item'> {
+  static override hostSelector = 'pct-table-column-chooser';
+  static override readonly parts = ['item'] as const;
 }
 
 /**

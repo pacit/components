@@ -1,0 +1,137 @@
+<!--
+  The columns, in the order the table draws them: each row a checkbox that shows the column,
+  the buttons that move it, and the menu that pins it. The group around the list carries the
+  name the consumer gives, and the list keeps its own role and count.
+-->
+<div
+  role="group"
+  class="pct-table-column-chooser__group"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+  [attr.aria-label]="ariaLabel() || null"
+>
+  <ul class="pct-table-column-chooser__list">
+    @for (placed of placed(); track placed.column.id) {
+    <!--
+    The row hears Alt with an arrow from the controls inside it, which take the focus: the row
+    itself is no control and takes none, so the rule is a false positive here.
+  -->
+    <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
+    <li
+      class="pct-table-column-chooser__item"
+      data-pct-part="item"
+      [attr.data-pct-column]="placed.column.id"
+      [attr.data-pct-pinned]="placed.pin"
+      (keydown)="key(placed, $event)"
+    >
+      <pct-checkbox
+        class="pct-table-column-chooser__check"
+        [label]="placed.column.header"
+        [checked]="!placed.hidden"
+        [disabled]="one() && !placed.hidden"
+        (checkedChange)="show(placed, $event)"
+      />
+      <button
+        pctButton
+        type="button"
+        variant="ghost"
+        size="sm"
+        data-pct-move="up"
+        [disabled]="!canMove(placed, -1)"
+        [attr.aria-label]="nameOf(texts().tableMoveUp, placed)"
+        (click)="press(placed, -1, $event)"
+      >
+        <pct-icon name="chevron-down" class="pct-table-column-chooser__up">
+          <svg
+            viewBox="0 0 16 16"
+            width="100%"
+            height="100%"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            focusable="false"
+          >
+            <path d="M4 6l4 4 4-4" />
+          </svg>
+        </pct-icon>
+      </button>
+      <button
+        pctButton
+        type="button"
+        variant="ghost"
+        size="sm"
+        data-pct-move="down"
+        [disabled]="!canMove(placed, 1)"
+        [attr.aria-label]="nameOf(texts().tableMoveDown, placed)"
+        (click)="press(placed, 1, $event)"
+      >
+        <pct-icon name="chevron-down" class="pct-table-column-chooser__down">
+          <svg
+            viewBox="0 0 16 16"
+            width="100%"
+            height="100%"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            focusable="false"
+          >
+            <path d="M4 6l4 4 4-4" />
+          </svg>
+        </pct-icon>
+      </button>
+      <button
+        pctButton
+        type="button"
+        variant="ghost"
+        size="sm"
+        [pctMenuTrigger]="pins"
+        [attr.aria-label]="nameOf(texts().tableColumnMenu, placed)"
+      >
+        <pct-icon name="more" class="pct-table-column-chooser__dots">
+          <svg
+            viewBox="0 0 16 16"
+            width="100%"
+            height="100%"
+            fill="currentColor"
+            focusable="false"
+          >
+            <circle cx="8" cy="3.5" r="1.5" />
+            <circle cx="8" cy="8" r="1.5" />
+            <circle cx="8" cy="12.5" r="1.5" />
+          </svg>
+        </pct-icon>
+      </button>
+      <pct-menu #pins>
+        @if (placed.pin !== 'start') {
+        <button
+          pctMenuItem
+          (click)="pin(placed, 'start')"
+          [attr.aria-label]="texts().tablePinStart"
+        >
+          {{ texts().tablePinStart }}
+        </button>
+        } @if (placed.pin !== 'end') {
+        <button
+          pctMenuItem
+          (click)="pin(placed, 'end')"
+          [attr.aria-label]="texts().tablePinEnd"
+        >
+          {{ texts().tablePinEnd }}
+        </button>
+        } @if (placed.pin) {
+        <button
+          pctMenuItem
+          (click)="pin(placed, null)"
+          [attr.aria-label]="texts().tableUnpin"
+        >
+          {{ texts().tableUnpin }}
+        </button>
+        }
+      </pct-menu>
+    </li>
+    }
+  </ul>
+</div>

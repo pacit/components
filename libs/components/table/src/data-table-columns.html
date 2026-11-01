@@ -1,0 +1,104 @@
+<!--
+  What a table that lays its columns out draws beside each header's label: the column's menu
+  and, at the header's end edge, its separator. Drawn by the table, declared here, so a table
+  that lays out no column carries none of it (0097).
+-->
+<ng-template #head let-column>
+  <button
+    type="button"
+    class="pct-data-table__options"
+    data-pct-part="options"
+    [pctMenuTrigger]="menu"
+    [attr.aria-label]="menuOf(column)"
+  >
+    <pct-icon name="more" class="pct-data-table__dots">
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="currentColor"
+        focusable="false"
+      >
+        <circle cx="8" cy="3.5" r="1.5" />
+        <circle cx="8" cy="8" r="1.5" />
+        <circle cx="8" cy="12.5" r="1.5" />
+      </svg>
+    </pct-icon>
+  </button>
+  <pct-menu #menu>
+    <button
+      pctMenuItem
+      [disabled]="!canMove(column, -1)"
+      (click)="move(column, -1)"
+      [attr.aria-label]="texts().tableMoveStart"
+    >
+      {{ texts().tableMoveStart }}
+    </button>
+    <button
+      pctMenuItem
+      [disabled]="!canMove(column, 1)"
+      (click)="move(column, 1)"
+      [attr.aria-label]="texts().tableMoveEnd"
+    >
+      {{ texts().tableMoveEnd }}
+    </button>
+    @if (pinOf(column) !== 'start') {
+    <button
+      pctMenuItem
+      (click)="pin(column, 'start')"
+      [attr.aria-label]="texts().tablePinStart"
+    >
+      {{ texts().tablePinStart }}
+    </button>
+    } @if (pinOf(column) !== 'end') {
+    <button
+      pctMenuItem
+      (click)="pin(column, 'end')"
+      [attr.aria-label]="texts().tablePinEnd"
+    >
+      {{ texts().tablePinEnd }}
+    </button>
+    } @if (pinOf(column)) {
+    <button
+      pctMenuItem
+      (click)="pin(column, null)"
+      [attr.aria-label]="texts().tableUnpin"
+    >
+      {{ texts().tableUnpin }}
+    </button>
+    }
+    <button
+      pctMenuItem
+      (click)="fit(column)"
+      [attr.aria-label]="texts().tableFit"
+    >
+      {{ texts().tableFit }}
+    </button>
+    <button
+      pctMenuItem
+      [disabled]="last()"
+      (click)="hide(column)"
+      [attr.aria-label]="texts().tableHide"
+    >
+      {{ texts().tableHide }}
+    </button>
+  </pct-menu>
+  <!-- The APG's window splitter: its value the column's width, moved by the arrows and dragged. -->
+  <div
+    role="separator"
+    tabindex="0"
+    class="pct-data-table__separator"
+    data-pct-part="separator"
+    aria-orientation="vertical"
+    [attr.aria-label]="resizeOf(column)"
+    [attr.aria-valuenow]="widthOf(column)"
+    [attr.aria-valuemin]="boundsOf(column).min"
+    [attr.aria-valuemax]="boundsOf(column).max"
+    (keydown)="key(column, $event)"
+    (pointerdown)="grab(column, $event)"
+    (pointermove)="drag(column, $event)"
+    (pointerup)="drop($event)"
+    (pointercancel)="drop($event)"
+    (dblclick)="fit(column)"
+  ></div>
+</ng-template>

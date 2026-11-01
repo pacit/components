@@ -126,6 +126,17 @@ const ENGLISH: PctTexts = {
   tableClear: 'Clear',
   tableFrom: '{column} from',
   tableTo: '{column} to',
+  tableColumnMenu: 'Options for {column}',
+  tableResize: 'Resize {column}',
+  tableMoveStart: 'Move left',
+  tableMoveEnd: 'Move right',
+  tablePinStart: 'Pin to the start',
+  tablePinEnd: 'Pin to the end',
+  tableUnpin: 'Unpin',
+  tableFit: 'Fit to content',
+  tableHide: 'Hide column',
+  tableMoveUp: 'Move {column} up',
+  tableMoveDown: 'Move {column} down',
 };
 
 describe('PCT_TEXTS', () => {

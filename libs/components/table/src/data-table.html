@@ -12,7 +12,10 @@
 } @if (filters(); as filters) {
 <!-- The columns' filters, made in this view: their button, panel and row cell are drawn below. -->
 <ng-container [ngComponentOutlet]="filters.parts" />
-}
+} @if (layout(); as layout) {
+<!-- The columns' layout, made in this view: a header's menu and separator are drawn below. -->
+<ng-container [ngComponentOutlet]="layout.parts" />
+} @let lead = leadSticks(); @let sticks = lead.cells;
 <pct-table-frame
   [labelledby]="ariaLabelledby() || null"
   [label]="ariaLabel() || null"
@@ -28,25 +31,62 @@
     [class.pct-data-table__window]="window() !== null"
     [style.--_lead.px]="window()?.lead()"
     [style.--_tail.px]="window()?.tail()"
+    [class.pct-data-table__laid]="laid()"
+    [style.--_min]="minWidth()"
+    [style.--_width]="wholeWidth()"
+    [style.--_digits]="laid() ? digits() : null"
   >
     @if (caption()) {
     <caption pctCaption>
       {{ caption() }}
     </caption>
+    } @if (laid()) {
+    <!-- The columns' widths, which a fixed layout reads before any row: the leading ones the
+         sheet's, the rest the layout's, or a share of what is left. -->
+    <colgroup>
+      @if (selection()) {
+      <col class="pct-data-table__toggle-col" />
+      } @if (disclosure()) {
+      <col class="pct-data-table__toggle-col" />
+      } @if (rowNumbers()) {
+      <col class="pct-data-table__number-col" />
+      } @for (head of heads(); track head.column.id) {
+      <col [style.inline-size.px]="head.width" />
+      }
+    </colgroup>
     }
     <thead>
       <tr [attr.aria-rowindex]="rowCount() === null ? null : 1">
         @if (selection(); as selection) {
         <!-- The column of picks: what is in it is the selection's to draw. -->
-        <th pctHeader scope="col" class="pct-data-table__pick">
+        <th
+          pctHeader
+          scope="col"
+          class="pct-data-table__pick"
+          [attr.data-pct-pinned]="lead.pick?.pinned"
+          [style.--_at.px]="lead.pick?.at"
+        >
           <ng-container [ngTemplateOutlet]="selection.head()" />
         </th>
         } @if (disclosure()) {
-        <th pctHeader scope="col" class="pct-data-table__disclosure">
+        <th
+          pctHeader
+          scope="col"
+          class="pct-data-table__disclosure"
+          [attr.data-pct-pinned]="lead.disclosure?.pinned"
+          [style.--_at.px]="lead.disclosure?.at"
+        >
           <span class="pct-data-table__word">{{ texts().tableDetails }}</span>
         </th>
         } @if (rowNumbers()) {
-        <th pctHeader scope="col" numeric class="pct-data-table__number">
+        <th
+          pctHeader
+          scope="col"
+          numeric
+          class="pct-data-table__number"
+          [attr.data-pct-pinned]="lead.number?.pinned"
+          [style.--_at.px]="lead.number?.at"
+        >
           <span aria-hidden="true">#</span
           ><span class="pct-data-table__word"
             >{{ texts().tableRowNumber }}</span
@@ -59,9 +99,13 @@
           [sortKey]="head.sortKey"
           [numeric]="head.numeric"
           [description]="head.said"
-          [attr.aria-label]="head.filterable ? head.column.header : null"
+          [attr.aria-label]="head.actions ? head.column.header : null"
           [attr.data-pct-filtered]="head.filtered ? '' : null"
-          [class.pct-data-table__filterable]="head.filterable"
+          [attr.data-pct-column]="laid() ? head.column.id : null"
+          [class.pct-data-table__acting]="head.actions > 0"
+          [style.--_actions]="head.actions || null"
+          [attr.data-pct-pinned]="sticks[$index]?.pinned"
+          [style.--_at.px]="sticks[$index]?.at"
         >
           @if (head.slot) {
           <ng-container
@@ -75,13 +119,20 @@
             aria-hidden="true"
             >{{ head.place }}{{ head.arrow }}</span
           >
-          } @if (head.filterable) {
+          } @if (head.actions) {
           <!-- Beside the label, outside the sort's button: a button is never inside another. -->
           <span pctHeaderAction class="pct-data-table__action">
+            @if (head.filterable) {
             <ng-container
               [ngTemplateOutlet]="filters()!.head()"
               [ngTemplateOutletContext]="{ $implicit: head.column }"
             />
+            } @if (layout(); as layout) {
+            <ng-container
+              [ngTemplateOutlet]="layout.head()"
+              [ngTemplateOutletContext]="{ $implicit: head.column }"
+            />
+            }
           </span>
           }
         </th>
@@ -94,13 +145,29 @@
         [attr.aria-rowindex]="rowCount() === null ? null : 2"
       >
         @if (selection()) {
-        <td pctCell></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.pick?.pinned"
+          [style.--_at.px]="lead.pick?.at"
+        ></td>
         } @if (disclosure()) {
-        <td pctCell></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.disclosure?.pinned"
+          [style.--_at.px]="lead.disclosure?.at"
+        ></td>
         } @if (rowNumbers()) {
-        <td pctCell></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.number?.pinned"
+          [style.--_at.px]="lead.number?.at"
+        ></td>
         } @for (head of heads(); track head.column.id) {
-        <td pctCell>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="sticks[$index]?.pinned"
+          [style.--_at.px]="sticks[$index]?.at"
+        >
           @if (head.filterable) {
           <ng-container
             [ngTemplateOutlet]="filters()!.cell()"
@@ -117,13 +184,31 @@
       @for (index of placeholders(); track index) {
       <tr data-pct-part="placeholder" aria-hidden="true">
         @if (selection()) {
-        <td pctCell></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.pick?.pinned"
+          [style.--_at.px]="lead.pick?.at"
+        ></td>
         } @if (disclosure()) {
-        <td pctCell></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.disclosure?.pinned"
+          [style.--_at.px]="lead.disclosure?.at"
+        ></td>
         } @if (rowNumbers()) {
-        <td pctCell></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.number?.pinned"
+          [style.--_at.px]="lead.number?.at"
+        ></td>
         } @for (head of heads(); track head.column.id) {
-        <td pctCell><pct-skeleton /></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="sticks[$index]?.pinned"
+          [style.--_at.px]="sticks[$index]?.at"
+        >
+          <pct-skeleton />
+        </td>
         }
       </tr>
       }
@@ -185,15 +270,35 @@
         [class.pct-data-table__even]="row.index % 2 === 1"
       >
         @if (row.failed === null) { @if (selection()) {
-        <td pctCell></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.pick?.pinned"
+          [style.--_at.px]="lead.pick?.at"
+        ></td>
         } @if (disclosure()) {
-        <td pctCell></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.disclosure?.pinned"
+          [style.--_at.px]="lead.disclosure?.at"
+        ></td>
         } @if (rowNumbers()) {
-        <td pctCell numeric class="pct-data-table__number">
+        <td
+          pctCell
+          numeric
+          class="pct-data-table__number"
+          [attr.data-pct-pinned]="lead.number?.pinned"
+          [style.--_at.px]="lead.number?.at"
+        >
           {{ row.index + 1 }}
         </td>
         } @for (head of heads(); track head.column.id) {
-        <td pctCell><pct-skeleton /></td>
+        <td
+          pctCell
+          [attr.data-pct-pinned]="sticks[$index]?.pinned"
+          [style.--_at.px]="sticks[$index]?.at"
+        >
+          <pct-skeleton />
+        </td>
         } } @else {
         <td pctCell [attr.colspan]="span()">
           @if (row.first) {
@@ -215,14 +320,24 @@
         [attr.data-pct-selected]="row.selected ? '' : null"
       >
         @if (selection(); as selection) {
-        <td pctCell class="pct-data-table__pick">
+        <td
+          pctCell
+          class="pct-data-table__pick"
+          [attr.data-pct-pinned]="lead.pick?.pinned"
+          [style.--_at.px]="lead.pick?.at"
+        >
           <ng-container
             [ngTemplateOutlet]="selection.cell()"
             [ngTemplateOutletContext]="{ $implicit: row }"
           />
         </td>
         } @if (disclosure()) {
-        <td pctCell class="pct-data-table__disclosure">
+        <td
+          pctCell
+          class="pct-data-table__disclosure"
+          [attr.data-pct-pinned]="lead.disclosure?.pinned"
+          [style.--_at.px]="lead.disclosure?.at"
+        >
           <button
             type="button"
             class="pct-data-table__toggle"
@@ -250,7 +365,13 @@
           </button>
         </td>
         } @if (rowNumbers()) {
-        <td pctCell numeric class="pct-data-table__number">
+        <td
+          pctCell
+          numeric
+          class="pct-data-table__number"
+          [attr.data-pct-pinned]="lead.number?.pinned"
+          [style.--_at.px]="lead.number?.at"
+        >
           {{ row.index + 1 }}
         </td>
         } @for (cell of row.cells; track cell.column.id) {
@@ -262,6 +383,8 @@
           [attr.data-pct-tone]="cell.tone"
           [attr.title]="cell.title"
           [attr.data-pct-tooltip]="cell.clip ? '' : null"
+          [attr.data-pct-pinned]="sticks[$index]?.pinned"
+          [style.--_at.px]="sticks[$index]?.at"
         >
           @if (cell.slot) {
           <ng-container

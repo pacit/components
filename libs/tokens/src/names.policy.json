@@ -125,7 +125,8 @@
       "band",
       "bubble",
       "edge",
-      "body"
+      "body",
+      "pinned"
     ],
     "properties": [
       "alpha",

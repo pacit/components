@@ -349,6 +349,72 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Rules laid out"
+  summary="Each column's width, place and edge are the user's: a separator at a header's end edge widens it by the arrows or a drag, a header's menu moves it, pins it, fits it or hides it, and the list beside the table shows, moves and pins them too. The rows' checkboxes and numbers stick with the columns pinned to the start. The layout is one model, saved as JSON and laid back as it was."
+  [reqs]="['req-api-signal-forms']"
+  data-testid="demo-layout"
+>
+  <div class="datatable__layout">
+    <pct-table-column-chooser
+      data-testid="layout-chooser"
+      class="datatable__chooser"
+      ariaLabel="Columns"
+      [columns]="layoutColumns"
+      [(layout)]="ruleLayout"
+    />
+    <pct-data-table
+      data-testid="table-layout"
+      class="datatable__laid"
+      caption="Rules"
+      locale="en"
+      rowNumbers
+      pctTableSelection
+      [(value)]="laidPicked"
+      [now]="now"
+      [pctTableColumns]="layoutColumns"
+      [(layout)]="ruleLayout"
+      [rows]="rules()"
+      [columns]="layoutColumns"
+      [rowId]="byId"
+    />
+  </div>
+  <p class="datatable__more">
+    <button
+      pctButton
+      type="button"
+      size="sm"
+      variant="outline"
+      data-testid="layout-save"
+      (click)="saveLayout()"
+    >
+      Save
+    </button>
+    <button
+      pctButton
+      type="button"
+      size="sm"
+      variant="outline"
+      data-testid="layout-reset"
+      (click)="ruleLayout.set({})"
+    >
+      Reset
+    </button>
+    <button
+      pctButton
+      type="button"
+      size="sm"
+      variant="outline"
+      data-testid="layout-restore"
+      [disabled]="savedLayout() === ''"
+      (click)="restoreLayout()"
+    >
+      Restore the saved
+    </button>
+  </p>
+  <p data-testid="layout-state"><code>{{ ruleLayoutText() }}</code></p>
+</sbx-demo>
+
+<sbx-demo
   heading="Devices at a glance"
   summary="Striped rows numbered from 1, a faulty device's row in the danger tone, a state toned by its value, and a long name cut to one line with the whole name under the pointer. Every tone repeats a word the row says."
   [reqs]="['req-a11y-forced-colors']"

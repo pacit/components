@@ -56,6 +56,9 @@ import type {
  * **`filter`** arrived with the data table's filters by column: the funnel a column's filter
  * button shows, which every icon font of the four draws under that name or `funnel`.
  *
+ * **`more`** arrived with the data table's layout: the three dots of a column's menu button,
+ * stood on end, which every icon font of the four draws as its vertical ellipsis.
+ *
  * @since 0.1.0
  */
 export type PctIconName =
@@ -75,7 +78,8 @@ export type PctIconName =
   | 'previous'
   | 'next'
   | 'reset'
-  | 'filter';
+  | 'filter'
+  | 'more';
 
 /**
  * What `providePctIcons` takes, any number of times: a set component, or a source.

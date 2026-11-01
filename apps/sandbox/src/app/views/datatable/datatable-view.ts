@@ -25,7 +25,10 @@ import {
   PctTableGroups,
   PctTablePage,
   type PctTableAnswer,
+  PctTableColumnChooser,
   PctTableColumnFilters,
+  PctTableColumns,
+  type PctTableLayout,
   type PctTableLoad,
   PctTableRemote,
   type PctTableRequest,
@@ -305,6 +308,8 @@ function serveBlock(
     PctTableRemote,
     PctTableColumnFilters,
     PctFilterTemplate,
+    PctTableColumns,
+    PctTableColumnChooser,
     PctPagination,
     FormField,
   ],
@@ -413,6 +418,41 @@ export class DatatableView {
   protected readonly ruleFiltersText = computed(() =>
     JSON.stringify(this.ruleFilters()),
   );
+
+  /** The rules laid out by the user: each column at a width that, together, the frame scrolls. */
+  protected readonly layoutColumns = col.of([
+    col.key('name', { header: 'Name', width: 200, minWidth: 140 }),
+    col.key('room', { header: 'Room', width: 150 }),
+    col.key('address', { header: 'Address', numeric: true, width: 150 }),
+    col.key('energy', {
+      header: 'Energy',
+      kind: { number: { unit: 'kWh', fractionDigits: 1 } },
+      width: 140,
+    }),
+    col.key('nextAt', {
+      header: 'Next run',
+      kind: { instant: { relative: true, timeZone: 'Europe/Warsaw' } },
+      width: 160,
+    }),
+    col.key('enabled', { header: 'Enabled', kind: 'boolean' }),
+  ]);
+  protected readonly ruleLayout = signal<
+    PctTableLayout<
+      'name' | 'room' | 'address' | 'energy' | 'nextAt' | 'enabled'
+    >
+  >({});
+  protected readonly ruleLayoutText = computed(() =>
+    JSON.stringify(this.ruleLayout()),
+  );
+  protected readonly laidPicked = signal<readonly PctRowId[]>([]);
+  /** The layout as an application keeps it: a string, read back as the model. */
+  protected readonly savedLayout = signal('');
+  protected saveLayout(): void {
+    this.savedLayout.set(JSON.stringify(this.ruleLayout()));
+  }
+  protected restoreLayout(): void {
+    this.ruleLayout.set(JSON.parse(this.savedLayout()));
+  }
   protected readonly sort = signal<
     readonly PctTableSort<
       'name' | 'room' | 'address' | 'energy' | 'nextAt' | 'enabled'

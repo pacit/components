@@ -25,3 +25,23 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+/* The list beside the table, the table in what is left: narrower than its columns, so it
+   scrolls along the line and a pinned column is seen to stay. */
+.datatable__layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.datatable__chooser {
+  flex: 0 0 16rem;
+}
+
+.datatable__laid {
+  flex: 1 1 20rem;
+  min-inline-size: 0;
+  max-inline-size: 40rem;
+  block-size: 20rem;
+}
