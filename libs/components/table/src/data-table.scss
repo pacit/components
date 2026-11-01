@@ -382,9 +382,29 @@ tr[data-pct-part='details'] > td {
   margin: 0;
 }
 
+/* A grid's cell holding the focus is ringed as a control is, inside its own edges, so the
+   ring is not cut by the next cell's surface. */
+:is(td, th):focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+/* The cells of a grid's range, on the surface of a picked row: what was picked, by the cell. */
+[data-pct-in-range] {
+  background-color: var(--pct-table-bg-selected);
+  color: var(--pct-table-fg-selected);
+}
+
 @media (forced-colors: active) {
-  .pct-data-table__toggle:focus-visible {
+  .pct-data-table__toggle:focus-visible,
+  :is(td, th):focus-visible {
     outline-color: Highlight;
+  }
+
+  [data-pct-in-range] {
+    background-color: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
   }
 }
 

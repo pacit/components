@@ -535,6 +535,22 @@ describe('PctTableFrame — the region that exists while the table overflows', (
     expect(frame().hasAttribute('role')).toBe(false);
   });
 
+  it('is a region and no stop while it overflows, when the cells take the focus themselves', async () => {
+    @Component({
+      imports: [PctTableFrame, PctTable],
+      template: `<pct-table-frame [focusable]="false" label="Readings"
+        ><table pctTable></table
+      ></pct-table-frame>`,
+    })
+    class Unfocusable {}
+    const fixture = await render(Unfocusable);
+    widths(frame(), 301, 300);
+    wake();
+    await settle(fixture);
+    expect(frame().getAttribute('role')).toBe('region');
+    expect(frame().getAttribute('tabindex')).toBe('-1');
+  });
+
   it('warns once of an overflowing frame nothing names, and not of one with a label', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const fixture = await render(UncaptionedFrameHost);

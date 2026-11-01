@@ -17,6 +17,7 @@
 <ng-container [ngComponentOutlet]="layout.parts" />
 } @let lead = leadSticks(); @let sticks = lead.cells;
 <pct-table-frame
+  [focusable]="!grid()"
   [labelledby]="ariaLabelledby() || null"
   [label]="ariaLabel() || null"
 >
@@ -101,7 +102,7 @@
           [description]="head.said"
           [attr.aria-label]="head.actions ? head.column.header : null"
           [attr.data-pct-filtered]="head.filtered ? '' : null"
-          [attr.data-pct-column]="laid() ? head.column.id : null"
+          [attr.data-pct-column]="laid() || grid() ? head.column.id : null"
           [class.pct-data-table__acting]="head.actions > 0"
           [style.--_actions]="head.actions || null"
           [attr.data-pct-pinned]="sticks[$index]?.pinned"

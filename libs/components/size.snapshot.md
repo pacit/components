@@ -49,7 +49,7 @@ before an application ships them.
 ./badge 2357 - @angular/core
 ./breadcrumb 15416 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./button 17834 ./core @angular/core,@angular/forms/signals
-./chart 252740 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
+./chart 252816 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
 ./checkbox 23337 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 17568 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
@@ -75,7 +75,7 @@ before an application ships them.
 ./stepper 16936 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
 ./switch 22817 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./table 309675 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./table 321805 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./tabs 18750 ./core @angular/core,@angular/forms/signals
 ./testing 13531 - @angular/cdk/testing
 ./theme 518 - @angular/core
@@ -138,7 +138,7 @@ single number this file had ever moved.
 ```
 ./accordion PctAccordion 2 6608 17584
 ./breadcrumb PctBreadcrumb 3 6708 15254
-./chart PctArea 15 224733 249643
+./chart PctArea 15 224733 249719
 ./chips PctChip 2 17426 17429
 ./date PctCalendar 2 29022 48160
 ./field PctField 3 26110 35840
@@ -146,7 +146,7 @@ single number this file had ever moved.
 ./radio PctRadio 2 25699 25701
 ./select PctMultiSelect 2 53964 80151
 ./stepper PctStep 2 16793 16795
-./table PctDataTable 11 93802 306791
+./table PctDataTable 11 94496 307489
 ./tabs PctTab 2 18581 18584
 ./time PctTime 2 49918 49919
 ./tree PctTree 2 12783 12786

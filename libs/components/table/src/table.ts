@@ -227,7 +227,7 @@ export class PctTableCell {
   host: {
     class: 'pct-table-frame',
     '[attr.role]': 'overflows() ? "region" : null',
-    '[attr.tabindex]': 'overflows() ? "0" : null',
+    '[attr.tabindex]': 'overflows() ? (focusable() ? "0" : "-1") : null',
     // The caption names the region; an `aria-labelledby` the consumer wrote on the frame stays
     // where no caption stands, and stays while the frame is no region, rather than going with
     // the first change detection.
@@ -264,6 +264,16 @@ export class PctTableFrame {
    * @since next
    */
   readonly label = input<string | null>(null);
+
+  /**
+   * Whether the frame takes the focus while it scrolls. Off for a table whose cells take it
+   * themselves — a grid, where a key on a cell scrolls the frame to the next — so a keyboard
+   * meets one stop, not a frame and then the table in it. Off, an overflowing frame is
+   * `tabindex="-1"`, since Firefox puts a scrolling element with no tab index in the order.
+   *
+   * @since next
+   */
+  readonly focusable = input(true, { transform: booleanAttribute });
 
   /** The name's id: the input's, or the attribute's. */
   protected readonly named = computed(

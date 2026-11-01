@@ -8,6 +8,7 @@ import {
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PctDataTable } from './data-table';
 import { PctTableDetails } from './data-table-details';
+import { PctTableGrid } from './data-table-grid';
 import { PctTableGroups } from './data-table-groups';
 import { PctDetailsTemplate } from './data-table-slots';
 import { PctTableWindow } from './data-table-window';
@@ -43,6 +44,7 @@ function registersOf(count: number): readonly Register[] {
     PctTableWindow,
     PctTableDetails,
     PctTableGroups,
+    PctTableGrid,
     PctDetailsTemplate,
   ],
   template: `
@@ -53,6 +55,15 @@ function registersOf(count: number): readonly Register[] {
         [groupBy]="['room']"
         caption="Registers"
         [stickyHeader]="sticky()"
+        [rows]="rows()"
+        [columns]="columns()"
+        [rowId]="byId"
+      />
+    } @else if (grid()) {
+      <pct-data-table
+        pctTableWindow
+        [pctTableGrid]="columns()"
+        caption="Registers"
         [rows]="rows()"
         [columns]="columns()"
         [rowId]="byId"
@@ -82,6 +93,7 @@ class WindowHost {
   readonly columns = signal(columns);
   readonly sticky = signal(true);
   readonly grouped = signal(false);
+  readonly grid = signal(false);
   readonly open = signal<readonly PctRowId[]>([]);
   readonly byId = (register: Register) => register.id;
 }
@@ -927,5 +939,92 @@ describe('PctDataTable without a window', () => {
     expect(element.tFoot?.rows[0].hasAttribute('aria-rowindex')).toBe(false);
     expect(element.classList).not.toContain('pct-data-table__window');
     expect(element.style.getPropertyValue('--_lead')).toBe('');
+  });
+});
+
+describe('PctTableWindow — a grid in a window', () => {
+  /** The first cell of a line drawn. */
+  const first = (fixture: ComponentFixture<unknown>, line: number) =>
+    table(fixture).querySelector<HTMLElement>(
+      `tbody tr[data-pct-index="${line}"] > td`,
+    );
+  const keydown = (
+    target: Element,
+    key: string,
+    init: KeyboardEventInit = {},
+  ) =>
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key,
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      }),
+    );
+
+  it('keeps the keys on the table when the scroll left the line of the focus, and brings it back with the next', async () => {
+    const fixture = await render((host) => host.grid.set(true));
+    (first(fixture, 2) as HTMLElement).focus();
+    await settle(fixture);
+    await scroll(fixture, 20_000);
+    expect(first(fixture, 2)).toBeNull();
+    // The view stays where the scroll took it, and the table holds the focus.
+    expect(document.activeElement).toBe(table(fixture));
+    expect(frameOf(fixture).scrollTop).toBe(20_000);
+    keydown(table(fixture), 'ArrowDown');
+    await fixture.whenStable();
+    // The browser says the frame scrolled, as it does after the window scrolls it.
+    frameOf(fixture).dispatchEvent(new Event('scroll'));
+    await settle(fixture);
+    expect(document.activeElement).toBe(first(fixture, 3));
+  });
+
+  it('moves Page Down from the table by the lines a frame holds, measured off a row drawn', async () => {
+    const fixture = await render((host) => host.grid.set(true));
+    (first(fixture, 2) as HTMLElement).focus();
+    await settle(fixture);
+    await scroll(fixture, 20_000);
+    expect(first(fixture, 2)).toBeNull();
+    // A row drawn measures 40 px, as a browser lays it out.
+    vi.spyOn(
+      HTMLTableRowElement.prototype,
+      'getBoundingClientRect',
+    ).mockReturnValue({
+      top: 0,
+      height: 40,
+      width: 0,
+      bottom: 40,
+      left: 0,
+      right: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect);
+    keydown(table(fixture), 'PageDown');
+    await fixture.whenStable();
+    frameOf(fixture).dispatchEvent(new Event('scroll'));
+    await settle(fixture);
+    // A frame of 400 px under a header of 40 holds nine lines of 40.
+    expect(document.activeElement).toBe(first(fixture, 11));
+  });
+
+  it("goes to the foot's last cell on Ctrl+End, and up from it to a line the window had not drawn", async () => {
+    const fixture = await render((host) => host.grid.set(true));
+    (first(fixture, 0) as HTMLElement).focus();
+    await settle(fixture);
+    keydown(document.activeElement as Element, 'End', { ctrlKey: true });
+    await settle(fixture);
+    // The foot stands under every line, drawn whatever the window draws.
+    const foot = table(fixture).tFoot?.rows[0];
+    expect(document.activeElement).toBe(foot?.cells[foot.cells.length - 1]);
+    keydown(document.activeElement as Element, 'ArrowUp');
+    await fixture.whenStable();
+    frameOf(fixture).dispatchEvent(new Event('scroll'));
+    await settle(fixture);
+    expect(document.activeElement).toBe(
+      table(fixture).querySelector(
+        'tbody tr[data-pct-index="999"] > td:last-child',
+      ),
+    );
   });
 });

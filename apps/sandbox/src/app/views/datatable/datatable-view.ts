@@ -25,9 +25,12 @@ import {
   PctTableGroups,
   PctTablePage,
   type PctTableAnswer,
+  type PctTableCellRange,
   PctTableColumnChooser,
   PctTableColumnFilters,
   PctTableColumns,
+  PctTableGrid,
+  type PctTableGridCell,
   type PctTableLayout,
   type PctTableLoad,
   PctTableRemote,
@@ -310,6 +313,7 @@ function serveBlock(
     PctFilterTemplate,
     PctTableColumns,
     PctTableColumnChooser,
+    PctTableGrid,
     PctPagination,
     FormField,
   ],
@@ -445,6 +449,22 @@ export class DatatableView {
     JSON.stringify(this.ruleLayout()),
   );
   protected readonly laidPicked = signal<readonly PctRowId[]>([]);
+
+  /** The grid's stop, its range and its picks, said under it as they change. */
+  protected readonly gridPicked = signal<readonly PctRowId[]>([]);
+  protected readonly gridFocused = signal<PctTableGridCell<
+    'name' | 'room' | 'address' | 'energy' | 'nextAt' | 'enabled'
+  > | null>(null);
+  protected readonly gridRange = signal<PctTableCellRange<
+    'name' | 'room' | 'address' | 'energy' | 'nextAt' | 'enabled'
+  > | null>(null);
+  protected readonly gridText = computed(() =>
+    JSON.stringify({
+      focused: this.gridFocused(),
+      range: this.gridRange(),
+      picked: this.gridPicked().length,
+    }),
+  );
   /** The layout as an application keeps it: a string, read back as the model. */
   protected readonly savedLayout = signal('');
   protected saveLayout(): void {
