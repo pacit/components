@@ -720,6 +720,9 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-table-mark-fg color component public
 --pct-table-padding-x dimension component public
 --pct-table-padding-y dimension component public
+--pct-table-pinned-bg color component public
+--pct-table-pinned-shadow shadow component public
+--pct-table-separator-fg color component public
 --pct-table-toggle-gap dimension component public
 --pct-table-toggle-target-min dimension component public
 --pct-tabs-list-bg color component public

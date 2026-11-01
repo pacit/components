@@ -232,6 +232,42 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-table-toggle-target-min',
   },
   {
+    name: 'data table toggle column',
+    applies:
+      'libs/components/table/src/data-table.scss .pct-data-table__toggle-col',
+    route: '/datatable',
+    // A fixed layout draws the column at its col's width: the header cell above the picks.
+    selector: '[data-testid="table-layout"] thead th:first-child',
+    axis: 'inline',
+    zero: ['--pct-table-font-size', '--pct-table-padding-x'],
+    ceiling: 24,
+    floor: '--pct-table-toggle-target-min',
+  },
+  {
+    name: 'data table column menu',
+    applies:
+      'libs/components/table/src/data-table-columns.scss .pct-data-table__options',
+    route: '/datatable',
+    selector:
+      '[data-testid="table-layout"] thead th:nth-child(3) [data-pct-part="options"]',
+    axis: 'both',
+    zero: ['--pct-table-font-size'],
+    ceiling: 24,
+    floor: '--pct-table-toggle-target-min',
+  },
+  {
+    name: 'data table separator',
+    applies:
+      'libs/components/table/src/data-table-columns.scss .pct-data-table__separator',
+    route: '/datatable',
+    selector:
+      '[data-testid="table-layout"] thead th:nth-child(3) [data-pct-part="separator"]',
+    axis: 'both',
+    zero: ['--pct-table-font-size', '--pct-table-padding-y'],
+    ceiling: 24,
+    floor: '--pct-table-toggle-target-min',
+  },
+  {
     name: 'checkbox control',
     applies:
       'libs/components/checkbox/src/checkbox.scss .pct-checkbox__control',

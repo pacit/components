@@ -40,8 +40,11 @@
   }
 }
 
+/* A panel on its way out answers no pointer: what moves under a resting pointer as the panel
+   fades — a table re-laid by the command just chosen — is not the user reaching into it. */
 .pct-menu__panel[data-pct-leaving] {
   opacity: 0;
+  pointer-events: none;
 }
 
 /* The panel takes focus only when it has no item to give it to, and that is a programmatic

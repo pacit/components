@@ -1177,3 +1177,246 @@ test.describe('PctTableRemote — a million registers from a server, a block at 
     );
   });
 });
+
+/**
+ * The columns laid out by the user (`pctTableColumns` and `pct-table-column-chooser`): the
+ * separator by its arrows and by a drag, the header's menu by keyboard and by pointer, the
+ * chooser's checkboxes and buttons, the pinned columns that stay while the rest scroll, and
+ * the layout saved as JSON and laid back as it was.
+ */
+test.describe('PctTableColumns — the columns as the user lays them out', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const table = (page: Page) => page.getByTestId('table-layout');
+  const chooser = (page: Page) => page.getByTestId('layout-chooser');
+  /** The ids of the columns the table draws, in the order it draws them. */
+  const order = (page: Page) =>
+    table(page)
+      .locator('thead th[data-pct-column]')
+      .evaluateAll((ths) =>
+        ths.map((th) => th.getAttribute('data-pct-column')),
+      );
+  const state = (page: Page, json: string) =>
+    expect(page.getByTestId('layout-state')).toHaveText(json);
+  const header = (page: Page, id: string) =>
+    table(page).locator(`thead th[data-pct-column="${id}"]`);
+  const width = async (locator: Locator) =>
+    Math.round((await locator.boundingBox())?.width ?? 0);
+  /** An item of a column's menu, the one open: a menu closing fades out under the next. */
+  const item = (page: Page, column: string, name: string) =>
+    page
+      .getByRole('menu', { name: `Options for ${column}` })
+      .getByRole('menuitem', { name });
+
+  test('a separator widens its column by the arrows, by 32 with Shift, and stops at its narrowest', async ({
+    page,
+  }) => {
+    const room = table(page).getByRole('separator', { name: 'Resize Room' });
+    await expect(room).toHaveAttribute('aria-valuenow', '150');
+    await expect(room).toHaveAttribute('aria-valuemin', '120');
+    await expect(room).toHaveAttribute('aria-valuemax', '2000');
+    await expect(room).toHaveAttribute('aria-orientation', 'vertical');
+    await room.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(room).toHaveAttribute('aria-valuenow', '158');
+    await page.keyboard.press('Shift+ArrowRight');
+    await expect(room).toHaveAttribute('aria-valuenow', '190');
+    await page.keyboard.press('ArrowLeft');
+    await state(page, '{"widths":{"room":182}}');
+    await expect.poll(() => width(header(page, 'room'))).toBe(182);
+
+    const name = table(page).getByRole('separator', { name: 'Resize Name' });
+    await name.focus();
+    for (let step = 0; step < 3; step++)
+      await page.keyboard.press('Shift+ArrowLeft');
+    // 200 less 96 is below the column's 140.
+    await expect(name).toHaveAttribute('aria-valuenow', '140');
+  });
+
+  test('a drag sets the width, and a double press fits the column to what it draws', async ({
+    page,
+  }) => {
+    const room = table(page).getByRole('separator', { name: 'Resize Room' });
+    await room.scrollIntoViewIfNeeded();
+    const box = (await room.boundingBox()) as {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 20, y, { steps: 2 });
+    await page.mouse.move(x + 50, y, { steps: 2 });
+    await page.mouse.up();
+    await expect(room).toHaveAttribute('aria-valuenow', '200');
+    await state(page, '{"widths":{"room":200}}');
+
+    await room.dblclick();
+    // "Living room" and the header's buttons: narrower than the 200 the drag left.
+    await expect
+      .poll(async () => Number(await room.getAttribute('aria-valuenow')))
+      .toBeLessThan(200);
+    const fitted = await room.getAttribute('aria-valuenow');
+    await state(page, `{"widths":{"room":${fitted}}}`);
+  });
+
+  test('a header’s menu moves its column, pins it and hides it, and the focus goes to the menu taking its place', async ({
+    page,
+  }) => {
+    const roomMenu = table(page).getByRole('button', {
+      name: 'Options for Room',
+    });
+    await roomMenu.focus();
+    await page.keyboard.press('Enter');
+    await expect(item(page, 'Room', 'Move left')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect
+      .poll(() => order(page))
+      .toEqual(['room', 'name', 'address', 'energy', 'nextAt', 'enabled']);
+    await expect(roomMenu).toBeFocused();
+    // The first column moves no further towards the start.
+    await page.keyboard.press('Enter');
+    await expect(item(page, 'Room', 'Move left')).toBeDisabled();
+    await page.keyboard.press('Escape');
+
+    await table(page)
+      .getByRole('button', { name: 'Options for Enabled' })
+      .click();
+    await item(page, 'Enabled', 'Pin to the start').click();
+    await expect(
+      table(page).getByRole('button', { name: 'Options for Enabled' }),
+    ).toBeFocused();
+    await expect.poll(async () => (await order(page))[0]).toBe('enabled');
+    await expect(header(page, 'enabled')).toHaveAttribute(
+      'data-pct-pinned',
+      'start edge',
+    );
+    await state(
+      page,
+      '{"order":["room","name","address","energy","nextAt","enabled"],"pinned":{"start":["enabled"],"end":[]}}',
+    );
+
+    // The keyboard alone from here: a menu opening under the resting pointer follows it.
+    await page.mouse.move(0, 0);
+    await table(page)
+      .getByRole('button', { name: 'Options for Energy' })
+      .focus();
+    await page.keyboard.press('Enter');
+    await expect(item(page, 'Energy', 'Move left')).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(item(page, 'Energy', 'Hide column')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(header(page, 'energy')).toHaveCount(0);
+    await expect(
+      table(page).getByRole('button', { name: 'Options for Next run' }),
+    ).toBeFocused();
+    await expect(
+      chooser(page).getByRole('checkbox', { name: 'Energy' }),
+    ).not.toBeChecked();
+  });
+
+  test('the chooser shows and hides a column, its buttons move one, and Alt with an arrow moves the one focused', async ({
+    page,
+  }) => {
+    const room = chooser(page).getByRole('checkbox', { name: 'Room' });
+    await room.uncheck();
+    await expect(header(page, 'room')).toHaveCount(0);
+    await expect(
+      table(page).locator('tbody tr').first().locator('td'),
+    ).toHaveCount(7);
+    await state(page, '{"hidden":["room"]}');
+    await room.check();
+    await expect(header(page, 'room')).toHaveCount(1);
+
+    const down = chooser(page).getByRole('button', { name: 'Move Name down' });
+    await down.click();
+    await expect
+      .poll(() => order(page))
+      .toEqual(['room', 'name', 'address', 'energy', 'nextAt', 'enabled']);
+    await expect(down).toBeFocused();
+
+    const enabled = chooser(page).getByRole('checkbox', { name: 'Enabled' });
+    await enabled.focus();
+    await page.keyboard.press('Alt+ArrowUp');
+    await expect
+      .poll(async () => (await order(page)).slice(-2))
+      .toEqual(['enabled', 'nextAt']);
+    await expect(enabled).toBeFocused();
+    await expect(
+      chooser(page).locator('[data-pct-part="item"]').nth(4),
+    ).toHaveAttribute('data-pct-column', 'enabled');
+  });
+
+  test('a column pinned to an edge stays there while the rest scroll under it', async ({
+    page,
+  }) => {
+    await table(page).getByRole('button', { name: 'Options for Name' }).click();
+    await item(page, 'Name', 'Pin to the start').click();
+    await table(page)
+      .getByRole('button', { name: 'Options for Enabled' })
+      .click();
+    await item(page, 'Enabled', 'Pin to the end').click();
+    await expect(header(page, 'enabled')).toHaveAttribute(
+      'data-pct-pinned',
+      'end edge',
+    );
+    // The press on the last header's menu scrolled the frame to it: back to the start first.
+    const frame = table(page).locator('pct-table-frame');
+    await frame.evaluate((element) => {
+      element.scrollLeft = 0;
+    });
+    const left = async (id: string) =>
+      Math.round((await header(page, id).boundingBox())?.x ?? 0);
+    const before = {
+      name: await left('name'),
+      room: await left('room'),
+      enabled: await left('enabled'),
+    };
+    await frame.evaluate((element) => {
+      element.scrollLeft = 120;
+    });
+    await expect.poll(() => left('room')).toBeLessThan(before.room - 100);
+    expect(await left('name')).toBe(before.name);
+    expect(await left('enabled')).toBe(before.enabled);
+    // The rows' checkboxes and numbers stick with the start's columns.
+    const lead = table(page).locator('tbody tr').first().locator('td');
+    await expect(lead.nth(0)).toHaveAttribute('data-pct-pinned', 'start');
+    await expect(lead.nth(1)).toHaveAttribute('data-pct-pinned', 'start');
+  });
+
+  test('a layout saved as JSON lays the table back as it was, and Reset forgets it', async ({
+    page,
+  }) => {
+    await chooser(page).getByRole('checkbox', { name: 'Address' }).uncheck();
+    await chooser(page).getByRole('button', { name: 'Move Room up' }).click();
+    const room = table(page).getByRole('separator', { name: 'Resize Room' });
+    await room.focus();
+    await page.keyboard.press('Shift+ArrowRight');
+    const saved =
+      '{"hidden":["address"],"order":["room","name","address","energy","nextAt","enabled"],"widths":{"room":182}}';
+    await state(page, saved);
+    await page.getByTestId('layout-save').click();
+
+    await page.getByTestId('layout-reset').click();
+    await state(page, '{}');
+    await expect
+      .poll(() => order(page))
+      .toEqual(['name', 'room', 'address', 'energy', 'nextAt', 'enabled']);
+    await expect(room).toHaveAttribute('aria-valuenow', '150');
+
+    await page.getByTestId('layout-restore').click();
+    await state(page, saved);
+    await expect
+      .poll(() => order(page))
+      .toEqual(['room', 'name', 'energy', 'nextAt', 'enabled']);
+    await expect(room).toHaveAttribute('aria-valuenow', '182');
+    await expect(
+      chooser(page).getByRole('checkbox', { name: 'Address' }),
+    ).not.toBeChecked();
+  });
+});

@@ -381,6 +381,34 @@ export interface PctTexts {
   readonly tableFrom: string;
   /** Data table: the upper end of a column's range filter. `{column}` stands for its header. */
   readonly tableTo: string;
+  /** Data table: the name of a column's menu button. `{column}` stands for its header. */
+  readonly tableColumnMenu: string;
+  /** Data table: the name of a column's separator, which sets its width. `{column}` stands for its header. */
+  readonly tableResize: string;
+  /**
+   * Data table: the command of a column's menu that moves it one place towards the start of
+   * the line, the left in a left-to-right language; a right-to-left language's text says right.
+   */
+  readonly tableMoveStart: string;
+  /**
+   * Data table: the command that moves a column one place towards the end of the line, the
+   * right in a left-to-right language; a right-to-left language's text says left.
+   */
+  readonly tableMoveEnd: string;
+  /** Data table: the command that pins a column to the start of the line. */
+  readonly tablePinStart: string;
+  /** Data table: the command that pins a column to the end of the line. */
+  readonly tablePinEnd: string;
+  /** Data table: the command that takes a column off the edge it is pinned to. */
+  readonly tableUnpin: string;
+  /** Data table: the command that fits a column's width to what it draws. */
+  readonly tableFit: string;
+  /** Data table: the command that hides a column. */
+  readonly tableHide: string;
+  /** Data table: the button of a column chooser that moves a column up its list. `{column}` stands for its header. */
+  readonly tableMoveUp: string;
+  /** Data table: the button of a column chooser that moves a column down its list. `{column}` stands for its header. */
+  readonly tableMoveDown: string;
 }
 
 /**
@@ -484,6 +512,17 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableClear: 'Clear',
   tableFrom: '{column} from',
   tableTo: '{column} to',
+  tableColumnMenu: 'Options for {column}',
+  tableResize: 'Resize {column}',
+  tableMoveStart: 'Move left',
+  tableMoveEnd: 'Move right',
+  tablePinStart: 'Pin to the start',
+  tablePinEnd: 'Pin to the end',
+  tableUnpin: 'Unpin',
+  tableFit: 'Fit to content',
+  tableHide: 'Hide column',
+  tableMoveUp: 'Move {column} up',
+  tableMoveDown: 'Move {column} down',
 };
 
 /**

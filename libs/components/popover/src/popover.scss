@@ -40,8 +40,11 @@
   }
 }
 
+/* A panel on its way out answers no pointer: a panel that slides under a resting pointer as
+   it fades is not the user reaching into it. */
 .pct-popover__panel[data-pct-leaving] {
   opacity: 0;
+  pointer-events: none;
 }
 
 /* The panel takes focus itself, so that its name and role are announced before the user is

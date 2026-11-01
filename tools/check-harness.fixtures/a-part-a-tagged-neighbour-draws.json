@@ -14,11 +14,13 @@
         "hole",
         "mark",
         "message",
+        "options",
         "place",
         "placeholder",
         "retry",
         "select",
         "select-all",
+        "separator",
         "toggle",
         "warning"
       ]

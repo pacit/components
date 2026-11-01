@@ -46,14 +46,14 @@ table {
 :host([data-pct-sticky]) thead th {
   position: sticky;
   inset-block-start: 0;
-  z-index: 2;
+  z-index: calc(3 + var(--_lift, 0));
 }
 
 /* The row of filters sticks below the headers' row, whose height the table measures. */
 :host([data-pct-sticky]) .pct-data-table__filters > td {
   position: sticky;
   inset-block-start: var(--_first, 0px);
-  z-index: 2;
+  z-index: calc(3 + var(--_lift, 0));
 }
 
 .pct-data-table__filters > td {
@@ -62,14 +62,16 @@ table {
   vertical-align: top;
 }
 
-/* A column's filter stands at its header's end edge, beside the label and outside the sort's
-   button, which leaves it the room: `--_action` is read by the header's own sheet. A sticky
-   header is positioned already, and the button is placed against it either way. */
-th.pct-data-table__filterable {
-  --_action: var(--pct-table-toggle-target-min);
+/* A column's buttons — its filter's, its menu's, its separator — stand at its header's end
+   edge, beside the label and outside the sort's button, which leaves them the room:
+   `--_action` is read by the header's own sheet. A sticky header is positioned already, and
+   the buttons are placed against it either way. */
+th.pct-data-table__acting {
+  --_action: calc(var(--_actions) * var(--pct-table-toggle-target-min));
 }
 
-:host(:not([data-pct-sticky])) th.pct-data-table__filterable {
+:host(:not([data-pct-sticky]))
+  th.pct-data-table__acting:not([data-pct-pinned]) {
   position: relative;
 }
 
@@ -79,6 +81,104 @@ th.pct-data-table__filterable {
   inset-inline-end: 0;
   display: flex;
   align-items: center;
+}
+
+/* A table laid out by its columns' widths: each column as wide as the layout says, or a share
+   of what the others leave, never under its narrowest, whatever its rows hold. With no share,
+   the table is the sum of the widths, so the frame does not stretch them. The leading
+   columns are as wide as their controls, and the numbers as wide as their digits. */
+.pct-data-table__laid {
+  --_number: calc(var(--_digits) * 1ch + 2 * var(--pct-table-padding-x));
+  table-layout: fixed;
+  inline-size: var(--_width, 100%);
+  min-inline-size: var(--_min);
+}
+
+.pct-data-table__toggle-col {
+  inline-size: var(--pct-table-toggle-target-min);
+}
+
+.pct-data-table__number-col {
+  inline-size: var(--_number);
+}
+
+/* A word longer than its column breaks rather than running into the next one. */
+.pct-data-table__laid > * > tr > * {
+  overflow-wrap: anywhere;
+}
+
+/* A column measured to its content: the layout let go for the one read that measures it. */
+.pct-data-table__laid[data-pct-sizing] {
+  table-layout: auto;
+  inline-size: max-content;
+  min-inline-size: 0;
+}
+
+.pct-data-table__laid[data-pct-sizing] > * > tr > * {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+/* A pinned cell stays at its edge while the rest scroll under it, on the surface of its row:
+   its own tone, the pointer's tint, the pick's, the stripe's, or the table's. The line under
+   it is drawn as a shade within it, because a collapsed border stays where the cell was. */
+[data-pct-pinned] {
+  position: sticky;
+  z-index: 1;
+  background-color: var(
+    --_tone,
+    var(--_hover, var(--_selected, var(--_stripe, var(--pct-table-pinned-bg))))
+  );
+}
+
+[data-pct-pinned~='start'] {
+  inset-inline-start: var(--_at);
+}
+
+[data-pct-pinned~='end'] {
+  inset-inline-end: var(--_at);
+}
+
+/* A pinned header stands over the headers that scroll under it. Lifted by a property rather
+   than a z-index of its own, which the sticky header's rules above would outweigh. */
+thead [data-pct-pinned] {
+  --_lift: 1;
+  z-index: 4;
+  background-color: var(--pct-table-heading-bg);
+}
+
+/* The last cell pinned to an edge casts a shade over the cells that scroll under it. */
+[data-pct-pinned~='edge']::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inline-size: var(--pct-space-2);
+  box-shadow: var(--pct-table-pinned-shadow);
+  pointer-events: none;
+}
+
+[data-pct-pinned~='start'][data-pct-pinned~='edge']::after {
+  inset-inline-start: 100%;
+}
+
+[data-pct-pinned~='end'][data-pct-pinned~='edge']::after {
+  inset-inline-end: 100%;
+}
+
+/* The shade is cast along the inline axis away from its edge: the one shadow, turned. */
+[data-pct-pinned~='end'][data-pct-pinned~='edge']:dir(ltr)::after,
+[data-pct-pinned~='start'][data-pct-pinned~='edge']:dir(rtl)::after {
+  scale: -1 1;
+}
+
+@media (forced-colors: active) {
+  [data-pct-pinned~='start'][data-pct-pinned~='edge'] {
+    border-inline-end: 2px solid CanvasText;
+  }
+
+  [data-pct-pinned~='end'][data-pct-pinned~='edge'] {
+    border-inline-start: 2px solid CanvasText;
+  }
 }
 
 /* A key after the first carries its place and its way to the eye, beside the label; `aria-sort`
@@ -316,7 +416,7 @@ tr[data-pct-part='group'] > th {
   inset-block-start: calc(
     var(--_head, 0px) + (var(--_level, 0) * var(--_group, 0px))
   );
-  z-index: 1;
+  z-index: 2;
 }
 
 .pct-data-table__heading {

@@ -208,6 +208,23 @@
         "$type": "color",
         "$value": "{pct.warning}",
         "$description": "Text colour of the warning under a data table that picks rows."
+      },
+      "$comment-separator": "The line a column's separator draws at its header's end edge: the muted text's colour, the chevron's hint beside it, so the control is seen at the non-text floor on the header's surface. Under the pointer and the focus it takes the header's own text colour.",
+      "separator-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Colour of the line a data table's column separator draws."
+      },
+      "$comment-pinned": "A pinned cell stays while the others scroll under it, so it needs a surface of its own where the rest of the table has none: the page's, which the table is drawn on. The last cell at an edge casts a shade over what scrolls under it: inset in a strip beside the cell, drawn towards the edge it falls from and turned by the sheet for the other edge and the other direction.",
+      "pinned-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of a data table's pinned cell."
+      },
+      "pinned-shadow": {
+        "$type": "shadow",
+        "$value": "inset 8px 0 8px -8px rgba(15, 23, 42, 0.24)",
+        "$description": "Shade the last pinned cell at an edge casts over the cells that scroll under it."
       }
     }
   }

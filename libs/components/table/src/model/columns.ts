@@ -181,6 +181,16 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * the table's foot: a number kind writes the sum in its unit, `count` writes a count.
    */
   readonly aggregate?: PctAggregate<V>;
+  /**
+   * The column's width in pixels, read by `pctTableColumns`: the width it starts at, which the
+   * user may change. A column with none takes an equal share of the width the others leave.
+   */
+  readonly width?: number;
+  /**
+   * The narrowest the user may make the column, in pixels, read by `pctTableColumns`: 120 px
+   * with none, which leaves the header's buttons room beside a short word.
+   */
+  readonly minWidth?: number;
 }
 
 /**

@@ -149,6 +149,7 @@
         "txt",
         "ul",
         "ver",
+        "vert",
         "vw",
         "wl"
       ]
@@ -231,6 +232,7 @@
         "readme",
         "spacer",
         "spi",
+        "splitter",
         "stepper",
         "superset",
         "todo",

@@ -1,0 +1,37 @@
+/* A list of rows, each its checkbox, then its buttons at the end edge. */
+:host {
+  display: block;
+}
+
+.pct-table-column-chooser__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pct-table-column-chooser__item {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-2);
+}
+
+.pct-table-column-chooser__check {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.pct-table-column-chooser__up,
+.pct-table-column-chooser__down,
+.pct-table-column-chooser__dots {
+  display: inline-block;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+/* The library's one chevron points down; up is the same chevron turned. */
+.pct-table-column-chooser__up {
+  rotate: 180deg;
+}

@@ -215,6 +215,9 @@ from what the browser really gets.
 ./table PctDataTable message
 ./table PctDataTable place
 ./table PctDataTable placeholder
+./table PctTableColumnChooser item
+./table PctTableColumnParts options
+./table PctTableColumnParts separator
 ./table PctTableFilterParts filter
 ./table PctTableHeader icon
 ./table PctTableHeader toggle

@@ -1,0 +1,76 @@
+/* The layout's parts, drawn in the table's places (see data-table-columns.html). */
+
+/* A column's menu button: the size of the table's other buttons, its dots the icon's colour. */
+.pct-data-table__options {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-inline-size: var(--pct-table-toggle-target-min);
+  min-block-size: var(--pct-table-toggle-target-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pct-table-icon-fg-muted);
+  cursor: pointer;
+}
+
+.pct-data-table__options:is(:hover, [aria-expanded='true']) {
+  color: inherit;
+}
+
+.pct-data-table__options:focus-visible,
+.pct-data-table__separator:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+.pct-data-table__dots {
+  display: inline-block;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+/* The separator: a target the size of a finger at the header's end edge, which it draws as a
+   line along that edge. A drag on it is the separator's, not the page's scroll. */
+.pct-data-table__separator {
+  position: relative;
+  align-self: stretch;
+  box-sizing: border-box;
+  inline-size: var(--pct-table-toggle-target-min);
+  min-block-size: var(--pct-table-toggle-target-min);
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.pct-data-table__separator::before {
+  content: '';
+  position: absolute;
+  inset-block: var(--pct-space-2);
+  inset-inline-end: 0;
+  inline-size: 2px;
+  background-color: var(--pct-table-separator-fg);
+}
+
+.pct-data-table__separator:is(:hover, :focus-visible)::before {
+  inset-block: 0;
+  background-color: currentColor;
+}
+
+@media (forced-colors: active) {
+  .pct-data-table__options,
+  .pct-data-table__options:is(:hover, [aria-expanded='true']) {
+    color: ButtonText;
+  }
+
+  .pct-data-table__options:focus-visible,
+  .pct-data-table__separator:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .pct-data-table__separator::before,
+  .pct-data-table__separator:is(:hover, :focus-visible)::before {
+    background-color: CanvasText;
+  }
+}

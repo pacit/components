@@ -54,6 +54,11 @@ import { pctAggregate } from './model/aggregate';
 import type { PctAnyColumnFilter } from './model/filters';
 import { pctFit } from './model/fit';
 import {
+  type PctColumnPin,
+  pctColumnWidthBounds,
+  type PctPlacedColumn,
+} from './model/layout';
+import {
   pctGroupKey,
   pctLineKey,
   pctLines,
@@ -193,6 +198,32 @@ export interface PctTableFeature {
     readonly head: Signal<TemplateRef<unknown>>;
     readonly cell: Signal<TemplateRef<unknown>>;
   };
+  /**
+   * The columns' layout: every column in its place, with its edge, its width and whether the
+   * user hid it; the widths the table drew its columns at, by id, which the table writes after
+   * each layout; and the component the table makes for the controls, out of the paint, with
+   * what it draws in a header — its menu and its separator — given the column.
+   */
+  readonly layout?: {
+    readonly placed: Signal<readonly PctPlacedColumn<unknown>[]>;
+    readonly drawn: WritableSignal<ReadonlyMap<string, number>>;
+    readonly parts: Type<unknown>;
+    readonly head: Signal<TemplateRef<unknown>>;
+  };
+}
+
+/** A column in the order the table draws it, with its place among the columns given. */
+interface Shown<T> {
+  readonly column: PctAnyColumn<T>;
+  readonly c: number;
+  readonly pin: PctColumnPin | null;
+  readonly width: number | null;
+}
+
+/** Where a pinned cell sticks: `start` or `end`, with `edge` on the last before the rest. */
+interface Stick {
+  readonly pinned: string;
+  readonly at: number;
 }
 
 /** What a group's heading or the table's foot sums up: a label's span and the columns' sums. */
@@ -244,6 +275,12 @@ const HYSTERESIS = 8;
 
 /** How many placeholder rows stand in for rows that are still coming. */
 const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4];
+
+/**
+ * The least a column with no width of its own is laid out at, when the frame leaves less: its
+ * header's padding, chevron and buttons, about 90 px, and a word of eight letters beside them.
+ */
+const SHARE_WIDTH = 160;
 
 /** A cell of a row line, written once per render rather than once per binding. */
 interface Cell<T> {
@@ -649,8 +686,41 @@ export class PctDataTable<
    * column's value would then be in no row at all, and a frame that scrolls keeps it reachable.
    */
   private readonly hideOrder = computed(() =>
-    this.detailsOff() ? [] : pctHideOrder(this.columns()),
+    this.detailsOff()
+      ? []
+      : pctHideOrder(this.view().map(({ column }) => column)),
   );
+
+  /** The columns' layout, while `pctTableColumns` lays them out. */
+  protected readonly layout = computed(() => this.contributed().layout ?? null);
+
+  /** The table lays its columns out at their widths, `table-layout: fixed`. */
+  protected readonly laid = computed(() => this.layout() !== null);
+
+  /**
+   * The columns in the order the table draws them, those the user hid left out: the layout's,
+   * or the columns as given. A narrow table hides some of these too (see `shown`).
+   */
+  private readonly view = computed<readonly Shown<T>[]>(() => {
+    const layout = this.layout();
+    if (layout === null)
+      return (this.columns() as readonly PctAnyColumn<T>[]).map(
+        (column, c) => ({
+          column,
+          c,
+          pin: null,
+          width: null,
+        }),
+      );
+    return (layout.placed() as readonly PctPlacedColumn<T>[])
+      .filter((one) => !one.hidden)
+      .map(({ column, index, pin, width }) => ({
+        column,
+        c: index,
+        pin,
+        width,
+      }));
+  });
 
   /** How many columns of the hide order the frame has no room for. */
   private readonly hiddenCount = signal(0);
@@ -691,9 +761,7 @@ export class PctDataTable<
   );
 
   /** The cells a details row spans: every column shown, and the leading ones. */
-  protected readonly span = computed(
-    () => this.columns().length - this.hiddenColumns().length + this.lead(),
-  );
+  protected readonly span = computed(() => this.shown().length + this.lead());
 
   /** The cells before a row's data: its checkbox, its disclosure and its number. */
   private readonly lead = computed(
@@ -803,9 +871,14 @@ export class PctDataTable<
     const text = (column: PctAnyColumn<T>, row: T) =>
       written(row)[place.get(column) as number];
     const words = pctQuestionWords(question);
+    // A column the user hid is out of the table, and a row it alone matched would stay with
+    // nothing on the screen to say why: the quick filter reads the columns in the view.
+    const searched = this.layout()
+      ? this.view().map(({ column }) => column)
+      : columns;
     const quick = own
       ? (row: T) => own(row, question)
-      : (row: T) => pctMatches(row, columns, text, words);
+      : (row: T) => pctMatches(row, searched, text, words);
     // The columns' filters come after the quick one, and `filterWith` replaces only the quick
     // one: a filter of a column is a question of its own.
     const make = this.contributed().filters?.test();
@@ -916,12 +989,10 @@ export class PctDataTable<
     });
   });
 
-  /** The columns shown, each with its place among all the columns. */
+  /** The columns shown, in their order, each with its place among all the columns. */
   private readonly shown = computed(() => {
     const hidden = new Set<string>(this.hiddenColumns());
-    return (this.columns() as readonly PctAnyColumn<T>[])
-      .map((column, c) => ({ column, c }))
-      .filter(({ column }) => !hidden.has(column.id));
+    return this.view().filter(({ column }) => !hidden.has(column.id));
   });
 
   /** How a set of rows is summed up under the columns shown. */
@@ -1146,39 +1217,40 @@ export class PctDataTable<
     const sort = this.sort();
     const sentence = this.texts().tableSortLater;
     const templates = this.headerTemplates();
-    const hidden = new Set<string>(this.hiddenColumns());
     const filters = this.filters();
     const offered = filters?.offered();
     const filtered = filters?.filtered();
-    return this.columns()
-      .filter((column) => !hidden.has(column.id))
-      .map((column) => {
-        const position = sort.findIndex((key) => key.key === column.id);
-        const later = position > 0 ? sort[position] : null;
-        return {
-          column,
-          sortKey: column.sort === false ? null : column.id,
-          numeric: pctColumnNumeric(column),
-          direction: position < 0 ? null : sort[position].direction,
-          // The first key is `aria-sort`; the rest carry their place and way to the eye, and to a
-          // reader as the description of the header's button.
-          place: later ? position + 1 : null,
-          arrow: later?.direction === 'descending' ? '▼' : '▲',
-          said: later
-            ? sentence
-                .replace('{place}', String(position + 1))
-                .replace(
-                  '{way}',
-                  later.direction === 'descending'
-                    ? this.texts().tableSortDescending
-                    : this.texts().tableSortAscending,
-                )
-            : '',
-          slot: templates.get(column.id) ?? null,
-          filterable: offered?.has(column.id) ?? false,
-          filtered: filtered?.has(column.id) ?? false,
-        };
-      });
+    const laid = this.laid();
+    return this.shown().map(({ column, width }) => {
+      const position = sort.findIndex((key) => key.key === column.id);
+      const later = position > 0 ? sort[position] : null;
+      return {
+        column,
+        sortKey: column.sort === false ? null : column.id,
+        numeric: pctColumnNumeric(column),
+        direction: position < 0 ? null : sort[position].direction,
+        // The first key is `aria-sort`; the rest carry their place and way to the eye, and to a
+        // reader as the description of the header's button.
+        place: later ? position + 1 : null,
+        arrow: later?.direction === 'descending' ? '▼' : '▲',
+        said: later
+          ? sentence
+              .replace('{place}', String(position + 1))
+              .replace(
+                '{way}',
+                later.direction === 'descending'
+                  ? this.texts().tableSortDescending
+                  : this.texts().tableSortAscending,
+              )
+          : '',
+        slot: templates.get(column.id) ?? null,
+        filterable: offered?.has(column.id) ?? false,
+        filtered: filtered?.has(column.id) ?? false,
+        // The buttons beside the label: the filter's, and the layout's menu and separator.
+        actions: (offered?.has(column.id) ? 1 : 0) + (laid ? 2 : 0),
+        width,
+      };
+    });
   });
 
   /** The columns' filters, while `pctTableColumnFilters` gives them. */
@@ -1302,9 +1374,18 @@ export class PctDataTable<
       };
     });
     const hidden = new Set<string>(this.hiddenColumns());
+    // The cells shown, in the order the columns stand, and those a narrow table hid, by their
+    // places among the columns given.
+    const view = this.view();
+    const shownAt = view
+      .filter(({ column }) => !hidden.has(column.id))
+      .map(({ c }) => c);
+    const hiddenAt = view
+      .filter(({ column }) => hidden.has(column.id))
+      .map(({ c }) => c);
     // The template's context is typed by the template's own list, which the table cannot name.
-    const hiddenColumns = columns.filter((column) =>
-      hidden.has(column.id),
+    const hiddenColumns = hiddenAt.map(
+      (c) => columns[c],
     ) as unknown as Row<T>['hiddenColumns'];
     const lines = this.lines();
     const picked = this.picked();
@@ -1340,7 +1421,7 @@ export class PctDataTable<
           clip: tooltip === true && slot === null && yes === null,
         };
       });
-      const shown = all.filter((cell) => !hidden.has(cell.column.id));
+      const shown = shownAt.map((c) => all[c]);
       return {
         kind: 'row',
         key: pctLineKey(line),
@@ -1352,7 +1433,7 @@ export class PctDataTable<
         tone: rowTone?.(line.row) ?? null,
         values,
         cells: shown,
-        hidden: all.filter((cell) => hidden.has(cell.column.id)),
+        hidden: hiddenAt.map((c) => all[c]),
         hiddenColumns,
         open: lines[at + 1]?.kind === 'details',
         detailsId: `${this.uid}-details-${number}`,
@@ -1551,7 +1632,9 @@ export class PctDataTable<
 
     this.watchVisible(destroyRef);
     this.watchChanges();
-    this.watchFit(destroyRef);
+    destroyRef.onDestroy(() => this.sizes?.disconnect());
+    this.watchFit();
+    this.watchWidths();
     this.watchFocus();
 
     afterRenderEffect(() => {
@@ -1654,10 +1737,9 @@ export class PctDataTable<
         return;
       }
       if (!same) before = new Map();
-      // The shown columns' values are drawn in each row after the leading cells; a hidden
-      // column's stands in the details, and does not flash.
-      const hidden = new Set<string>(this.hiddenColumns());
-      const shown = columns.flatMap((id, c) => (hidden.has(id) ? [] : [c]));
+      // The shown columns' values are drawn in each row after the leading cells, in their
+      // order; a hidden column's stands in the details, and does not flash.
+      const shown = this.shown().map(({ c }) => c);
       const lead = this.lead();
       const rows = this.lineRows();
       const start = this.drawn().start;
@@ -1695,9 +1777,7 @@ export class PctDataTable<
    * table are both watched: a table that grows inside a frame that does not — a font that
    * arrives late, a template that fills in — is fitted again too.
    */
-  private watchFit(destroyRef: DestroyRef): void {
-    let observer: ResizeObserver | null = null;
-    destroyRef.onDestroy(() => observer?.disconnect());
+  private watchFit(): void {
     let order: string | null = null;
     let needed: readonly number[] = [];
     afterRenderEffect(() => {
@@ -1720,11 +1800,7 @@ export class PctDataTable<
       const frame = this.frame().nativeElement as HTMLElement;
       // Only where a column may hide: the frame needs an observer of its own anyway, and a
       // table with nothing to hide reads no width at all.
-      if (observer === null) {
-        observer = new ResizeObserver(() => this.resized.set({}));
-        observer.observe(frame);
-        observer.observe(table);
-      }
+      this.observeSize();
       // The shown columns' header cells are the row's last ones, after the leading cells.
       const cells = Array.from(
         (table.tHead as HTMLTableSectionElement).rows[0].cells,
@@ -1748,6 +1824,149 @@ export class PctDataTable<
       this.change(fit.count);
     });
   }
+
+  /** What follows the frame's size and the table's, once something reads them. */
+  private sizes: ResizeObserver | null = null;
+
+  /** Starts following the frame's size and the table's: each resize renders what reads them again. */
+  private observeSize(): void {
+    if (this.sizes !== null) return;
+    this.sizes = new ResizeObserver(() => this.resized.set({}));
+    this.sizes.observe(this.frame().nativeElement as HTMLElement);
+    this.sizes.observe(this.ownTable());
+  }
+
+  /** The widths the header's cells were drawn at, leading ones first, while a layout reads them. */
+  private readonly cellWidths = signal<readonly number[]>([]);
+
+  /**
+   * Reads the widths the columns were drawn at, while `pctTableColumns` lays them out: what a
+   * pinned cell's offset is summed from, and the width a separator says of a column that has
+   * none of its own but a share. Read off the header's cells, which a fixed layout draws at
+   * the columns' widths whatever the rows hold, again whenever the columns or the table's
+   * size change.
+   */
+  private watchWidths(): void {
+    afterRenderEffect(() => {
+      const layout = this.layout();
+      if (layout === null) return;
+      const heads = this.heads();
+      this.lead();
+      this.resized();
+      this.observeSize();
+      const cells = Array.from(
+        (this.ownTable().tHead as HTMLTableSectionElement).rows[0].cells,
+      );
+      const widths = cells.map((cell) => cell.getBoundingClientRect().width);
+      const drawn = new Map(
+        heads.map((head, h) => [
+          head.column.id,
+          widths[widths.length - heads.length + h],
+        ]),
+      );
+      untracked(() => {
+        const before = this.cellWidths();
+        if (
+          widths.length !== before.length ||
+          widths.some((width, w) => width !== before[w])
+        )
+          this.cellWidths.set(widths);
+        const was = layout.drawn();
+        if (
+          drawn.size !== was.size ||
+          [...drawn].some(([id, width]) => was.get(id) !== width)
+        )
+          layout.drawn.set(drawn);
+      });
+    });
+  }
+
+  /**
+   * Where each cell of a row sticks, by its place among the row's cells, the leading ones
+   * first: `null` for a cell that scrolls. With a column pinned to the start the leading cells
+   * stick before it, so a row's checkbox stays with the row's name. Empty with nothing pinned,
+   * which leaves every cell's bindings empty.
+   */
+  protected readonly sticks = computed<readonly (Stick | null)[]>(() => {
+    const shown = this.shown();
+    if (!shown.some(({ pin }) => pin !== null)) return [];
+    const starts = shown.some(({ pin }) => pin === 'start');
+    const pins = [
+      ...Array.from({ length: this.lead() }, () => (starts ? 'start' : null)),
+      ...shown.map(({ pin }) => pin),
+    ];
+    const widths = this.cellWidths();
+    const last = pins.lastIndexOf('start');
+    const first = pins.indexOf('end');
+    let start = 0;
+    const at = pins.map((pin, p) => {
+      if (pin !== 'start') return 0;
+      const offset = start;
+      start += widths[p] ?? 0;
+      return offset;
+    });
+    let end = 0;
+    for (let p = pins.length - 1; p >= 0; p--)
+      if (pins[p] === 'end') {
+        at[p] = end;
+        end += widths[p] ?? 0;
+      }
+    return pins.map((pin, p) =>
+      pin === null
+        ? null
+        : {
+            pinned: p === last || p === first ? `${pin} edge` : pin,
+            at: at[p],
+          },
+    );
+  });
+
+  /** Where the leading cells stick, by name: the checkbox's, the disclosure's, the number's. */
+  protected readonly leadSticks = computed(() => {
+    const sticks = this.sticks();
+    let p = 0;
+    const next = (on: boolean) => (on ? (sticks[p++] ?? null) : null);
+    return {
+      pick: next(this.selection() !== null),
+      disclosure: next(this.disclosure()),
+      number: next(this.rowNumbers()),
+      cells: sticks.slice(this.lead()),
+    };
+  });
+
+  /**
+   * What a fixed layout needs at the least: the columns' widths, each column that shares what
+   * is left at 160 px or its narrowest, whichever is wider, and the leading cells' room, which
+   * the sheet knows. `null` without a layout.
+   */
+  protected readonly minWidth = computed(() => {
+    if (!this.laid()) return null;
+    const shown = this.shown();
+    const shares = shown.filter(({ width }) => width === null);
+    const narrowest = Math.max(
+      SHARE_WIDTH,
+      ...shares.map(({ column }) => pctColumnWidthBounds(column).min),
+    );
+    const fixed =
+      shown.reduce((sum, { width }) => sum + (width ?? 0), 0) +
+      shares.length * narrowest;
+    const toggles = (this.selection() ? 1 : 0) + (this.disclosure() ? 1 : 0);
+    const numbers = this.rowNumbers() ? 1 : 0;
+    return `calc(${fixed}px + ${toggles} * var(--pct-table-toggle-target-min) + ${numbers} * var(--_number))`;
+  });
+
+  /**
+   * The table's width when every column shown has one of its own: their sum, so no column is
+   * drawn wider than its width says. `null` while a column shares, which takes what is left.
+   */
+  protected readonly wholeWidth = computed(() =>
+    this.shown().every(({ width }) => width !== null) ? this.minWidth() : null,
+  );
+
+  /** How many digits the widest row number has: the column of numbers is as wide as they are. */
+  protected readonly digits = computed(
+    () => String(this.given().length).length,
+  );
 
   /** Writes how many columns are hidden. */
   private change(count: number): void {

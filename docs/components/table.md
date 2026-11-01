@@ -85,6 +85,9 @@ what it holds. While the table fits, it writes none of the three.
 | `hole`        | the data table's row a remote source has not delivered                       |
 | `retry`       | the data table's button that asks a failed block again                       |
 | `filter`      | the data table's button that opens a column's filter                         |
+| `options`     | the data table's button that opens a column's menu                           |
+| `separator`   | the data table's handle that resizes a column                                |
+| `item`        | the data table's column chooser's row of a column                            |
 
 ## Theming
 
