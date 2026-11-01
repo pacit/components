@@ -45,3 +45,14 @@
   max-inline-size: 40rem;
   block-size: 20rem;
 }
+
+/* The grid scrolls in a frame of its own, so Page Down moves by what the frame shows. */
+.datatable__grid {
+  block-size: 20rem;
+}
+
+.datatable__actions {
+  display: flex;
+  gap: var(--pct-space-2);
+  margin: 0;
+}

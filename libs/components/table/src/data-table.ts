@@ -210,6 +210,12 @@ export interface PctTableFeature {
     readonly parts: Type<unknown>;
     readonly head: Signal<TemplateRef<unknown>>;
   };
+  /**
+   * The grid: the table is a `grid` of every column it has and its leading ones, and names
+   * each header's column, which the grid's keys and its model read. What a cell does under
+   * the keys is the grid's own, written on the cells the table drew.
+   */
+  readonly grid?: Record<never, never>;
 }
 
 /** A column in the order the table draws it, with its place among the columns given. */
@@ -694,8 +700,30 @@ export class PctDataTable<
   /** The columns' layout, while `pctTableColumns` lays them out. */
   protected readonly layout = computed(() => this.contributed().layout ?? null);
 
+  /**
+   * Every column's id in the order the table places it, a column the user hid in its place
+   * among them: where a grid tells a reader each cell stands.
+   *
+   * @since next
+   */
+  readonly columnOrder = computed<readonly (keyof M & string)[]>(() => {
+    const layout = this.layout();
+    const columns =
+      layout === null
+        ? (this.columns() as readonly PctAnyColumn<T>[])
+        : (layout.placed() as readonly PctPlacedColumn<T>[]).map(
+            ({ column }) => column,
+          );
+    return columns.map(({ id }) => id as keyof M & string);
+  });
+
   /** The table lays its columns out at their widths, `table-layout: fixed`. */
   protected readonly laid = computed(() => this.layout() !== null);
+
+  /** Whether the grid directive is on: the headers name their columns, and the frame takes no stop. */
+  protected readonly grid = computed(
+    () => this.contributed().grid !== undefined,
+  );
 
   /**
    * The columns in the order the table draws them, those the user hid left out: the layout's,
@@ -2007,6 +2035,8 @@ export class PctDataTable<
       const at = this.focusAt;
       if (at === null || at.element.isConnected) return;
       this.focusAt = null;
+      // A grid hands its focus on by its own stop.
+      if (untracked(this.grid)) return;
       untracked(() => this.handFocus(at));
     });
   }

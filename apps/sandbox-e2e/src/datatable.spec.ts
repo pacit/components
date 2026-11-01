@@ -1420,3 +1420,227 @@ test.describe('PctTableColumns — the columns as the user lays them out', () =>
     ).not.toBeChecked();
   });
 });
+
+/**
+ * The table as a grid: one tab stop moved by the APG's keys, a lone control in a cell taking
+ * the stop itself, a header of several stepped into and out of, a range stretched by Shift,
+ * Ctrl+A picking every row, and the stop kept through a new order.
+ */
+test.describe('PctTableGrid — the rules as a grid', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const grid = (page: Page) => page.getByTestId('table-grid');
+  /** What the element with the focus is: its tag, its part, and the text of its cell. */
+  const focus = (page: Page) =>
+    page.evaluate(() => {
+      const active = document.activeElement as HTMLElement;
+      const cell = active.closest('td, th');
+      return {
+        tag: active.tagName.toLowerCase(),
+        type: active.getAttribute('type'),
+        column:
+          cell
+            ?.closest('table')
+            ?.tHead?.rows[0].cells[
+              (cell as HTMLTableCellElement).cellIndex
+            ]?.getAttribute('data-pct-column') ?? null,
+        text: cell?.textContent?.trim() ?? null,
+      };
+    });
+
+  test('is one tab stop: Tab reaches the first cell of the first row, and the next Tab leaves', async ({
+    page,
+  }) => {
+    await expect(grid(page).getByRole('grid', { name: 'Rules' })).toHaveCount(
+      1,
+    );
+    const stops = await grid(page).locator('table [tabindex="0"]').count();
+    expect(stops).toBe(1);
+    await grid(page)
+      .locator('table')
+      .evaluate((table) => {
+        const before = document.createElement('button');
+        before.textContent = 'before';
+        before.id = 'grid-before';
+        table.closest('pct-data-table')?.before(before);
+      });
+    await page.locator('#grid-before').focus();
+    await page.keyboard.press('Tab');
+    // The first row's checkbox, alone in its cell, holds the stop itself.
+    expect(await focus(page)).toMatchObject({ tag: 'input', type: 'checkbox' });
+    await page.keyboard.press('Tab');
+    expect(
+      await grid(page).evaluate((host) =>
+        host.contains(document.activeElement),
+      ),
+    ).toBe(false);
+  });
+
+  test('the arrows move cell to cell, Home and End along the row, Ctrl with them to the ends', async ({
+    page,
+  }) => {
+    const first = grid(page).locator('tbody tr').first();
+    await first.locator('td.pct-data-table__pick input').focus();
+    await page.keyboard.press('ArrowRight');
+    expect(await focus(page)).toMatchObject({ tag: 'button' });
+    await page.keyboard.press('ArrowRight');
+    expect(await focus(page)).toMatchObject({ tag: 'td', text: '1' });
+    await page.keyboard.press('ArrowRight');
+    expect(await focus(page)).toMatchObject({ tag: 'td', column: 'name' });
+    const name = (await focus(page)).text;
+    await page.keyboard.press('ArrowDown');
+    expect((await focus(page)).text).not.toBe(name);
+    await page.keyboard.press('ArrowUp');
+    expect((await focus(page)).text).toBe(name);
+    await page.keyboard.press('ArrowUp');
+    // The header's Name: its sort button, alone in the cell.
+    expect(await focus(page)).toMatchObject({ tag: 'button', column: 'name' });
+    await page.keyboard.press('Home');
+    expect(await focus(page)).toMatchObject({ tag: 'input', type: 'checkbox' });
+    await page.keyboard.press('End');
+    expect(await focus(page)).toMatchObject({ tag: 'th', column: 'enabled' });
+    await page.keyboard.press('Control+End');
+    // The last row's switch.
+    expect(await focus(page)).toMatchObject({
+      tag: 'input',
+      column: 'enabled',
+    });
+    await expect(page.getByTestId('grid-state')).toContainText(
+      '"column":"enabled"',
+    );
+    await page.keyboard.press('Control+Home');
+    expect(await focus(page)).toMatchObject({ tag: 'input', type: 'checkbox' });
+    await expect(page.getByTestId('grid-state')).toContainText(
+      '"focused":{"row":null,"column":"#select"}',
+    );
+  });
+
+  test('a switch alone in its cell takes Space, and the arrows go on from it', async ({
+    page,
+  }) => {
+    const toggle = grid(page)
+      .getByRole('switch', { name: 'Enabled: Boiler' })
+      .first();
+    const was = await toggle.isChecked();
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    await expect(toggle).toBeChecked({ checked: !was });
+    await page.keyboard.press('ArrowLeft');
+    expect(await focus(page)).toMatchObject({ tag: 'td' });
+    expect((await focus(page)).column).not.toBe('enabled');
+  });
+
+  test('opens a row with its disclosure; its details, of two buttons, are stepped into with Enter and left with Escape', async ({
+    page,
+  }) => {
+    const first = grid(page).locator('tbody tr').first();
+    await first.locator('[data-pct-part="disclosure"]').focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('ArrowDown');
+    // The details hold two buttons: the cell takes the stop.
+    const details = grid(page).locator('tr[data-pct-part="details"] > td');
+    await expect(details).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator(':focus')).toHaveText(/Run .* now/);
+    await page.keyboard.press('Tab');
+    await expect(page.locator(':focus')).toHaveText('Skip the next run');
+    await page.keyboard.press('Escape');
+    await expect(details).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    expect(await focus(page)).toMatchObject({ tag: 'button' });
+  });
+
+  test('Page Down and Page Up move by what the frame shows', async ({
+    page,
+  }) => {
+    const rows = grid(page).locator('tbody tr[data-pct-index]');
+    await rows.first().locator('td.pct-data-table__first').focus();
+    await page.keyboard.press('PageDown');
+    const down = await page.evaluate(() =>
+      Number(
+        (document.activeElement as HTMLElement)
+          .closest('tr')
+          ?.getAttribute('data-pct-index'),
+      ),
+    );
+    expect(down).toBeGreaterThan(3);
+    await page.keyboard.press('PageUp');
+    await expect(
+      rows.first().locator('td.pct-data-table__first'),
+    ).toBeFocused();
+  });
+
+  test('Shift with the arrows stretches a range of cells, an arrow alone lets it go', async ({
+    page,
+  }) => {
+    const name = grid(page)
+      .locator('tbody tr')
+      .first()
+      .locator('td.pct-data-table__first');
+    await name.focus();
+    await page.keyboard.press('Shift+ArrowDown');
+    await page.keyboard.press('Shift+ArrowRight');
+    const marked = grid(page).locator('[data-pct-in-range]');
+    await expect(marked).toHaveCount(4);
+    await expect(marked.first()).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('grid-state')).toContainText(
+      '"range":{"from"',
+    );
+    await page.keyboard.press('ArrowRight');
+    await expect(marked).toHaveCount(0);
+    await expect(page.getByTestId('grid-state')).toContainText('"range":null');
+  });
+
+  test('Ctrl+A picks every row, and each row says it is selected', async ({
+    page,
+  }) => {
+    const rows = grid(page).locator('tbody tr[data-pct-index]');
+    await expect(rows.first()).toHaveAttribute('aria-selected', 'false');
+    await rows.first().locator('td.pct-data-table__first').focus();
+    await page.keyboard.press('ControlOrMeta+a');
+    await expect(page.getByTestId('grid-state')).toContainText('"picked":20');
+    await expect(rows.first()).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test("Enter on a header's lone sort button sorts, and the stop stays on it through the new order", async ({
+    page,
+  }) => {
+    await grid(page)
+      .locator('tbody tr')
+      .first()
+      .locator('td.pct-data-table__first')
+      .focus();
+    // To the header's row, where Enter on the Name's sort button sorts.
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('Enter');
+    await expect(
+      grid(page).getByRole('columnheader', { name: 'Name' }),
+    ).toHaveAttribute('aria-sort', 'ascending');
+    // The stop stays on the button through the new order.
+    expect(await focus(page)).toMatchObject({ tag: 'button', column: 'name' });
+    await page.keyboard.press('ArrowDown');
+    expect(await focus(page)).toMatchObject({ tag: 'td', column: 'name' });
+  });
+
+  test('keeps the stop on its row through a new order', async ({ page }) => {
+    const cell = grid(page)
+      .locator('tbody tr')
+      .nth(3)
+      .locator('td.pct-data-table__first');
+    const text = (await cell.textContent())?.trim();
+    await cell.focus();
+    // Sorted by a press that leaves the focus where it is: the row moves, and its cell keeps it.
+    await grid(page)
+      .getByRole('button', { name: 'Room', exact: true })
+      .evaluate((button: HTMLButtonElement) => button.click());
+    await expect(
+      grid(page).getByRole('columnheader', { name: 'Room' }),
+    ).toHaveAttribute('aria-sort', 'ascending');
+    await expect.poll(async () => (await focus(page)).text).toBe(text);
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowUp');
+    expect((await focus(page)).text).toBe(text);
+  });
+});
