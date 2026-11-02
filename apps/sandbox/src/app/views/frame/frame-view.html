@@ -1,0 +1,151 @@
+<h2 class="view__title">Frame</h2>
+<p class="muted view__intro">
+  An application's frame in three parts: a top bar of a start, the screen's
+  title and an end; a navigation that marks the current screen; and a
+  description list of a thing's properties. The library draws the parts; where
+  they stand, and at which width the navigation moves into a drawer, is this
+  view's decision.
+</p>
+
+<sbx-demo
+  heading="A frame the application arranges"
+  summary="Wide, the navigation stands in a column beside the content. Narrow, the view moves the same navigation into a drawer and puts the button that opens it at the start of the bar. The current screen carries aria-current, written by the view the way routerLinkActive writes it."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-frame"
+>
+  <div class="view__app" data-testid="app">
+    <header pctTopbar data-testid="topbar">
+      @if (!wide()) {
+      <button
+        #menuButton
+        pctButton
+        pctTopbarStart
+        variant="ghost"
+        [pctDrawerTrigger]="menu"
+        data-testid="menu"
+        type="button"
+      >
+        Screens
+      </button>
+      }
+      <h3 pctTopbarTitle data-testid="title">{{ current().title }}</h3>
+      <span pctTopbarEnd class="view__user" data-testid="user"
+        >Ada Lovelace</span
+      >
+      <button
+        pctButton
+        pctTopbarEnd
+        variant="outline"
+        data-testid="sign-out"
+        type="button"
+        (click)="signedOut.set(true)"
+      >
+        {{ signedOut() ? 'Signed out' : 'Sign out' }}
+      </button>
+    </header>
+
+    <div class="view__body">
+      @if (wide()) {
+      <div #side class="view__side" data-testid="side">
+        <ng-container [ngTemplateOutlet]="screensNav" />
+      </div>
+      }
+      <div class="view__main">
+        <dl pctDescriptionList data-testid="properties">
+          <div pctDescription>
+            <span pctDescriptionTerm>Supply temperature</span>
+            21.4 °C
+          </div>
+          <div pctDescription>
+            <span pctDescriptionTerm>Mode</span>
+            Heating
+          </div>
+          <div pctDescription #heatingRow="pctDescription">
+            <span pctDescriptionTerm>Heating</span>
+            {{ heating() ? 'On' : 'Off' }}
+            <pct-switch
+              pctDescriptionControl
+              [ariaLabelledby]="heatingRow.termId"
+              [(checked)]="heating"
+              data-testid="heating"
+            />
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <pct-drawer #menu heading="Screens" data-testid="drawer">
+      @if (!wide()) {
+      <ng-container [ngTemplateOutlet]="screensNav" />
+      }
+    </pct-drawer>
+
+    <ng-template #screensNav>
+      <nav pctNav aria-label="Screens" data-testid="nav">
+        @for (screen of screens; track screen.id) {
+        <pct-nav-item>
+          <a
+            pctNavLink
+            routerLink="."
+            [fragment]="screen.id"
+            [attr.aria-current]="currentId() === screen.id ? 'page' : null"
+            [attr.data-testid]="'link-' + screen.id"
+            (click)="go(screen, menu)"
+          >
+            <pct-icon pctNavIcon>
+              <svg
+                viewBox="0 0 16 16"
+                width="100%"
+                height="100%"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                focusable="false"
+              >
+                <rect x="2.5" y="2.5" width="11" height="11" rx="2" />
+              </svg>
+            </pct-icon>
+            {{ screen.title }}
+          </a>
+        </pct-nav-item>
+        }
+      </nav>
+    </ng-template>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A title longer than its bar"
+  summary="The bar is one row at every width. The title gives way first and ends in an ellipsis; the start and the end keep their size, and the whole title stays in the document for a reader."
+  [reqs]="['req-token-logical']"
+  data-testid="demo-topbar"
+>
+  <div class="view__narrow">
+    <header pctTopbar data-testid="topbar-long">
+      <h3 pctTopbarTitle data-testid="title-long">
+        Heat pump in the utility room, second floor
+      </h3>
+      <button pctButton pctTopbarEnd variant="ghost" type="button">Edit</button>
+    </header>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Terms and their values"
+  summary="Each pair is a dt and a dd the component writes itself, so a reader hears a term and its value. A row narrower than the term and the value's floor wraps the value under its term; the control in the last row is named by the term."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-description"
+>
+  <div class="view__narrow">
+    <dl pctDescriptionList data-testid="properties-narrow">
+      <div pctDescription>
+        <span pctDescriptionTerm>Model</span>
+        Aero 9 kW, outdoor unit
+      </div>
+      <div pctDescription>
+        <span pctDescriptionTerm>Serial number</span>
+        AX-2291-0457-PL
+      </div>
+    </dl>
+  </div>
+</sbx-demo>

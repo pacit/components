@@ -1099,6 +1099,39 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * The frame's bar and rows are lines on a surface the mode drops, so the lines take the text
+   * word; the current screen's tint goes with the surface, and its bar takes the highlight —
+   * the shape that keeps telling the current screen from the rest.
+   */
+  test('the frame keeps its lines in CanvasText and the current screen’s bar in Highlight', async ({
+    page,
+  }) => {
+    await visit(page, '/frame', { media: FORCED });
+    const sys = await systemColors(page);
+
+    expect(
+      await styleOf(page.getByTestId('topbar'), 'border-bottom-color'),
+    ).toBe(sys.CanvasText);
+    expect(
+      await styleOf(
+        page.getByTestId('properties').locator('[pctDescription]').first(),
+        'border-bottom-color',
+      ),
+    ).toBe(sys.CanvasText);
+    const current = page.getByTestId('link-devices');
+    expect(
+      await current.evaluate(
+        (a) => getComputedStyle(a, '::before').backgroundColor,
+      ),
+    ).toBe(sys.Highlight);
+    expect(
+      await page
+        .getByTestId('link-rooms')
+        .evaluate((a) => getComputedStyle(a, '::before').content),
+    ).toBe('none');
+  });
+
+  /**
    * A stepper's two filled markers ride on the accent — exactly what this mode drops.
    * What has to stand: every circle's border, the check as a drawing in the text word
    * (done stays visibly done), the connector's line, and the current step's label WEIGHT

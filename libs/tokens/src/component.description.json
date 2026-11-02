@@ -1,0 +1,42 @@
+{
+  "pct": {
+    "description": {
+      "$comment": "A description list (1.10, 0110): rows of a term and its value, a line between them and none under the last. The term is the muted text and the value the full one, because the value is what the row is read for; the term's width is a basis rather than a column, so the rows line up while they hold it and a value wraps under its term when they do not.",
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of a value."
+      },
+      "term-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of a term."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Colour of the line between rows."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Gap between the term, the value and the control of a row."
+      },
+      "padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Block padding of a row."
+      },
+      "term-width": {
+        "$type": "dimension",
+        "$value": "12rem",
+        "$description": "Width of a term while the row holds it."
+      },
+      "min-width": {
+        "$type": "dimension",
+        "$value": "8rem",
+        "$description": "The narrowest a value stands beside its term before it wraps under it."
+      }
+    }
+  }
+}

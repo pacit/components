@@ -183,6 +183,84 @@ export class PctCardControlHarness extends PctHarness<never> {
   static override readonly parts = [] as const;
 }
 
+// ── @pacit/components/topbar ────────────────────────────────────────────────────
+
+/**
+ * `header[pctTopbar]` — `PctTopbar`: the start, the title's region and the end.
+ *
+ * @since next
+ */
+export class PctTopbarHarness extends PctHarness<'start' | 'heading' | 'end'> {
+  static override hostSelector = 'header[pctTopbar]';
+  static override readonly parts = ['start', 'heading', 'end'] as const;
+}
+
+/**
+ * `[pctTopbarTitle]` — `PctTopbarTitle`.
+ *
+ * @since next
+ */
+export class PctTopbarTitleHarness extends PctHarness<never> {
+  static override hostSelector = '[pctTopbarTitle]';
+  static override readonly parts = [] as const;
+}
+
+// ── @pacit/components/nav ───────────────────────────────────────────────────────
+
+/**
+ * `nav[pctNav]` — `PctNav`: the list inside the landmark.
+ *
+ * @since next
+ */
+export class PctNavHarness extends PctHarness<'list'> {
+  static override hostSelector = 'nav[pctNav]';
+  static override readonly parts = ['list'] as const;
+}
+
+/**
+ * `pct-nav-item` — `PctNavItem`.
+ *
+ * @since next
+ */
+export class PctNavItemHarness extends PctHarness<never> {
+  static override hostSelector = 'pct-nav-item';
+  static override readonly parts = [] as const;
+}
+
+/**
+ * `a[pctNavLink]` — `PctNavLink`: the icon and the name.
+ *
+ * @since next
+ */
+export class PctNavLinkHarness extends PctHarness<'icon' | 'label'> {
+  static override hostSelector = 'a[pctNavLink]';
+  static override readonly parts = ['icon', 'label'] as const;
+}
+
+// ── @pacit/components/description ───────────────────────────────────────────────
+
+/**
+ * `dl[pctDescriptionList]` — `PctDescriptionList`.
+ *
+ * @since next
+ */
+export class PctDescriptionListHarness extends PctHarness<never> {
+  static override hostSelector = 'dl[pctDescriptionList]';
+  static override readonly parts = [] as const;
+}
+
+/**
+ * `div[pctDescription]` — `PctDescription`: the term, the value and the control.
+ *
+ * @since next
+ */
+export class PctDescriptionHarness extends PctHarness<
+  'term' | 'value' | 'control'
+> {
+  static override hostSelector = 'div[pctDescription]';
+  static override readonly parts = ['term', 'value', 'control'] as const;
+}
+
 // ── @pacit/components/chart ─────────────────────────────────────────────────────
 
 /**

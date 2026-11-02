@@ -1,0 +1,11 @@
+/* The browser's margins and nothing else: the navigation paints no surface, so it stands on
+   whatever the application put it on — a side column, the drawer's panel. */
+:host {
+  display: block;
+}
+
+.pct-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-nav-gap);
+}

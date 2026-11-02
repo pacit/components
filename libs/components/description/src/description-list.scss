@@ -1,0 +1,7 @@
+/* The browser's margins off the consumer's `<dl>`: the list is a block of rows, and its edge
+   is the edge of the rows. */
+:host {
+  display: block;
+  margin: 0;
+  color: var(--pct-description-fg);
+}

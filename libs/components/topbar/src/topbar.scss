@@ -1,0 +1,48 @@
+/* One row at every width: the start and the end keep their size, and the title between them
+   takes what is left and gives way first (`min-inline-size: 0`, and the title's own ellipsis).
+   The bar paints the page's surface with an edge under it, and no shadow. */
+:host {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-topbar-gap);
+  box-sizing: border-box;
+  min-block-size: var(--pct-topbar-height);
+  padding-inline: var(--pct-topbar-padding-x);
+  border-block-end: 1px solid var(--pct-topbar-border);
+  background: var(--pct-topbar-bg);
+  color: var(--pct-topbar-fg);
+}
+
+.pct-topbar__start,
+.pct-topbar__end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--pct-topbar-gap);
+}
+
+.pct-topbar__title {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-inline-size: 0;
+}
+
+/* The start and the end take no room when nothing was projected into them. The title's
+   region is never hidden: it keeps its `flex: 1`, so the end stands at the end even when the
+   bar has no title. */
+.pct-topbar__start:empty {
+  display: none;
+}
+
+.pct-topbar__end:empty {
+  display: none;
+}
+
+/* The edge is the bar's one line against the page, and forced colours drop the surface it
+   stands on, so it takes the mode's text word. */
+@media (forced-colors: active) {
+  :host {
+    border-block-end-color: CanvasText;
+  }
+}

@@ -57,6 +57,7 @@ before an application ships them.
 ./core 14139 - @angular/core,@angular/forms/signals
 ./date 49231 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./datetime 81524 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./description 8694 ./core @angular/core,@angular/forms/signals
 ./dialog 22672 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./drawer 21879 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./field 38857 ./core,./icon @angular/common,@angular/core,@angular/forms,@angular/forms/signals
@@ -64,6 +65,7 @@ before an application ships them.
 ./hero 6005 - @angular/core
 ./icon 8987 - @angular/common,@angular/core
 ./menu 22913 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
+./nav 3939 - @angular/core
 ./pagination 20039 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./popover 17197 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./progress 17961 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
@@ -78,11 +80,12 @@ before an application ships them.
 ./switch 22843 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./table 337625 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./tabs 18776 ./core @angular/core,@angular/forms/signals
-./testing 14138 - @angular/cdk/testing
+./testing 14914 - @angular/cdk/testing
 ./theme 518 - @angular/core
 ./time 52684 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./toast 26346 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tooltip 16076 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core,@angular/forms/signals
+./topbar 2371 - @angular/core
 ./tree 12928 ./icon @angular/common,@angular/core
 ```
 
@@ -143,13 +146,16 @@ single number this file had ever moved.
 ./chart PctArea 15 224759 249760
 ./chips PctChip 2 17452 17455
 ./date PctCalendar 2 29048 48186
+./description PctDescription 2 8125 8540
 ./field PctField 3 26136 35866
 ./menu PctMenu 2 21700 21703
+./nav PctNav 3 755 3790
 ./radio PctRadio 2 25725 25727
 ./select PctMultiSelect 2 53990 80177
 ./stepper PctStep 2 16819 16821
 ./table PctDataTable 12 95364 334592
 ./tabs PctTab 2 18607 18610
 ./time PctTime 2 49944 49945
+./topbar PctTopbar 2 1685 2230
 ./tree PctTree 2 12783 12786
 ```

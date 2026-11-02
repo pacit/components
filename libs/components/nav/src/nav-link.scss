@@ -1,0 +1,86 @@
+/* A row as tall as a control, the icon and the name on it, the whole row the link's target.
+   The mark of the current screen is three channels, so no one of them carries it alone: a
+   tint, a bar at the start edge, and a weight — the weight and the bar survive forced colours,
+   where the tint does not. `aria-current="false"` and an empty value are the attribute
+   saying no, and draw nothing. */
+:host {
+  display: flex;
+  position: relative;
+  align-items: center;
+  gap: var(--pct-nav-link-gap);
+  box-sizing: border-box;
+  min-block-size: var(--pct-nav-link-height);
+  padding-inline: var(--pct-nav-link-padding-x);
+  border-radius: var(--pct-nav-link-radius);
+  color: var(--pct-nav-link-fg);
+  text-decoration: none;
+}
+
+:host(:hover) {
+  background: var(--pct-nav-link-bg-hover);
+}
+
+:host(:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+:host([aria-current]:not([aria-current='false' i], [aria-current=''])) {
+  background: var(--pct-nav-link-bg-current);
+  color: var(--pct-nav-link-fg-current);
+  font-weight: var(--pct-nav-link-font-weight-current);
+}
+
+/* The bar: a logical inset, so it stands at the left in a left-to-right page and at the right
+   in a right-to-left one off one rule. */
+:host([aria-current]:not([aria-current='false' i], [aria-current='']))::before {
+  position: absolute;
+  inset-block: var(--pct-nav-marker-inset);
+  inset-inline-start: 0;
+  inline-size: var(--pct-nav-marker-width);
+  border-radius: var(--pct-nav-marker-width);
+  background: var(--pct-nav-marker-color);
+  content: '';
+}
+
+.pct-nav__icon {
+  display: flex;
+  flex: none;
+  color: var(--pct-nav-icon-color);
+}
+
+.pct-nav__icon:empty {
+  display: none;
+}
+
+.pct-nav__label {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Forced colours, written out: the platform paints every anchor `LinkText`, the tint is
+   dropped, and the bar takes the mode's highlight so the current screen keeps a shape. */
+@media (forced-colors: active) {
+  :host,
+  :host([aria-current]:not([aria-current='false' i], [aria-current=''])) {
+    color: LinkText;
+  }
+
+  :host(:hover) {
+    text-decoration: underline;
+  }
+
+  :host(:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  /* A fill the mode would drop: the bar opts out of the adjustment and names the system
+     colour itself, the one thing it may paint here. */
+  :host(
+    [aria-current]:not([aria-current='false' i], [aria-current=''])
+  )::before {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+}

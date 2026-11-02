@@ -361,6 +361,83 @@
       "severity": "warn"
     },
     {
+      "$comment": "The top bar paints the page's own surface, so the title and the words at its ends are the body text's pair, held under the bar's names so a skin that moves one is measured.",
+      "name": "topbar — the text",
+      "fg": "pct.topbar.fg",
+      "bg": "pct.topbar.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The edge parts the bar from the page; it identifies no control, and the bar's surface and its row part it too.",
+      "name": "UI: topbar — the edge under the bar",
+      "fg": "pct.topbar.border",
+      "bg": "pct.topbar.bg",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "$comment": "The navigation paints no surface of its own, so a link is measured on the page's, the one it stands on in a side column and in the drawer's panel alike.",
+      "name": "nav — a link",
+      "fg": "pct.nav.link-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "nav — a link under the pointer",
+      "fg": "pct.nav.link-fg",
+      "bg": "pct.nav.link-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "nav — the link to the current screen",
+      "fg": "pct.nav.link-fg-current",
+      "bg": "pct.nav.link-bg-current",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The icon stands beside the screen's name and carries none of it; a reader never hears it.",
+      "name": "UI: nav — a link's icon",
+      "fg": "pct.nav.icon-color",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "$comment": "The bar is one of the three channels the current screen is told by, and the one the forced-colours mode keeps, so it is held to the non-text floor on the tint it stands on.",
+      "name": "UI: nav — the bar marking the current screen",
+      "fg": "pct.nav.marker-color",
+      "bg": "pct.nav.link-bg-current",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "description — a value",
+      "fg": "pct.description.fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The term is the quieter half of a pair and still text a reader has to read, so it is held to AA like the value.",
+      "name": "description — a term",
+      "fg": "pct.description.term-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The line parts the rows; the rows' own padding parts them too, and it identifies no control.",
+      "name": "UI: description — the line between rows",
+      "fg": "pct.description.border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "$comment": "The other direction of the same gradient: the `text` face of `pctHero` cuts the sweep out of the WORD, so each stop is a foreground on the page's own surface and each is measured at AA — three checks again, and the weakest of the three is the one nobody looks at.",
       "name": "hero/text — the first stop as a word",
       "fg": "pct.hero-text",
