@@ -293,6 +293,74 @@
       "severity": "error"
     },
     {
+      "$comment": "The card paints the page's own surface, so its text is the body text's pair, held under the card's names so a skin that moves one is measured.",
+      "name": "card — the text",
+      "fg": "pct.card.fg",
+      "bg": "pct.card.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "card — the subtitle",
+      "fg": "pct.card.subtitle-fg",
+      "bg": "pct.card.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "card — the footer",
+      "fg": "pct.card.footer-fg",
+      "bg": "pct.card.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "A muted card is information still — a reading the device gave last — so its text is held to AA on the disabled surface, where a disabled control's label is only warned about.",
+      "name": "card — the text of a muted card",
+      "fg": "pct.card.fg-muted",
+      "bg": "pct.card.bg-muted",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "card — the error message",
+      "fg": "pct.card.message-fg-danger",
+      "bg": "pct.card.message-bg-danger",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The danger icon beside the message is the half of the error that is not a word, so it is held to the non-text floor on the message's box.",
+      "name": "UI: card — the error icon",
+      "fg": "pct.card.icon-color-danger",
+      "bg": "pct.card.message-bg-danger",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "The card's edge against the page. Warn: the edge groups a card's content, and identifies no control; the heading and the gaps group it too.",
+      "name": "UI: card — the edge",
+      "fg": "pct.card.border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "$comment": "The edge under the pointer, the one sign besides the cursor that a card that is one link answers anywhere. Warn for the same reason as the edge.",
+      "name": "UI: card — the edge under the pointer",
+      "fg": "pct.card.border-hover",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: card — the muted surface against the page",
+      "fg": "pct.card.bg-muted",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "$comment": "The other direction of the same gradient: the `text` face of `pctHero` cuts the sweep out of the WORD, so each stop is a foreground on the page's own surface and each is measured at AA — three checks again, and the weakest of the three is the one nobody looks at.",
       "name": "hero/text — the first stop as a word",
       "fg": "pct.hero-text",

@@ -109,6 +109,80 @@ export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
   static override readonly parts = ['label', 'spinner'] as const;
 }
 
+// ── @pacit/components/card ──────────────────────────────────────────────────────
+
+/**
+ * `pct-card` — `PctCard`.
+ *
+ * @since next
+ */
+export class PctCardHarness extends PctHarness<
+  | 'header'
+  | 'icon'
+  | 'heading'
+  | 'actions'
+  | 'body'
+  | 'message'
+  | 'message-icon'
+  | 'footer'
+  | 'note'
+  | 'footer-actions'
+> {
+  static override hostSelector = 'pct-card';
+  static override readonly parts = [
+    'header',
+    'icon',
+    'heading',
+    'actions',
+    'body',
+    'message',
+    'message-icon',
+    'footer',
+    'note',
+    'footer-actions',
+  ] as const;
+}
+
+/**
+ * `[pctCardTitle]` — `PctCardTitle`.
+ *
+ * @since next
+ */
+export class PctCardTitleHarness extends PctHarness<never> {
+  static override hostSelector = '[pctCardTitle]';
+  static override readonly parts = [] as const;
+}
+
+/**
+ * `[pctCardSubtitle]` — `PctCardSubtitle`.
+ *
+ * @since next
+ */
+export class PctCardSubtitleHarness extends PctHarness<never> {
+  static override hostSelector = '[pctCardSubtitle]';
+  static override readonly parts = [] as const;
+}
+
+/**
+ * `a[pctCardLink]` — `PctCardLink`.
+ *
+ * @since next
+ */
+export class PctCardLinkHarness extends PctHarness<never> {
+  static override hostSelector = 'a[pctCardLink]';
+  static override readonly parts = [] as const;
+}
+
+/**
+ * `[pctCardControl]` — `PctCardControl`.
+ *
+ * @since next
+ */
+export class PctCardControlHarness extends PctHarness<never> {
+  static override hostSelector = '[pctCardControl]';
+  static override readonly parts = [] as const;
+}
+
 // ── @pacit/components/chart ─────────────────────────────────────────────────────
 
 /**

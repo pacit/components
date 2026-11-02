@@ -49,6 +49,7 @@ before an application ships them.
 ./badge 2357 - @angular/core
 ./breadcrumb 15442 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./button 17860 ./core @angular/core,@angular/forms/signals
+./card 17291 ./icon,./skeleton @angular/common,@angular/core
 ./chart 252857 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
 ./checkbox 23363 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 17594 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
@@ -77,7 +78,7 @@ before an application ships them.
 ./switch 22843 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./table 337625 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./tabs 18776 ./core @angular/core,@angular/forms/signals
-./testing 13540 - @angular/cdk/testing
+./testing 14138 - @angular/cdk/testing
 ./theme 518 - @angular/core
 ./time 52684 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./toast 26346 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
@@ -138,6 +139,7 @@ single number this file had ever moved.
 ```
 ./accordion PctAccordion 2 6634 17610
 ./breadcrumb PctBreadcrumb 3 6734 15280
+./card PctCard 4 15849 16802
 ./chart PctArea 15 224759 249760
 ./chips PctChip 2 17452 17455
 ./date PctCalendar 2 29048 48186

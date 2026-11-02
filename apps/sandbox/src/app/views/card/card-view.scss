@@ -1,0 +1,12 @@
+/* A grid of cards, as a dashboard lays them out: a row stretches its items to one height. */
+.view__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.view__value {
+  margin: 0;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}

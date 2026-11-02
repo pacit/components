@@ -1,0 +1,109 @@
+{
+  "pct": {
+    "card": {
+      "$comment": "A box of a header, a body and a footer (1.9, 0108). It paints the surface the page stands on and an edge, not a shadow: a card is a part of the page, not something lifted over it, and a grid of twelve shadows is a grid of twelve blurs. Its three states swap colours and nothing else — the muted card wears the skin's disabled pair instead of `opacity`, which would take the text under its contrast and the controls with it.",
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the card."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the card."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the card."
+      },
+      "$comment-border-hover": "The one sign a pointer gets that the whole box answers it, when the card is one link: the edge darkens, as a field's does. The cursor says the rest.",
+      "border-hover": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of a card that is one link, under the pointer."
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the card."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Inline padding inside the card's edge."
+      },
+      "padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Block padding inside the card's edge."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Gap between the card's header, body and footer."
+      },
+      "header-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the icon, the heading and the actions in the header."
+      },
+      "title-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of the card's title."
+      },
+      "title-font-weight": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the card's title."
+      },
+      "subtitle-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the card's subtitle."
+      },
+      "subtitle-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the card's subtitle."
+      },
+      "footer-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the card's footer."
+      },
+      "footer-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the card's footer."
+      },
+      "$comment-muted": "The disabled surface, the one every control wears when it is out of reach, with the muted text over it — not the disabled text: that pair measured 4.34:1 in the light skin and 3.07:1 in the dark on 2026-11-02, and the text of a muted card is still information, the last reading the device gave, so it is held to AA (`contrast.policy.json`).",
+      "bg-muted": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of a muted card."
+      },
+      "fg-muted": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of a muted card."
+      },
+      "message-fg-danger": {
+        "$type": "color",
+        "$value": "{pct.on-danger-100}",
+        "$description": "Text colour of the card's error message."
+      },
+      "message-bg-danger": {
+        "$type": "color",
+        "$value": "{pct.danger-100}",
+        "$description": "Background of the card's error message."
+      },
+      "icon-color-danger": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Colour of the icon beside the card's error message."
+      }
+    }
+  }
+}

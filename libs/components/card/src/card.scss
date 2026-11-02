@@ -1,0 +1,121 @@
+/* A column of three regions, and the footer pushed to the end of it: a grid stretches its
+   items across the row by default, so the cards of a row stand at one height and their
+   footers on one line. The card paints an edge and no shadow (`component.card.json`). */
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-card-gap);
+  box-sizing: border-box;
+  min-inline-size: 0;
+  padding-block: var(--pct-card-padding-y);
+  padding-inline: var(--pct-card-padding-x);
+  border: 1px solid var(--pct-card-border);
+  border-radius: var(--pct-card-radius);
+  background: var(--pct-card-bg);
+  color: var(--pct-card-fg);
+}
+
+.pct-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pct-card-header-gap);
+}
+
+.pct-card__heading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.pct-card__icon,
+.pct-card__actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--pct-card-header-gap);
+}
+
+/* A region nothing was projected into takes no room and no gap. */
+.pct-card__header:not(:has(> :not(:empty))),
+.pct-card__icon:empty,
+.pct-card__heading:empty,
+.pct-card__actions:empty,
+.pct-card__note:empty,
+.pct-card__footer:not(:has(> :not(:empty))) {
+  display: none;
+}
+
+.pct-card__body {
+  min-inline-size: 0;
+}
+
+.pct-card__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pct-card-header-gap);
+  padding: var(--pct-card-header-gap);
+  border-radius: var(--pct-card-radius);
+  background: var(--pct-card-message-bg-danger);
+  color: var(--pct-card-message-fg-danger);
+}
+
+.pct-card__error-icon {
+  flex: none;
+  color: var(--pct-card-icon-color-danger);
+}
+
+.pct-card__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-card-header-gap);
+  margin-block-start: auto;
+  color: var(--pct-card-footer-fg);
+  font-size: var(--pct-card-footer-font-size);
+}
+
+.pct-card__note {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+/* Muted: the disabled surface and the muted text in place of the card's pair, and every other colour of the card
+   follows the text — never `opacity`, which would take the controls with it. */
+:host([data-pct-muted]) {
+  --pct-card-bg: var(--pct-card-bg-muted);
+  --pct-card-fg: var(--pct-card-fg-muted);
+  --pct-card-subtitle-fg: var(--pct-card-fg-muted);
+  --pct-card-footer-fg: var(--pct-card-fg-muted);
+}
+
+/* One link: the link's box is stretched over the card (`card-link.scss`), so the card is its
+   containing block, and the actions stand over that box so a press on them is their own. */
+:host([data-pct-link]) {
+  position: relative;
+}
+
+:host([data-pct-link]) .pct-card__actions {
+  position: relative;
+  z-index: 1;
+}
+
+:host([data-pct-link]:hover) {
+  border-color: var(--pct-card-border-hover);
+}
+
+@media (forced-colors: active) {
+  :host,
+  :host([data-pct-link]:hover) {
+    border-color: CanvasText;
+  }
+
+  :host([data-pct-muted]),
+  :host([data-pct-muted][data-pct-link]:hover) {
+    border-color: GrayText;
+    color: GrayText;
+  }
+
+  .pct-card__error {
+    border: 1px solid CanvasText;
+  }
+}

@@ -1074,6 +1074,31 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * A card is an edge round a surface; the surface is the fill the mode drops, so the edge
+   * takes the text word. A muted card's colours are the disabled pair, which the mode maps to
+   * GrayText, and a card that is one link rings its whole box in the mode's highlight.
+   */
+  test('a card keeps its edge in CanvasText, a muted one in GrayText, and its ring in Highlight', async ({
+    page,
+  }) => {
+    await visit(page, '/card', { media: FORCED });
+    const sys = await systemColors(page);
+
+    expect(
+      await styleOf(page.getByTestId('card-plain'), 'border-top-color'),
+    ).toBe(sys.CanvasText);
+    const muted = page.getByTestId('card-muted');
+    expect(await styleOf(muted, 'border-top-color')).toBe(sys.GrayText);
+    expect(await styleOf(muted, 'color')).toBe(sys.GrayText);
+
+    const link = page.getByTestId('link');
+    await link.focus();
+    expect(
+      await link.evaluate((a) => getComputedStyle(a, '::after').outlineColor),
+    ).toBe(sys.Highlight);
+  });
+
+  /**
    * A stepper's two filled markers ride on the accent — exactly what this mode drops.
    * What has to stand: every circle's border, the check as a drawing in the text word
    * (done stays visibly done), the connector's line, and the current step's label WEIGHT

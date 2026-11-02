@@ -127,7 +127,11 @@
       "edge",
       "body",
       "pinned",
-      "editor"
+      "editor",
+      "header",
+      "footer",
+      "title",
+      "subtitle"
     ],
     "properties": [
       "alpha",

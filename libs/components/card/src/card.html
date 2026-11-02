@@ -1,0 +1,64 @@
+<!--
+  Every region is a wrapper of the card's own around a slot, so the card's stylesheet reaches
+  it: the consumer's elements keep the encapsulation of the template they were written in
+  (lesson-96). A wrapper with nothing projected into it is `:empty` and takes no room.
+-->
+<div class="pct-card__header" data-pct-part="header">
+  <div class="pct-card__icon" data-pct-part="icon">
+    <ng-content select="[pctCardIcon]" />
+  </div>
+  <div class="pct-card__heading" data-pct-part="heading">
+    <ng-content select="[pctCardTitle]" />
+    <ng-content select="[pctCardSubtitle]" />
+  </div>
+  <div class="pct-card__actions" data-pct-part="actions">
+    <ng-content select="[pctCardActions]" />
+  </div>
+</div>
+
+<!--
+  The body is projected whatever the state, and shown in one of them: content inside `@if` is
+  created once all the same, so a state that comes and goes does not rebuild the consumer's
+  controls.
+-->
+@switch (state()) { @case ('loading') {
+<div class="pct-card__body" data-pct-part="body">
+  <pct-skeleton [lines]="3" />
+</div>
+} @case ('error') {
+<div class="pct-card__error" data-pct-part="message">
+  <pct-icon
+    class="pct-card__error-icon"
+    data-pct-part="message-icon"
+    name="danger"
+  >
+    <svg
+      viewBox="0 0 16 16"
+      width="100%"
+      height="100%"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+    >
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 4.8v3.4" />
+      <path d="M8 11h.01" />
+    </svg>
+  </pct-icon>
+  <span>{{ error() }}</span>
+</div>
+} @default {
+<div class="pct-card__body" data-pct-part="body"><ng-content /></div>
+} }
+
+<div class="pct-card__footer" data-pct-part="footer">
+  <div class="pct-card__note" data-pct-part="note">
+    <ng-content select="[pctCardFooter]" />
+  </div>
+  <div class="pct-card__actions" data-pct-part="footer-actions">
+    <ng-content select="[pctCardFooterActions]" />
+  </div>
+</div>

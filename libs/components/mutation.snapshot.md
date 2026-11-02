@@ -97,6 +97,7 @@ libs/components/avatar/src/avatar.ts 87.50 28(0) 3 0 1 0
 libs/components/badge/src/badge.ts 81.82 9(0) 2 0 0 0
 libs/components/breadcrumb/src/breadcrumb.ts 92.00 23(0) 2 0 0 0
 libs/components/button/src/button.ts 92.54 124(0) 10 0 0 3
+libs/components/card/src/card.ts 100.00 5(0) 0 0 0 4
 libs/components/chart/src/annotation.ts 100.00 52(0) 0 0 0 2
 libs/components/chart/src/area.ts 85.08 154(0) 24 0 3 2
 libs/components/chart/src/band.ts 90.19 193(0) 21 0 0 7
@@ -232,5 +233,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 89.97 17836/19825
+TOTAL 89.97 17841/19830
 ```

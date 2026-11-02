@@ -130,7 +130,7 @@ first measurement, not its specification. A library is allowed to grow in public
 argument to a first visitor.
 
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
-form exists and is a condition of entering a release. Thirty-eight cards are filled in.
+form exists and is a condition of entering a release. Thirty-nine cards are filled in.
 
 - [x] **1.3 — time field** in `@pacit/components/time` — **closed 2026-10-08**
   - the value module landed 2026-10-06, enforced as
@@ -234,10 +234,18 @@ form exists and is a condition of entering a release. Thirty-eight cards are fil
     row menu, a window over columns
   - ends with: both cards, the sandbox in three engines, the readers' walk
 
-- [ ] **1.9 — the card** `pct-card` in `@pacit/components/card` — a header, a body and a footer
-      that stays down in a row of equal heights; loading, error and muted without `opacity`;
-      a variant where the whole card is one link and the controls inside it still answer on
-      their own, measured in three engines and by three readers before it is promised
+- [x] **1.9 — the card** `pct-card` in `@pacit/components/card` — **closed 2026-11-02**
+  - a header of an icon, the title with its subtitle and actions, a body, and a footer of a
+    note and actions that stays down in a row of equal heights; a region with nothing in it
+    takes no room
+  - `loading` draws the skeleton and marks the card busy, `error` its message with the danger
+    icon, `muted` the disabled surface with the muted text — the disabled text measured under
+    AA in both skins — and no `opacity`
+  - one link by the title, stretched over the card, the controls standing over it, as
+    [0109](decisions/0109-a-card-is-one-link-by-its-title-and-its-controls-stand-over-it.md)
+    chose it in three engines over a forwarded click and a raised body
+  - the card filled in, `/card` in three engines, and the readers' walk of 2026-11-02: Orca
+    reached the link and the controls, NVDA the same without the word link, VoiceOver the switch alone
 
 - [ ] **1.10 — an application's frame** — a top bar of three slots; a navigation list marking
       the current page, which an application moves into the drawer (0047) on a narrow screen;

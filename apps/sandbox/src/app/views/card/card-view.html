@@ -1,0 +1,112 @@
+<h2 class="view__title">Card</h2>
+<p class="muted view__intro">
+  A header of a title, a subtitle, an icon and actions, a body of anything, and
+  a footer that stays down. The heading is the view's own, at the level its
+  outline needs; the card adds a box and no role.
+</p>
+
+<sbx-demo
+  heading="A row of cards at one height"
+  summary="Three cards with bodies of different lengths in a grid: the row stretches them to one height and each footer stands at the bottom. The switch in the header is the card's action; the footer says how fresh the reading is."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-grid"
+>
+  <div class="view__cards">
+    <pct-card data-testid="card-short">
+      <h3 pctCardTitle>Heat pump</h3>
+      <p pctCardSubtitle>Utility room</p>
+      <pct-switch pctCardActions [(checked)]="enabled" label="Enabled" />
+      <p class="view__value">21.4 °C</p>
+      <span pctCardFooter>Updated a moment ago</span>
+    </pct-card>
+    <pct-card data-testid="card-long">
+      <h3 pctCardTitle>Recuperator</h3>
+      <p pctCardSubtitle>Attic</p>
+      <p class="view__value">412 m³/h</p>
+      <p>
+        Supply 21.4 °C, exhaust 22.1 °C, outdoor 3.8 °C. The bypass is closed
+        and the filters were changed 41 days ago.
+      </p>
+      <span pctCardFooter>Updated 2 minutes ago</span>
+    </pct-card>
+    <pct-card data-testid="card-plain">
+      <h3 pctCardTitle>Inverter</h3>
+      <p class="view__value">3.2 kW</p>
+      <span pctCardFooter>Updated a moment ago</span>
+    </pct-card>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="One link, and the controls inside it"
+  summary="The title holds the card's link, stretched over the whole card: a press anywhere opens it, and a middle click or Ctrl with a click opens it in a new tab, as a link does. The switch in the body and the button in the footer stand over the link and answer on their own. A reader meets one link, named by the title."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-link"
+>
+  <div class="view__cards">
+    <pct-card data-testid="card-link">
+      <h3 pctCardTitle>
+        <a pctCardLink routerLink="." fragment="card-details" data-testid="link"
+          >Heat pump</a
+        >
+      </h3>
+      <p pctCardSubtitle>Utility room</p>
+      <p class="view__value" data-testid="link-body">21.4 °C</p>
+      <pct-switch
+        pctCardControl
+        [(checked)]="enabled"
+        data-testid="link-switch"
+        label="Enabled"
+      />
+      <span pctCardFooter>Renamed {{ renamed() }} times</span>
+      <button
+        pctButton
+        pctCardFooterActions
+        type="button"
+        data-testid="link-rename"
+        (click)="renamed.set(renamed() + 1)"
+      >
+        Rename
+      </button>
+    </pct-card>
+  </div>
+  <p id="card-details" tabindex="-1">The details of the heat pump open here.</p>
+</sbx-demo>
+
+<sbx-demo
+  heading="Loading, an error, out of reach"
+  summary="Loading draws the skeleton in place of the body and marks the card busy; an error draws its message there with the danger icon; muted repaints the card on the skin's disabled surface and leaves its switch working — the subtitle says why, because colours are the eye's alone."
+  [reqs]="['req-a11y-forced-colors']"
+  data-testid="demo-states"
+>
+  <div class="view__cards">
+    <pct-card [loading]="loading()" data-testid="card-loading">
+      <h3 pctCardTitle>Heat pump</h3>
+      <p class="view__value">21.4 °C</p>
+      <button
+        pctButton
+        pctCardFooterActions
+        type="button"
+        data-testid="toggle-loading"
+        (click)="loading.set(!loading())"
+      >
+        {{ loading() ? 'Arrive' : 'Reload' }}
+      </button>
+    </pct-card>
+    <pct-card
+      error="The device did not answer the last three reads."
+      data-testid="card-error"
+    >
+      <h3 pctCardTitle>Inverter</h3>
+      <p class="view__value">3.2 kW</p>
+      <span pctCardFooter>Last answer 14:02</span>
+    </pct-card>
+    <pct-card muted data-testid="card-muted">
+      <h3 pctCardTitle>Heat meter</h3>
+      <p pctCardSubtitle>Unavailable — no answer since 06:10</p>
+      <pct-switch pctCardActions [(checked)]="enabled" label="Enabled" />
+      <p class="view__value">7 899.7 kWh</p>
+      <span pctCardFooter>Updated 6 hours ago</span>
+    </pct-card>
+  </div>
+</sbx-demo>
