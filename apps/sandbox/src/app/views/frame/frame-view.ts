@@ -82,6 +82,9 @@ export class FrameView {
   protected readonly signedOut = signal(false);
 
   private readonly drawer = viewChild.required<PctDrawer>('menu');
+  private readonly drawerElement = viewChild.required('menu', {
+    read: ElementRef<HTMLElement>,
+  });
   private readonly menuButton = viewChild('menuButton', {
     read: ElementRef<HTMLElement>,
   });
@@ -93,20 +96,29 @@ export class FrameView {
     afterNextRender(() => {
       const query = matchMedia(WIDE);
       const sync = () => {
-        // Widening: the drawer's content is about to go, so the drawer shuts first — an open
-        // panel with nothing in it and no button would stay — and gives the keyboard back to
-        // its button while the button still stands; the column then takes the navigation.
-        if (query.matches) this.drawer().close('api');
-        // Narrowing: the column is about to go with the focus in it, so the keyboard is
-        // handed to the button that now opens the navigation, once it stands.
-        const held = this.side()?.nativeElement.contains(
-          document.activeElement,
-        );
-        this.wide.set(query.matches);
-        if (held)
-          afterNextRender(() => this.menuButton()?.nativeElement.focus(), {
-            injector: this.injector,
-          });
+        const focused = document.activeElement;
+        const wide = query.matches;
+        // The navigation is about to change places with the focus in it: in the drawer on a
+        // widening, in the column on a narrowing.
+        const inDrawer = this.drawerElement().nativeElement.contains(focused);
+        const inSide = this.side()?.nativeElement.contains(focused) ?? false;
+        // Widening: the drawer shuts first — an open panel with nothing in it and no button
+        // would stay — and the column then takes the navigation.
+        if (wide) this.drawer().close('api');
+        this.wide.set(wide);
+        // The keyboard follows the navigation once the new place stands: to the current
+        // screen's link in the column, or to the button that now opens the drawer.
+        if (wide ? inDrawer : inSide)
+          afterNextRender(
+            () =>
+              (wide
+                ? this.side()?.nativeElement.querySelector<HTMLElement>(
+                    '[aria-current="page"]',
+                  )
+                : this.menuButton()?.nativeElement
+              )?.focus(),
+            { injector: this.injector },
+          );
       };
       sync();
       query.addEventListener('change', sync);

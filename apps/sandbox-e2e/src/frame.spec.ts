@@ -235,12 +235,13 @@ test.describe('An application’s frame — topbar, nav, description list', () =
       await expect(page.getByTestId('sign-out')).toBeFocused();
     });
 
-    test('a widening with the drawer open shuts it before the column takes the navigation', async ({
+    test('a widening with the drawer open shuts it, and the keyboard follows the navigation', async ({
       page,
     }) => {
       const menu = page.getByTestId('menu');
       await menu.click();
       await page.getByTestId('link-rooms').focus();
+      await expect(page.getByTestId('link-rooms')).toBeFocused();
       await page.setViewportSize({ width: 1280, height: 900 });
       await expect(page.getByTestId('side').getByTestId('nav')).toBeVisible();
       await expect(page.getByTestId('menu')).toHaveCount(0);
@@ -248,7 +249,8 @@ test.describe('An application’s frame — topbar, nav, description list', () =
         'data-pct-open',
         /.*/,
       );
-      await expect(page.getByTestId('nav')).toHaveCount(1);
+      // The keyboard follows the navigation to the column, onto the current screen.
+      await expect(page.getByTestId('link-devices')).toBeFocused();
     });
 
     test('the start of the bar holds the button, before the title', async ({

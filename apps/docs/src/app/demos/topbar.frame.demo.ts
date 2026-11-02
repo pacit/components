@@ -93,7 +93,8 @@ export class TopbarFrameDemo {
     afterNextRender(() => {
       const query = matchMedia('(min-width: 64rem)');
       const sync = () => {
-        // Widening takes the drawer's content away: shut it first, while its button stands.
+        // Widening takes the drawer's content away: shut it, or an empty panel stays open.
+        // An application also moves the keyboard after it (the sandbox's `/frame` does).
         if (query.matches) this.drawer().close('api');
         this.wide.set(query.matches);
       };
