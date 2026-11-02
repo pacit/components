@@ -1,0 +1,9 @@
+/* The consumer's heading at the level the outline needs, in the card's type and without the
+   browser's margins, which belong to a heading in running text. */
+:host {
+  margin: 0;
+  font-size: var(--pct-card-title-font-size);
+  font-weight: var(--pct-card-title-font-weight);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}

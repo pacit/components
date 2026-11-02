@@ -17,6 +17,7 @@
     "libs/components/badge/src/badge.ts",
     "libs/components/breadcrumb/src/breadcrumb.ts",
     "libs/components/button/src/button.ts",
+    "libs/components/card/src/card.ts",
     "libs/components/chart/src/annotation.ts",
     "libs/components/chart/src/area.ts",
     "libs/components/chart/src/band.ts",

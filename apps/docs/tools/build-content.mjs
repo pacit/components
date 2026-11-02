@@ -148,6 +148,7 @@ const CARD_ORDER = [
   'container',
   'grid',
   'stack',
+  'card',
   'hero',
   'theme',
 ];

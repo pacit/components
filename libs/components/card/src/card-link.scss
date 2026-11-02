@@ -1,0 +1,29 @@
+/* The anchor keeps the title's look, and its box is stretched over the card by a
+   pseudo-element: the card is the containing block (`card.scss`), so a press anywhere on the
+   card lands on the anchor, and the anchor's ring is drawn around the card. */
+:host {
+  color: inherit;
+  text-decoration: none;
+}
+
+:host::after {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--pct-card-radius);
+  content: '';
+}
+
+:host(:focus-visible) {
+  outline: none;
+}
+
+:host(:focus-visible)::after {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  :host(:focus-visible)::after {
+    outline-color: Highlight;
+  }
+}

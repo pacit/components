@@ -27,6 +27,16 @@ from what the browser really gets.
 ./breadcrumb PctCrumb separator
 ./button PctButton label
 ./button PctButton spinner
+./card PctCard actions
+./card PctCard body
+./card PctCard footer
+./card PctCard footer-actions
+./card PctCard header
+./card PctCard heading
+./card PctCard icon
+./card PctCard message
+./card PctCard message-icon
+./card PctCard note
 ./chart PctArea area
 ./chart PctArea series
 ./chart PctArea swatch

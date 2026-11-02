@@ -15,6 +15,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   chart: () => import('./chart.demo').then((m) => m.ChartDemo),
   datatable: () => import('./datatable.demo').then((m) => m.DatatableDemo),
   button: () => import('./button.demo').then((m) => m.ButtonDemo),
+  card: () => import('./card.demo').then((m) => m.CardDemo),
   calendar: () => import('./calendar.demo').then((m) => m.CalendarDemo),
   checkbox: () => import('./checkbox.demo').then((m) => m.CheckboxDemo),
   columns: () => import('./columns.demo').then((m) => m.TimeColumnsDemo),
@@ -284,6 +285,12 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
         import('./datatable.filtered.demo').then(
           (m) => m.DatatableFilteredDemo,
         ),
+    },
+  ],
+  card: [
+    {
+      key: 'link',
+      load: () => import('./card.link.demo').then((m) => m.CardLinkDemo),
     },
   ],
   table: [

@@ -21,6 +21,7 @@
         "./libs/components/accordion/src/index.ts"
       ],
       "@pacit/components/button": ["./libs/components/button/src/index.ts"],
+      "@pacit/components/card": ["./libs/components/card/src/index.ts"],
       "@pacit/components/checkbox": ["./libs/components/checkbox/src/index.ts"],
       "@pacit/components/radio": ["./libs/components/radio/src/index.ts"],
       "@pacit/components/date": ["./libs/components/date/src/index.ts"],

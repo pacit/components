@@ -274,6 +274,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/chart/chart-view').then((m) => m.ChartView),
   },
   {
+    path: 'card',
+    title: 'Card',
+    summary:
+      'A header, a body and a footer — one link when the title holds one, and three states.',
+    group: 'components',
+    load: () => import('./views/card/card-view').then((m) => m.CardView),
+  },
+  {
     path: 'table',
     title: 'Table',
     summary:

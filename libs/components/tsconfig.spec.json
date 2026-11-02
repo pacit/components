@@ -23,6 +23,7 @@
     "toast/**/*.ts",
     "switch/**/*.ts",
     "table/**/*.ts",
+    "card/**/*.ts",
     "tabs/**/*.ts",
     "select/**/*.ts",
     "tooltip/**/*.ts",
