@@ -276,7 +276,8 @@ export class PctTableRemote<T, Id extends string = string> {
           const { to } = this.drawnRows();
           const top = this.table.lines().at(this.window.first()) as
             { readonly index: number } | undefined;
-          this.frame().scrollTop = 0;
+          const frame = this.frame();
+          if (frame !== null) frame.scrollTop = 0;
           this.follow(this.blocksFor(0, to - (top?.index ?? 0)));
         });
         // Read all the same, so the view the scroll brings is followed.
@@ -422,10 +423,16 @@ export class PctTableRemote<T, Id extends string = string> {
     }, fail);
   }
 
-  private frame(): HTMLElement {
-    return this.host.nativeElement.querySelector(
-      ':scope > pct-table-frame',
-    ) as HTMLElement;
+  /**
+   * The frame that scrolls, or `null` where there is none to scroll: a server lays nothing
+   * out, and its DOM answers a `:scope` query with `undefined`.
+   */
+  private frame(): HTMLElement | null {
+    return (
+      this.host.nativeElement.querySelector<HTMLElement>(
+        ':scope > pct-table-frame',
+      ) ?? null
+    );
   }
 }
 

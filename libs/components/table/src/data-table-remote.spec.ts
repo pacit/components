@@ -6,7 +6,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
+import { bootstrapApplication, By } from '@angular/platform-browser';
+import {
+  ɵgetDOM as getDOM,
+  ɵsetRootDomAdapter as setRootDomAdapter,
+} from '@angular/common';
+import {
+  provideServerRendering,
+  renderApplication,
+} from '@angular/platform-server';
 import { PctDataTable } from './data-table';
 import { PctTableDetails } from './data-table-details';
 import { PctTableColumnFilters } from './data-table-filters';
@@ -1039,5 +1047,110 @@ describe('PctTableRemote', () => {
         String(text).includes('pctTableRemote'),
       ),
     ).toEqual([]);
+  });
+});
+
+/**
+ * Renders on the server's platform and gives the spec's world back after: the server's DOM
+ * writes its types over the globals and makes its adapter the current one, and every later
+ * spec of this worker shares both with this one. `ngServerMode` is set as a server's build
+ * sets it, so the platform the tests run on is not the one found.
+ */
+async function onServer<R>(render: () => Promise<R>): Promise<R> {
+  const adapter = getDOM();
+  const world = globalThis as Record<PropertyKey, unknown>;
+  // Each global as it was, by its descriptor and by its value: the runner's are accessors
+  // whose setter keeps what is written over the window's own, so a write leaves the
+  // descriptor as it was.
+  const before = new Map(
+    Reflect.ownKeys(world).map((key) => [
+      key,
+      {
+        descriptor: Object.getOwnPropertyDescriptor(world, key),
+        value: world[key],
+      },
+    ]),
+  );
+  try {
+    world['ngServerMode'] = true;
+    return await render();
+  } finally {
+    setRootDomAdapter(adapter);
+    for (const key of Reflect.ownKeys(world)) {
+      const was = before.get(key);
+      if (was === undefined) {
+        Reflect.deleteProperty(world, key);
+        continue;
+      }
+      const now = Object.getOwnPropertyDescriptor(world, key);
+      if (
+        now?.value !== was.descriptor?.value ||
+        now?.get !== was.descriptor?.get ||
+        now?.set !== was.descriptor?.set
+      )
+        Object.defineProperty(world, key, was.descriptor as PropertyDescriptor);
+      // A getter of no setter took no write: nothing of it to give back.
+      else if (
+        (now?.set !== undefined || now?.writable === true) &&
+        world[key] !== was.value
+      )
+        world[key] = was.value;
+    }
+  }
+}
+
+describe('PctTableRemote — on a server', () => {
+  @Component({
+    selector: 'pct-server-host',
+    imports: [PctDataTable, PctTableWindow, PctTableRemote],
+    template: `
+      <pct-data-table
+        pctTableWindow
+        [pctTableRemote]="load"
+        caption="Registers"
+        [columns]="columns"
+        [rowId]="byId"
+      />
+    `,
+  })
+  class ServerHost {
+    readonly columns = columns;
+    readonly byId = (register: Register) => register.id;
+    readonly load = (
+      request: PctTableRequest<string>,
+    ): Promise<PctTableAnswer<Register>> =>
+      Promise.resolve({ rows: rowsOf(request.from, request.to), total: 1000 });
+  }
+
+  it('renders its table with no error: a server lays nothing out, so nothing is scrolled', async () => {
+    const seen: unknown[] = [];
+    const html = await onServer(() =>
+      renderApplication(
+        (context) =>
+          bootstrapApplication(
+            ServerHost,
+            {
+              providers: [
+                provideServerRendering(),
+                provideZonelessChangeDetection(),
+                {
+                  provide: ErrorHandler,
+                  useValue: {
+                    handleError: (error: unknown) => seen.push(error),
+                  },
+                },
+              ],
+            },
+            context,
+          ),
+        {
+          document:
+            '<!doctype html><html><head></head><body><pct-server-host></pct-server-host></body></html>',
+          url: '/',
+        },
+      ),
+    );
+    expect(seen).toEqual([]);
+    expect(html).toContain('Registers');
   });
 });
