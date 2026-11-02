@@ -1094,7 +1094,9 @@ describe('PctMenu', () => {
         expect(overlayPanels()).toHaveLength(0);
         expect(inlinePanel(layer)).toBeNull();
       } finally {
-        flags.ngServerMode = false;
+        // Gone, not `false`: a flag left defined tells the server's platform, in a later spec
+        // of this worker, that the mode is already decided.
+        delete flags.ngServerMode;
       }
     });
 

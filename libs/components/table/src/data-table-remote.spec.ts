@@ -1053,7 +1053,8 @@ describe('PctTableRemote', () => {
 /**
  * Renders on the server's platform and gives the spec's world back after: the server's DOM
  * writes its types over the globals and makes its adapter the current one, and every later
- * spec of this worker shares both with this one.
+ * spec of this worker shares both with this one. `ngServerMode` is set as a server's build
+ * sets it, so the platform the tests run on is not the one found.
  */
 async function onServer<R>(render: () => Promise<R>): Promise<R> {
   const adapter = getDOM();
@@ -1071,6 +1072,7 @@ async function onServer<R>(render: () => Promise<R>): Promise<R> {
     ]),
   );
   try {
+    world['ngServerMode'] = true;
     return await render();
   } finally {
     setRootDomAdapter(adapter);
