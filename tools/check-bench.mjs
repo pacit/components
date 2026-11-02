@@ -66,7 +66,9 @@ const readRegistry = (text) => {
   const block = text.match(/export const DEMOS[^{]*\{([\s\S]*?)\n\};/);
   if (!block) return [];
   return [
-    ...block[1].matchAll(/^\s+([a-z]+): \(\) => import\('\.\/\1\.demo'\)/gm),
+    // `\s+` after the arrow: an id long enough that the formatter breaks the line after it
+    // (`description`) is still a preview the site shows.
+    ...block[1].matchAll(/^\s+([a-z]+): \(\) =>\s+import\('\.\/\1\.demo'\)/gm),
   ].map((m) => m[1]);
 };
 

@@ -131,7 +131,8 @@
       "header",
       "footer",
       "title",
-      "subtitle"
+      "subtitle",
+      "term"
     ],
     "properties": [
       "alpha",

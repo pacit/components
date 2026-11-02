@@ -1,0 +1,8 @@
+<!--
+  The icon and the name in regions of the link's own, so its stylesheet reaches them. The icon
+  is the consumer's and silent by its own `aria-hidden`; the name is what the link is called.
+-->
+<span class="pct-nav__icon" data-pct-part="icon">
+  <ng-content select="[pctNavIcon]" />
+</span>
+<span class="pct-nav__label" data-pct-part="label"><ng-content /></span>

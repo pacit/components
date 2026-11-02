@@ -93,7 +93,7 @@ position, because a denominator that empties quietly is the defect it exists to 
 1.8 closed 9 116
 1.2 open 20 249
 1.9 closed 12 155
-1.10 open 4 59
+1.10 closed 9 96
 1.11 open 20 305
 3.1 closed 12 160
 3.2 closed 12 143

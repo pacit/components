@@ -282,6 +282,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/card/card-view').then((m) => m.CardView),
   },
   {
+    path: 'frame',
+    title: 'Frame',
+    summary:
+      'A top bar, a navigation marking the current screen, and a description list — arranged by the application.',
+    group: 'components',
+    load: () => import('./views/frame/frame-view').then((m) => m.FrameView),
+  },
+  {
     path: 'table',
     title: 'Table',
     summary:

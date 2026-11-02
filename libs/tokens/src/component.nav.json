@@ -1,0 +1,77 @@
+{
+  "pct": {
+    "nav": {
+      "$comment": "An application's navigation (1.10, 0110): rows of links as tall as a control, on whatever surface the application stands them on — it paints none. The current screen is three channels at once, a tint, a bar at the start edge and a weight, so no single one carries it: the tint is the first the forced-colours mode drops, and the bar and the weight survive it.",
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap between the links."
+      },
+      "link-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of a link."
+      },
+      "link-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of a link under the pointer."
+      },
+      "link-bg-current": {
+        "$type": "color",
+        "$value": "{pct.primary-100}",
+        "$description": "Background of the link to the current screen."
+      },
+      "link-fg-current": {
+        "$type": "color",
+        "$value": "{pct.on-primary-100}",
+        "$description": "Text colour of the link to the current screen."
+      },
+      "link-font-weight-current": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the link to the current screen."
+      },
+      "link-height": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.md}",
+        "$description": "Minimum height of a link."
+      },
+      "link-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Inline padding inside a link."
+      },
+      "link-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between a link's icon and its name."
+      },
+      "link-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of a link."
+      },
+      "icon-color": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Colour of a link's icon."
+      },
+      "marker-color": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Colour of the bar at the start edge of the link to the current screen."
+      },
+      "marker-width": {
+        "$type": "dimension",
+        "$value": "3px",
+        "$description": "Width of the bar marking the current screen."
+      },
+      "marker-inset": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "How far the bar marking the current screen stands in from the link's top and bottom."
+      }
+    }
+  }
+}

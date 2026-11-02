@@ -1,0 +1,13 @@
+<!--
+  The term, the value and the control, each in an element of the pair's own: the `<dt>` and the
+  `<dd>`s are written here, in the order the platform reads a pair in, and the pair's stylesheet
+  reaches them (lesson-96). A control nothing was projected into leaves its `<dd>` `:empty`, and
+  an empty `<dd>` takes no room and says nothing.
+-->
+<dt class="pct-description__term" data-pct-part="term" [id]="termId">
+  <ng-content select="[pctDescriptionTerm]" />
+</dt>
+<dd class="pct-description__value" data-pct-part="value"><ng-content /></dd>
+<dd class="pct-description__control" data-pct-part="control">
+  <ng-content select="[pctDescriptionControl]" />
+</dd>

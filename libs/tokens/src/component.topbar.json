@@ -1,0 +1,47 @@
+{
+  "pct": {
+    "topbar": {
+      "$comment": "An application's top bar (1.10, 0110): one row of a start, the screen's title and an end, on the page's own surface with an edge under it and no shadow — a bar that is part of the page, not lifted over it. Its height is the floor of the row and not the row: a control taller than it grows the bar rather than spilling out of it.",
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the top bar."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the top bar."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Colour of the edge under the top bar."
+      },
+      "height": {
+        "$type": "dimension",
+        "$value": "56px",
+        "$description": "Minimum height of the top bar."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Inline padding inside the top bar."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the start, the title and the end, and between the controls of each."
+      },
+      "title-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of the screen's title."
+      },
+      "title-font-weight": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the screen's title."
+      }
+    }
+  }
+}

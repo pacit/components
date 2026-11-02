@@ -16,6 +16,10 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   datatable: () => import('./datatable.demo').then((m) => m.DatatableDemo),
   button: () => import('./button.demo').then((m) => m.ButtonDemo),
   card: () => import('./card.demo').then((m) => m.CardDemo),
+  topbar: () => import('./topbar.demo').then((m) => m.TopbarDemo),
+  nav: () => import('./nav.demo').then((m) => m.NavDemo),
+  description: () =>
+    import('./description.demo').then((m) => m.DescriptionDemo),
   calendar: () => import('./calendar.demo').then((m) => m.CalendarDemo),
   checkbox: () => import('./checkbox.demo').then((m) => m.CheckboxDemo),
   columns: () => import('./columns.demo').then((m) => m.TimeColumnsDemo),
@@ -284,6 +288,27 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       load: () =>
         import('./datatable.filtered.demo').then(
           (m) => m.DatatableFilteredDemo,
+        ),
+    },
+  ],
+  topbar: [
+    {
+      key: 'frame',
+      load: () => import('./topbar.frame.demo').then((m) => m.TopbarFrameDemo),
+    },
+  ],
+  nav: [
+    {
+      key: 'icons',
+      load: () => import('./nav.icons.demo').then((m) => m.NavIconsDemo),
+    },
+  ],
+  description: [
+    {
+      key: 'control',
+      load: () =>
+        import('./description.control.demo').then(
+          (m) => m.DescriptionControlDemo,
         ),
     },
   ],

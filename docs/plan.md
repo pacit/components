@@ -130,7 +130,7 @@ first measurement, not its specification. A library is allowed to grow in public
 argument to a first visitor.
 
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
-form exists and is a condition of entering a release. Thirty-nine cards are filled in.
+form exists and is a condition of entering a release. Forty-two cards are filled in.
 
 - [x] **1.3 — time field** in `@pacit/components/time` — **closed 2026-10-08**
   - the value module landed 2026-10-06, enforced as
@@ -247,10 +247,15 @@ form exists and is a condition of entering a release. Thirty-nine cards are fill
   - the card filled in, `/card` in three engines, and the readers' walk of 2026-11-02: Orca
     reached the link and the controls, NVDA the same without the word link, VoiceOver the switch alone
 
-- [ ] **1.10 — an application's frame** — a top bar of three slots; a navigation list marking
-      the current page, which an application moves into the drawer (0047) on a narrow screen;
-      a description list on the platform's `<dl>` with a slot for a control. No shell that
-      picks the breakpoint: that is the edge 0057 drew
+- [x] **1.10 — an application's frame** in `./topbar`, `./nav`, `./description` — **closed 2026-11-02**
+  - a bar of a start, the title and an end on the consumer's `<header>`; a list in the
+    consumer's `<nav>`, the current screen the `aria-current` the router writes, drawn three
+    ways; `<dl>` pairs that write their own `<dt>` and `<dd>`s, a control named by its term
+  - no shell and no breakpoint
+    ([0110](decisions/0110-a-frame-is-three-parts-the-application-arranges.md)): the
+    application moves the navigation into the drawer at its own width
+  - three cards, `/frame` in three engines, wide and narrow, and the readers' walk of
+    READERS_WALK
 
 - [~] **1.11 — charts** in `@pacit/components/chart` — a scene and the marks it draws, on one
   core of pure functions and no dependency ([0099](decisions/0099-a-chart-is-scales-the-marks-share-and-a-ready-chart-is-a-recipe.md)–[0103](decisions/0103-a-chart-is-a-named-picture-and-its-cursor-is-the-platforms-range.md),

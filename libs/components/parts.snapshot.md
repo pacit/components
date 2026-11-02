@@ -115,6 +115,9 @@ from what the browser really gets.
 ./datetime PctDatetime time-control
 ./datetime PctDatetime toggle
 ./datetime PctDatetime warning
+./description PctDescription control
+./description PctDescription term
+./description PctDescription value
 ./dialog PctDialog backdrop
 ./dialog PctDialog close
 ./dialog PctDialog content
@@ -143,6 +146,9 @@ from what the browser really gets.
 ./field PctSuffix field-suffix-item
 ./menu PctMenu panel
 ./menu PctMenuItem item
+./nav PctNav list
+./nav PctNavLink icon
+./nav PctNavLink label
 ./pagination PctPagination ellipsis
 ./pagination PctPagination list
 ./pagination PctPagination next
@@ -256,6 +262,9 @@ from what the browser really gets.
 ./toast PctToastViewport item
 ./toast PctToastViewport message
 ./tooltip PctTooltipPanel panel
+./topbar PctTopbar end
+./topbar PctTopbar heading
+./topbar PctTopbar start
 ./tree PctTreeItem arrow
 ./tree PctTreeItem label
 ```

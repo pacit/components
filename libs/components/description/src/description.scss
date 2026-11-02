@@ -1,0 +1,48 @@
+/* One row: the term at its width, the value taking what is left, the control at the end.
+   When the row cannot hold the term and the value's floor, the value and the control wrap
+   under the term — the row decides by its own width, so the list needs no breakpoint. A line
+   between rows, none under the last. */
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--pct-description-gap);
+  padding-block: var(--pct-description-padding-y);
+  border-block-end: 1px solid var(--pct-description-border);
+}
+
+:host(:last-child) {
+  border-block-end: none;
+}
+
+.pct-description__term {
+  flex: 0 1 var(--pct-description-term-width);
+  min-inline-size: 0;
+  color: var(--pct-description-term-fg);
+  overflow-wrap: anywhere;
+}
+
+.pct-description__value {
+  flex: 1 1 var(--pct-description-min-width);
+  min-inline-size: 0;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.pct-description__control {
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin: 0;
+}
+
+.pct-description__control:empty {
+  display: none;
+}
+
+@media (forced-colors: active) {
+  :host {
+    border-block-end-color: CanvasText;
+  }
+}

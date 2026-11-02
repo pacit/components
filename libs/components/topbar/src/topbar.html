@@ -1,0 +1,15 @@
+<!--
+  Three regions of the bar's own around three slots, so the bar's stylesheet reaches them: the
+  consumer's elements keep the encapsulation of the template they were written in (lesson-96).
+  The order is the reading order — start, title, end — and a region with nothing in it is
+  `:empty` and takes no room.
+-->
+<div class="pct-topbar__start" data-pct-part="start">
+  <ng-content select="[pctTopbarStart]" />
+</div>
+<div class="pct-topbar__title" data-pct-part="heading">
+  <ng-content />
+</div>
+<div class="pct-topbar__end" data-pct-part="end">
+  <ng-content select="[pctTopbarEnd]" />
+</div>

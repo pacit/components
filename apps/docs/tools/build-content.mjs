@@ -108,6 +108,7 @@ const CARD_ORDER = [
   'menu',
   'tabs',
   'breadcrumb',
+  'nav',
   'pagination',
   // Text & numbers
   'field',
@@ -144,11 +145,13 @@ const CARD_ORDER = [
   'icon',
   'avatar',
   'skeleton',
+  'description',
   // Layout & theming
   'container',
   'grid',
   'stack',
   'card',
+  'topbar',
   'hero',
   'theme',
 ];
