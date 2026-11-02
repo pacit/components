@@ -62,9 +62,9 @@ navigation is in the drawer, and read the width after the first render (`afterNe
 
 ```css
 [data-theme='brand'] {
-  --pct-topbar-bg: #0f766e;
-  --pct-topbar-fg: #ffffff;
-  --pct-topbar-border: #0f766e;
+  --pct-topbar-bg: #f0fdfa;
+  --pct-topbar-fg: #134e4a;
+  --pct-topbar-border: #99f6e4;
 }
 ```
 
