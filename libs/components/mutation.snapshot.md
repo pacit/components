@@ -194,6 +194,7 @@ libs/components/switch/src/switch.ts 96.77 60(0) 2 0 0 5
 libs/components/table/src/column-chooser.ts 88.16 67(0) 8 0 1 0
 libs/components/table/src/data-table-columns.ts 94.12 128(0) 8 0 0 2
 libs/components/table/src/data-table-details.ts 100.00 5(0) 0 0 0 1
+libs/components/table/src/data-table-editing.ts 82.08 646(0) 131 2 8 6
 libs/components/table/src/data-table-filters.ts 97.32 218(0) 3 0 3 5
 libs/components/table/src/data-table-grid.ts 77.00 626(3) 170 0 17 2
 libs/components/table/src/data-table-groups.ts 100.00 9(0) 0 0 0 3
@@ -231,5 +232,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.29 17190/19038
+TOTAL 89.97 17836/19825
 ```

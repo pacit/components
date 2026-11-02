@@ -216,6 +216,16 @@ export interface PctTableFeature {
    * the keys is the grid's own, written on the cells the table drew.
    */
   readonly grid?: Record<never, never>;
+  /**
+   * The editing: whether a row's cell is open in an editor, and the template the table draws
+   * in a cell open, given the row, its id and the column. What the editor holds, and what
+   * its keys do, is the editing's own; the table draws its rows as they are given.
+   */
+  readonly editing?: {
+    readonly parts: Type<unknown>;
+    readonly editor: Signal<TemplateRef<unknown>>;
+    readonly open: Signal<(id: PctRowId, column: string) => boolean>;
+  };
 }
 
 /** A column in the order the table draws it, with its place among the columns given. */
@@ -725,6 +735,25 @@ export class PctDataTable<
     () => this.contributed().grid !== undefined,
   );
 
+  /** The editing's parts, while a directive edits the table's cells. */
+  protected readonly editing = computed(
+    () => this.contributed().editing ?? null,
+  );
+
+  /**
+   * The template a cell draws while it is open in an editor, or `null`: called for each cell
+   * drawn, it asks the editing one question and reads nothing else.
+   */
+  protected editorOf(
+    id: PctRowId,
+    column: string,
+  ): TemplateRef<unknown> | null {
+    const editing = this.editing();
+    return editing !== null && editing.open()(id, column)
+      ? editing.editor()
+      : null;
+  }
+
   /**
    * The columns in the order the table draws them, those the user hid left out: the layout's,
    * or the columns as given. A narrow table hides some of these too (see `shown`).
@@ -1022,6 +1051,16 @@ export class PctDataTable<
     const hidden = new Set<string>(this.hiddenColumns());
     return this.view().filter(({ column }) => !hidden.has(column.id));
   });
+
+  /**
+   * The ids of the columns the table draws, in their order: neither the user nor a narrow
+   * frame hid them. Where an editor's Tab goes next.
+   *
+   * @since next
+   */
+  readonly shownColumns = computed<readonly (keyof M & string)[]>(() =>
+    this.shown().map(({ column }) => column.id as keyof M & string),
+  );
 
   /** How a set of rows is summed up under the columns shown. */
   private readonly summarize = computed(() => {

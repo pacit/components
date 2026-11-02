@@ -1538,9 +1538,11 @@ test.describe('PctTableGrid — the rules as a grid', () => {
     const first = grid(page).locator('tbody tr').first();
     await first.locator('[data-pct-part="disclosure"]').focus();
     await page.keyboard.press('Enter');
+    // The details drawn first: an arrow before them goes to the next row.
+    const details = grid(page).locator('tr[data-pct-part="details"] > td');
+    await expect(details).toBeVisible();
     await page.keyboard.press('ArrowDown');
     // The details hold two buttons: the cell takes the stop.
-    const details = grid(page).locator('tr[data-pct-part="details"] > td');
     await expect(details).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.locator(':focus')).toHaveText(/Run .* now/);
@@ -1642,5 +1644,170 @@ test.describe('PctTableGrid — the rules as a grid', () => {
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowUp');
     expect((await focus(page)).text).toBe(text);
+  });
+});
+
+test.describe('PctTableEditing — the rules edited in place', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const table = (page: Page) => page.getByTestId('table-editing');
+  const cell = (page: Page, row: number, column: number) =>
+    table(page).locator('tbody tr').nth(row).locator('td').nth(column);
+  const editors = (page: Page) =>
+    table(page).locator('[data-pct-part="editor"]');
+  /** The last edit the table proposed, as the page keeps it. */
+  const last = async (page: Page) =>
+    JSON.parse(
+      (await page.getByTestId('editing-state').textContent()) ?? '{}',
+    ) as { editing: unknown; last: unknown };
+
+  test('opens a cell on Enter, commits on Enter and goes a row down, and the page applies it', async ({
+    page,
+  }) => {
+    await cell(page, 0, 0).click();
+    await page.keyboard.press('Enter');
+    const field = table(page).getByRole('textbox', { name: 'Edit Name' });
+    await expect(field).toBeFocused();
+    await expect(field).toHaveValue('Supply fan');
+    await expect(editors(page)).toHaveCount(1);
+    await page.keyboard.type(' 2');
+    await page.keyboard.press('Enter');
+    await expect(editors(page)).toHaveCount(0);
+    await expect(cell(page, 0, 0)).toHaveText('Supply fan 2');
+    await expect(cell(page, 1, 0)).toBeFocused();
+    expect((await last(page)).last).toEqual({
+      id: 1,
+      cause: 'edit',
+      changes: [
+        { column: 'name', value: 'Supply fan 2', previous: 'Supply fan' },
+      ],
+    });
+  });
+
+  test('lets the draft go on Escape, and commits on Tab with the stop on the next cell', async ({
+    page,
+  }) => {
+    await cell(page, 1, 0).dblclick();
+    const field = table(page).getByRole('textbox', { name: 'Edit Name' });
+    await expect(field).toBeFocused();
+    await page.keyboard.type(' A');
+    await page.keyboard.press('Escape');
+    await expect(cell(page, 1, 0)).toBeFocused();
+    await expect(cell(page, 1, 0)).toHaveText('Heater');
+    expect((await last(page)).last).toBeNull();
+    // The keys move the stop again.
+    await page.keyboard.press('ArrowDown');
+    await expect(cell(page, 2, 0)).toBeFocused();
+    await page.keyboard.press('F2');
+    await page.keyboard.type('!');
+    await page.keyboard.press('Tab');
+    await expect(cell(page, 2, 0)).toHaveText('Bypass!');
+    await expect(cell(page, 2, 1)).toBeFocused();
+  });
+
+  test('opens a number with the digit typed, in a field of its fraction digits', async ({
+    page,
+  }) => {
+    await cell(page, 3, 2).click();
+    await page.keyboard.press('7');
+    const field = table(page).getByRole('spinbutton', { name: 'Edit Energy' });
+    await expect(field).toBeFocused();
+    await expect(field).toHaveValue('7');
+    await page.keyboard.type('.25');
+    await page.keyboard.press('Enter');
+    await expect(cell(page, 3, 2)).toHaveText(/7\.3\s*kWh/);
+    expect((await last(page)).last).toEqual({
+      id: 4,
+      cause: 'edit',
+      changes: [{ column: 'energy', value: 7.3, previous: null }],
+    });
+  });
+
+  test('keeps every key typed on a cell, however fast, and commits on a press beside the table', async ({
+    page,
+  }) => {
+    await cell(page, 2, 0).click();
+    await page.keyboard.type('Damper');
+    const field = table(page).getByRole('textbox', { name: 'Edit Name' });
+    await expect(field).toHaveValue('Damper');
+    // A press on the page's text: the edit is committed, and the focus is where the press put it.
+    await page.getByTestId('editing-state').click();
+    await expect(editors(page)).toHaveCount(0);
+    await expect(cell(page, 2, 0)).toHaveText('Damper');
+    await expect(cell(page, 2, 0)).not.toBeFocused();
+    expect(await page.evaluate(() => document.activeElement?.tagName)).toBe(
+      'BODY',
+    );
+  });
+
+  test("edits the room in the page's own select, which commits on a pick", async ({
+    page,
+  }) => {
+    await cell(page, 0, 1).click();
+    await page.keyboard.press('Enter');
+    const select = table(page).getByRole('combobox', { name: 'Edit Room' });
+    await expect(select).toBeFocused();
+    // The select opens on its own key; Escape closes its list before the editor.
+    await page.keyboard.press('ArrowDown');
+    await expect(select).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(select).toHaveAttribute('aria-expanded', 'false');
+    await expect(editors(page)).toHaveCount(1);
+    await page.keyboard.press('ArrowDown');
+    await page.getByRole('option', { name: 'Garage' }).click();
+    await expect(editors(page)).toHaveCount(0);
+    await expect(cell(page, 0, 1)).toHaveText('Garage');
+    await expect(cell(page, 0, 1)).toBeFocused();
+  });
+
+  test('asks the last edit back on Ctrl+Z, and again on Ctrl+Shift+Z', async ({
+    page,
+  }) => {
+    await cell(page, 4, 0).click();
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('s');
+    await page.keyboard.press('Enter');
+    await expect(cell(page, 4, 0)).toHaveText('Boilers');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(cell(page, 4, 0)).toHaveText('Boiler');
+    await expect(cell(page, 4, 0)).toBeFocused();
+    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await expect(cell(page, 4, 0)).toHaveText('Boilers');
+    await page.getByRole('button', { name: 'Undo' }).click();
+    await expect(cell(page, 4, 0)).toHaveText('Boiler');
+    await expect(page.getByRole('button', { name: 'Redo' })).toBeEnabled();
+  });
+
+  test('edits a whole row: Enter opens its cells, Tab moves among them, the last Tab commits them in one edit', async ({
+    page,
+  }) => {
+    await page.getByRole('switch', { name: 'Edit a whole row' }).click();
+    await cell(page, 5, 0).click();
+    await page.keyboard.press('Enter');
+    await expect(editors(page)).toHaveCount(3);
+    await expect(
+      table(page).getByRole('textbox', { name: 'Edit Name' }),
+    ).toBeFocused();
+    await page.keyboard.type(' 2');
+    await page.keyboard.press('Tab');
+    await expect(
+      table(page).getByRole('combobox', { name: 'Edit Room' }),
+    ).toBeFocused();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.type('1');
+    await page.keyboard.press('Tab');
+    await expect(editors(page)).toHaveCount(0);
+    expect((await last(page)).last).toEqual({
+      id: 6,
+      cause: 'edit',
+      changes: [
+        { column: 'name', value: 'Floor heating 2', previous: 'Floor heating' },
+        { column: 'energy', value: 1, previous: 488.5 },
+      ],
+    });
+    await expect(cell(page, 5, 3)).toBeFocused();
   });
 });

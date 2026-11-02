@@ -126,7 +126,8 @@
       "bubble",
       "edge",
       "body",
-      "pinned"
+      "pinned",
+      "editor"
     ],
     "properties": [
       "alpha",

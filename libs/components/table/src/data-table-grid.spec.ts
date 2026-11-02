@@ -480,6 +480,41 @@ describe('PctTableGrid — the table as a grid', () => {
     expect(note.getAttribute('tabindex')).toBe('-1');
   });
 
+  it('leaves a cell stepped into when the focus comes back to the cell itself', async () => {
+    const fixture = await render(Host);
+    const note = cell(2, 4).querySelector('.note') as HTMLElement;
+    note.focus();
+    await settle(fixture);
+    expect(note.hasAttribute('tabindex')).toBe(false);
+    // A script, or a click beside the controls: the cell is left, with no render to wait for.
+    cell(2, 4).focus();
+    expect(note.getAttribute('tabindex')).toBe('-1');
+    await press(fixture, 'ArrowDown');
+    expect(active()).toBe(cell(3, 4));
+  });
+
+  it('leaves the focus where it went when it leaves a cell stepped into: the stop does not take it back', async () => {
+    const fixture = await render(Host);
+    const note = cell(2, 4).querySelector('.note') as HTMLElement;
+    const outside = document.body.appendChild(document.createElement('button'));
+    try {
+      note.focus();
+      await settle(fixture);
+      outside.focus();
+      await settle(fixture);
+      expect(active()).toBe(outside);
+      note.focus();
+      await settle(fixture);
+      // A press on the page's text: the focus goes nowhere, and stays there.
+      note.blur();
+      await settle(fixture);
+      expect(active()).toBe(document.body);
+      expect(note.getAttribute('tabindex')).toBe('-1');
+    } finally {
+      outside.remove();
+    }
+  });
+
   it("hands the focus on to a cell's lone control, and steps into no cell without one", async () => {
     const fixture = await render(Host);
     cell(2, 0).focus();

@@ -973,8 +973,8 @@ test.describe('The pages', () => {
     // since the annotations took the reference line, the band, the note and the moment of now;
     // 781 since an area took an edge and a candle its rise and its fall (0106); 784 since a
     // data table's columns took a separator's line, and a pinned column its surface and shade
-    // (0097).
-    await expect(count).toHaveText('784 of 784');
+    // (0097); 785 since a cell open in an editor took its outline (0108).
+    await expect(count).toHaveText('785 of 785');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );
@@ -982,7 +982,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-    await expect(count).toHaveText(/^\d+ of 784$/);
+    await expect(count).toHaveText(/^\d+ of 785$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');
@@ -998,7 +998,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-    await expect(count).toHaveText('784 of 784');
+    await expect(count).toHaveText('785 of 785');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({

@@ -697,6 +697,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-table-caption-gap dimension component public
 --pct-table-column-max-width dimension component public
 --pct-table-details-bg color component public
+--pct-table-editor-border color component public
 --pct-table-fg color component public
 --pct-table-fg-danger color component public
 --pct-table-fg-info color component public

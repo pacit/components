@@ -225,6 +225,12 @@
         "$type": "shadow",
         "$value": "inset 8px 0 8px -8px rgba(15, 23, 42, 0.24)",
         "$description": "Shade the last pinned cell at an edge casts over the cells that scroll under it."
+      },
+      "$comment-editor": "A cell open in an editor is outlined inside its edges in the primary colour, the colour a focused control wears, so the open cell is told from the stop at a glance and held to the non-text floor on the table's surface.",
+      "editor-border": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Outline of a data table's cell open in an editor."
       }
     }
   }

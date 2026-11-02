@@ -1017,6 +1017,7 @@ const NOT_THE_LABEL =
 export class PctDataTableHarness extends PctHarness<
   | 'details'
   | 'disclosure'
+  | 'editor'
   | 'error'
   | 'filter'
   | 'group'
@@ -1037,6 +1038,7 @@ export class PctDataTableHarness extends PctHarness<
   static override readonly parts = [
     'details',
     'disclosure',
+    'editor',
     'error',
     'filter',
     'group',

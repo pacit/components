@@ -1,0 +1,40 @@
+<!--
+  What a table that edits its cells draws in a cell open: the column's own editor on the
+  draft, or a field of the column's kind. Drawn by the table, declared here, so a table that
+  edits nothing carries none of it (0097, 0108).
+-->
+<ng-template #editor let-column="column">
+  @let cell = cellOf(column);
+  <!-- Its keys and its focus are heard by the editing, on the table, before the grid's. -->
+  <div
+    class="pct-data-table__editor"
+    data-pct-part="editor"
+    [attr.data-pct-column]="column.id"
+  >
+    @if (cell.slot) {
+    <ng-container
+      [ngTemplateOutlet]="cell.slot"
+      [ngTemplateOutletContext]="cell.context"
+    />
+    } @else if (cell.number) {
+    <input
+      pctNumber
+      class="pct-data-table__field"
+      [value]="numberOf(cell)"
+      (valueChange)="cell.context.value.set($event)"
+      [minFractionDigits]="cell.digits[0]"
+      [maxFractionDigits]="cell.digits[1]"
+      [locale]="locale()"
+      [attr.aria-label]="nameOf(column)"
+    />
+    } @else {
+    <input
+      pctText
+      class="pct-data-table__field"
+      [value]="textOf(cell)"
+      (valueChange)="cell.context.value.set($event)"
+      [attr.aria-label]="nameOf(column)"
+    />
+    }
+  </div>
+</ng-template>

@@ -137,6 +137,7 @@ const ENGLISH: PctTexts = {
   tableHide: 'Hide column',
   tableMoveUp: 'Move {column} up',
   tableMoveDown: 'Move {column} down',
+  tableEdit: 'Edit {column}',
 };
 
 describe('PCT_TEXTS', () => {
