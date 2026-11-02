@@ -77,13 +77,8 @@ export class PctNavItem {
    * when the item first stands in the document, and only in dev mode.
    */
   private warnOnLooseItem(): void {
-    // Rendered, so it has a parent: the host stands in the template that declared it.
-    if (
-      (this.host.nativeElement.parentElement as HTMLElement).getAttribute(
-        'role',
-      ) === 'list'
-    )
-      return;
+    const above = this.host.nativeElement.parentElement;
+    if (above?.getAttribute('role') === 'list') return;
     console.warn(
       `[pct-nav-item] An item whose parent element is not a list. \`role="listitem"\` needs \`role="list"\` directly above it — axe counts the loose arrangement as a critical violation in every engine. Make the item a direct child of <nav pctNav>.`,
     );

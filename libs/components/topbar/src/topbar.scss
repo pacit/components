@@ -28,8 +28,9 @@
   min-inline-size: 0;
 }
 
-/* The end stands at the end even when the title is empty: the title's region keeps its
-   `flex: 1` and is only taken out of the gap. */
+/* The start and the end take no room when nothing was projected into them. The title's
+   region is never hidden: it keeps its `flex: 1`, so the end stands at the end even when the
+   bar has no title. */
 .pct-topbar__start:empty {
   display: none;
 }

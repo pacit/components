@@ -5,6 +5,7 @@ import {
   DestroyRef,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PctButton } from '@pacit/components/button';
@@ -15,7 +16,8 @@ import { PctTopbar, PctTopbarTitle } from '@pacit/components/topbar';
 /**
  * A frame the application arranges: the navigation at the side while the window is wide, in a
  * drawer opened from the bar while it is narrow. The width is the application's, read after
- * the first render so the server's markup and the client's first one agree.
+ * the first render so the server's markup and the client's first one agree, and the drawer is
+ * shut before a widening takes its content away.
  */
 @Component({
   selector: 'demo-topbar-frame',
@@ -84,12 +86,17 @@ export class TopbarFrameDemo {
   protected readonly names = ['Rooms', 'Devices', 'Energy'];
   protected readonly current = signal('Rooms');
   protected readonly wide = signal(true);
+  private readonly drawer = viewChild.required<PctDrawer>('menu');
 
   constructor() {
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       const query = matchMedia('(min-width: 64rem)');
-      const sync = () => this.wide.set(query.matches);
+      const sync = () => {
+        // Widening takes the drawer's content away: shut it first, while its button stands.
+        if (query.matches) this.drawer().close('api');
+        this.wide.set(query.matches);
+      };
       sync();
       query.addEventListener('change', sync);
       destroyRef.onDestroy(() => query.removeEventListener('change', sync));

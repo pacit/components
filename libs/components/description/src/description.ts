@@ -84,11 +84,8 @@ export class PctDescription {
    * them — markup the platform does not read as a term and its value. Said once, in dev mode.
    */
   private warnOnLoosePair(): void {
-    // Rendered, so it has a parent: the host stands in the template that declared it.
-    if (
-      (this.host.nativeElement.parentElement as HTMLElement).localName === 'dl'
-    )
-      return;
+    const above = this.host.nativeElement.parentElement;
+    if (above?.localName === 'dl') return;
     console.warn(
       `[pctDescription] A pair whose parent element is not a <dl>. A term and its value are read as a pair only inside a description list — axe counts a loose <dt> as a serious violation. Make the pair a direct child of <dl pctDescriptionList>.`,
     );

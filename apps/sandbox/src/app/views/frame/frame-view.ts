@@ -4,8 +4,11 @@ import {
   Component,
   computed,
   DestroyRef,
+  ElementRef,
   inject,
+  Injector,
   signal,
+  viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PctButton } from '@pacit/components/button';
@@ -78,11 +81,33 @@ export class FrameView {
   protected readonly heating = signal(true);
   protected readonly signedOut = signal(false);
 
+  private readonly drawer = viewChild.required<PctDrawer>('menu');
+  private readonly menuButton = viewChild('menuButton', {
+    read: ElementRef<HTMLElement>,
+  });
+  private readonly side = viewChild<ElementRef<HTMLElement>>('side');
+  private readonly injector = inject(Injector);
+
   constructor() {
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       const query = matchMedia(WIDE);
-      const sync = () => this.wide.set(query.matches);
+      const sync = () => {
+        // Widening: the drawer's content is about to go, so the drawer shuts first — an open
+        // panel with nothing in it and no button would stay — and gives the keyboard back to
+        // its button while the button still stands; the column then takes the navigation.
+        if (query.matches) this.drawer().close('api');
+        // Narrowing: the column is about to go with the focus in it, so the keyboard is
+        // handed to the button that now opens the navigation, once it stands.
+        const held = this.side()?.nativeElement.contains(
+          document.activeElement,
+        );
+        this.wide.set(query.matches);
+        if (held)
+          afterNextRender(() => this.menuButton()?.nativeElement.focus(), {
+            injector: this.injector,
+          });
+      };
       sync();
       query.addEventListener('change', sync);
       destroyRef.onDestroy(() => query.removeEventListener('change', sync));

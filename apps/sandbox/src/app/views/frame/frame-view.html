@@ -17,6 +17,7 @@
     <header pctTopbar data-testid="topbar">
       @if (!wide()) {
       <button
+        #menuButton
         pctButton
         pctTopbarStart
         variant="ghost"
@@ -45,7 +46,7 @@
 
     <div class="view__body">
       @if (wide()) {
-      <div class="view__side" data-testid="side">
+      <div #side class="view__side" data-testid="side">
         <ng-container [ngTemplateOutlet]="screensNav" />
       </div>
       }

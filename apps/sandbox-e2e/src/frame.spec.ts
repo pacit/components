@@ -82,13 +82,29 @@ test.describe('An application’s frame — topbar, nav, description list', () =
     test('Tab walks the bar in its reading order, then the navigation', async ({
       page,
     }) => {
+      // Wide, the bar's one control is its end: the title and the user's name are text.
       await page.getByTestId('sign-out').focus();
       await page.keyboard.press('Tab');
       await expect(page.getByTestId('link-rooms')).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(page.getByTestId('link-devices')).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(page.getByTestId('link-energy')).toBeFocused();
       await page.keyboard.press('Enter');
-      await expect(page.getByTestId('title')).toHaveText('Devices');
+      await expect(page.getByTestId('title')).toHaveText('Energy');
+      await expect(page.getByTestId('link-energy')).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+    });
+
+    test('a narrowing takes the column away and hands the keyboard to the menu button', async ({
+      page,
+    }) => {
+      await page.getByTestId('link-rooms').focus();
+      await page.setViewportSize({ width: 600, height: 900 });
+      await expect(page.getByTestId('side')).toHaveCount(0);
+      await expect(page.getByTestId('menu')).toBeFocused();
     });
 
     test('the bar holds the start, the title and the end on one row, the end at the end', async ({
@@ -211,6 +227,28 @@ test.describe('An application’s frame — topbar, nav, description list', () =
       await expect(page.getByTestId('title')).toHaveText('Energy');
       await expect(menu).toHaveAttribute('aria-expanded', 'false');
       await expect(menu).toBeFocused();
+    });
+
+    test('Tab walks the bar from its start to its end', async ({ page }) => {
+      await page.getByTestId('menu').focus();
+      await page.keyboard.press('Tab');
+      await expect(page.getByTestId('sign-out')).toBeFocused();
+    });
+
+    test('a widening with the drawer open shuts it before the column takes the navigation', async ({
+      page,
+    }) => {
+      const menu = page.getByTestId('menu');
+      await menu.click();
+      await page.getByTestId('link-rooms').focus();
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await expect(page.getByTestId('side').getByTestId('nav')).toBeVisible();
+      await expect(page.getByTestId('menu')).toHaveCount(0);
+      await expect(page.getByTestId('drawer')).not.toHaveAttribute(
+        'data-pct-open',
+        /.*/,
+      );
+      await expect(page.getByTestId('nav')).toHaveCount(1);
     });
 
     test('the start of the bar holds the button, before the title', async ({

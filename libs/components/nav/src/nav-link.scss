@@ -1,7 +1,8 @@
 /* A row as tall as a control, the icon and the name on it, the whole row the link's target.
    The mark of the current screen is three channels, so no one of them carries it alone: a
    tint, a bar at the start edge, and a weight — the weight and the bar survive forced colours,
-   where the tint does not. */
+   where the tint does not. `aria-current="false"` is the attribute saying no, and draws
+   nothing. */
 :host {
   display: flex;
   position: relative;
@@ -24,7 +25,7 @@
   outline-offset: -2px;
 }
 
-:host([aria-current]) {
+:host([aria-current]:not([aria-current='false'])) {
   background: var(--pct-nav-link-bg-current);
   color: var(--pct-nav-link-fg-current);
   font-weight: var(--pct-nav-link-font-weight-current);
@@ -32,7 +33,7 @@
 
 /* The bar: a logical inset, so it stands at the left in a left-to-right page and at the right
    in a right-to-left one off one rule. */
-:host([aria-current])::before {
+:host([aria-current]:not([aria-current='false']))::before {
   position: absolute;
   inset-block: var(--pct-nav-marker-inset);
   inset-inline-start: 0;
@@ -62,7 +63,7 @@
    dropped, and the bar takes the mode's highlight so the current screen keeps a shape. */
 @media (forced-colors: active) {
   :host,
-  :host([aria-current]) {
+  :host([aria-current]:not([aria-current='false'])) {
     color: LinkText;
   }
 
@@ -76,7 +77,7 @@
 
   /* A fill the mode would drop: the bar opts out of the adjustment and names the system
      colour itself, the one thing it may paint here. */
-  :host([aria-current])::before {
+  :host([aria-current]:not([aria-current='false']))::before {
     forced-color-adjust: none;
     background: Highlight;
   }

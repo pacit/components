@@ -160,7 +160,7 @@ libs/components/date/src/locale.ts 94.07 127(1) 8 0 0 0
 libs/components/datetime/src/datetime-field.ts 85.64 692(0) 112 0 4 10
 libs/components/datetime/src/datetime.ts 100.00 99(0) 0 0 0 0
 libs/components/datetime/src/halves.ts 91.67 33(0) 3 0 0 0
-libs/components/description/src/description.ts 90.91 10(0) 1 0 0 0
+libs/components/description/src/description.ts 91.67 11(0) 1 0 0 0
 libs/components/dialog/src/dialog.ts 79.03 98(1) 26 0 0 4
 libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 0 2
 libs/components/drawer/src/drawer.ts 79.19 118(0) 30 1 0 2
@@ -174,7 +174,7 @@ libs/components/icon/src/icon.ts 93.28 111(0) 7 0 1 2
 libs/components/menu/src/menu-item.ts 78.79 26(0) 4 2 1 1
 libs/components/menu/src/menu-trigger.ts 79.31 23(0) 6 0 0 2
 libs/components/menu/src/menu.ts 81.16 280(0) 56 1 8 3
-libs/components/nav/src/nav.ts 90.91 10(0) 1 0 0 0
+libs/components/nav/src/nav.ts 91.67 11(0) 1 0 0 0
 libs/components/pagination/src/pagination.ts 96.43 108(0) 4 0 0 4
 libs/components/popover/src/popover.ts 70.45 155(0) 50 2 13 3
 libs/components/progress/src/progress.ts 92.31 48(0) 4 0 0 2
@@ -235,5 +235,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 89.97 17861/19852
+TOTAL 89.97 17863/19854
 ```

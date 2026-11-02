@@ -1,18 +1,20 @@
 import { Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { PctIcon } from '@pacit/components/icon';
 import { PctNav, PctNavItem, PctNavLink } from '@pacit/components/nav';
 
 /** Links with icons: the icon is silent, the name is what the link is called. */
 @Component({
   selector: 'demo-nav-icons',
-  imports: [PctIcon, PctNav, PctNavItem, PctNavLink],
+  imports: [RouterLink, PctIcon, PctNav, PctNavItem, PctNavLink],
   template: `
-    <nav pctNav aria-label="Screens" style="inline-size: 220px">
+    <nav pctNav aria-label="Screens with icons" style="inline-size: 220px">
       @for (screen of screens; track screen) {
         <pct-nav-item>
           <a
             pctNavLink
-            [href]="'#' + screen"
+            routerLink="."
+            [fragment]="screen"
             [attr.aria-current]="current() === screen ? 'page' : null"
             (click)="current.set(screen)"
           >

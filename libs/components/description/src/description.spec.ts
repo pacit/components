@@ -118,4 +118,17 @@ describe('PctDescription — the shape that warns', () => {
     expect(warn.mock.calls[0][0]).toContain('[pctDescription]');
     expect(warn.mock.calls[0][0]).toContain('<dl pctDescriptionList>');
   });
+
+  it('a host standing in no element at all warns rather than throws', async () => {
+    const warn = warnings();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PctDescription);
+    (fixture.nativeElement as HTMLElement).remove();
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('[pctDescription]');
+  });
 });

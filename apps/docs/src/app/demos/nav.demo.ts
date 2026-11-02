@@ -1,7 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { PctNav, PctNavItem, PctNavLink } from '@pacit/components/nav';
 
-/** A navigation of three screens, the current one marked by aria-current. */
+/**
+ * A navigation of three screens, the current one marked by aria-current. The preview renders
+ * with no router, so a press only moves the mark; an application's links are `routerLink`.
+ */
 @Component({
   selector: 'demo-nav',
   imports: [PctNav, PctNavItem, PctNavLink],
@@ -13,7 +16,7 @@ import { PctNav, PctNavItem, PctNavLink } from '@pacit/components/nav';
             pctNavLink
             [href]="'#' + screen"
             [attr.aria-current]="current() === screen ? 'page' : null"
-            (click)="current.set(screen)"
+            (click)="$event.preventDefault(); current.set(screen)"
             >{{ screen }}</a
           >
         </pct-nav-item>

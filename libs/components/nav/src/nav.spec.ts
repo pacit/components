@@ -159,4 +159,17 @@ describe('PctNav — the shapes that warn', () => {
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toContain('[pct-nav-item]');
   });
+
+  it('a host standing in no element at all warns rather than throws', async () => {
+    const warn = warnings();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PctNavItem);
+    (fixture.nativeElement as HTMLElement).remove();
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('[pct-nav-item]');
+  });
 });
