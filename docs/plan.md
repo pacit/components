@@ -118,7 +118,7 @@ field (**1.4**) on 2026-10-12, as
 and the time panel's shape follow
 [0089](decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) of
 2026-10-08, the wheel first, and its runway was measured and written on 2026-10-14
-([0091](decisions/0091-the-rings-runway-is-the-cycle-three-times-in-the-tree.md)). Section 3 holds nothing since `0.2.0`. Section 4 holds five open
+([0091](decisions/0091-the-rings-runway-is-the-cycle-three-times-in-the-tree.md)). Section 3 holds nothing since `0.2.0`. Section 4 holds seven open
 findings, each held by a **binds at** rather than by anybody's mood.
 
 ## 1. Components
@@ -255,7 +255,8 @@ form exists and is a condition of entering a release. Forty-two cards are filled
     ([0110](decisions/0110-a-frame-is-three-parts-the-application-arranges.md)): the
     application moves the navigation into the drawer at its own width
   - three cards, `/frame` in three engines, wide and narrow, and the readers' walk of
-    READERS_WALK
+    2026-11-02: Orca and NVDA the landmark and the current screen, Orca the switch by its
+    term, VoiceOver the bar's button alone
 
 - [~] **1.11 — charts** in `@pacit/components/chart` — a scene and the marks it draws, on one
   core of pure functions and no dependency ([0099](decisions/0099-a-chart-is-scales-the-marks-share-and-a-ready-chart-is-a-recipe.md)–[0103](decisions/0103-a-chart-is-a-named-picture-and-its-cursor-is-the-platforms-range.md),
@@ -411,6 +412,15 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - the sentence that `[formField]` fills `min` and `max` went rather than wait for a case:
     Angular 22.2's `min()` and `max()` take numbers, and the rule a string bound would need is
     measured with the time field, which ships it with a case or not at all
+
+- [ ] **4.84 — the readers' log quotes the data table's Polish**
+  - `/datatable` formats its relative times with `locale="pl"` on purpose, and on 2026-11-02
+    NVDA read the frame of the scrolling table whole for the first time, a Polish relative time included,
+    so `docs/acr/at/nvda-firefox-windows.md` carries Polish the language gate counts. The log is
+    a verbatim record and is not edited; `tools/language.policy.json` excuses it under this task
+  - the fix is the view's: a locale that writes no Polish word — `de` or `fr`, whose relative
+    times are the third language a record may quote — and the entry leaves the register with it
+  - binds at: **the next readers' walk**, whose log is written by the view as it then stands
 
 - [ ] **4.81 — the warning line is not heard on the stop it appears**
   - the dispatched pass on `/field` (2026-10-08, run 37733848017, the first reading of 0087's

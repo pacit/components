@@ -259,7 +259,7 @@ test.describe('The pages', () => {
     const chips = bar.locator('.bar__chip');
     await expect(chips).toHaveCount(6);
     await expect(chips.first()).toContainText('Actions & navigation');
-    await expect(chips.first().locator('b')).toHaveText('5');
+    await expect(chips.first().locator('b')).toHaveText('6');
 
     const heights = await chips.evaluateAll((els) =>
       els.map((el) => el.getBoundingClientRect().height),
