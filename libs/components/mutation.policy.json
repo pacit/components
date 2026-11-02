@@ -124,6 +124,7 @@
     "libs/components/table/src/column-chooser.ts",
     "libs/components/table/src/data-table-columns.ts",
     "libs/components/table/src/data-table-details.ts",
+    "libs/components/table/src/data-table-editing.ts",
     "libs/components/table/src/data-table-filters.ts",
     "libs/components/table/src/data-table-grid.ts",
     "libs/components/table/src/data-table-groups.ts",

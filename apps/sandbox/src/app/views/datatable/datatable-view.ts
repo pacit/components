@@ -12,6 +12,7 @@ import { PctButton } from '@pacit/components/button';
 import { pctWarn } from '@pacit/components/core';
 import { PctField, PctText } from '@pacit/components/field';
 import { PctPagination } from '@pacit/components/pagination';
+import { PctSelect, type PctSelectOption } from '@pacit/components/select';
 import { PctSwitch } from '@pacit/components/switch';
 import {
   PctCellTemplate,
@@ -29,6 +30,9 @@ import {
   PctTableColumnChooser,
   PctTableColumnFilters,
   PctTableColumns,
+  PctEditorTemplate,
+  PctTableEditing,
+  type PctTableEdit,
   PctTableGrid,
   type PctTableGridCell,
   type PctTableLayout,
@@ -119,6 +123,17 @@ const DEVICES: readonly Device[] = [
     room: 'Living room',
   },
 ];
+
+/** An edit of a rule's name, room, energy or switch, as the table proposes it. */
+type RuleEdit = PctTableEdit<
+  Rule,
+  {
+    readonly name: string;
+    readonly room: string;
+    readonly energy: number | null;
+    readonly enabled: boolean;
+  }
+>;
 
 const dev = pctColumnsOf<Device>();
 
@@ -314,6 +329,9 @@ function serveBlock(
     PctTableColumns,
     PctTableColumnChooser,
     PctTableGrid,
+    PctTableEditing,
+    PctEditorTemplate,
+    PctSelect,
     PctPagination,
     FormField,
   ],
@@ -465,6 +483,52 @@ export class DatatableView {
       picked: this.gridPicked().length,
     }),
   );
+  /** The rules edited in place: the table proposes each edit, and these are its rows. */
+  protected readonly editColumns = col.of([
+    col.key('name', { header: 'Name' }),
+    col.key('room', { header: 'Room' }),
+    col.key('energy', {
+      header: 'Energy',
+      kind: { number: { unit: 'kWh', fractionDigits: 1 } },
+    }),
+    col.key('enabled', { header: 'Enabled', kind: 'boolean', sort: false }),
+  ]);
+  protected readonly editRules = signal<readonly Rule[]>(RULES.slice(0, 6));
+  protected readonly editWhole = signal(false);
+  protected readonly editCell = signal<{
+    readonly row: PctRowId;
+    readonly column: 'name' | 'room' | 'energy' | 'enabled';
+  } | null>(null);
+  protected readonly roomOptions: readonly PctSelectOption[] = ROOMS.map(
+    (room) => ({ value: room, label: room }),
+  );
+  private readonly lastEdit = signal<RuleEdit | null>(null);
+  protected readonly editText = computed(() => {
+    const edit = this.lastEdit();
+    return JSON.stringify({
+      editing: this.editCell(),
+      last:
+        edit === null
+          ? null
+          : { id: edit.id, cause: edit.cause, changes: edit.changes },
+    });
+  });
+
+  /** An edit the table proposed, applied: the rules are written anew with its values. */
+  protected applyEdit(edit: RuleEdit): void {
+    this.lastEdit.set(edit);
+    this.editRules.update((rules) =>
+      rules.map((rule) =>
+        rule.id === edit.id
+          ? edit.changes.reduce<Rule>(
+              (one, change) => ({ ...one, [change.column]: change.value }),
+              rule,
+            )
+          : rule,
+      ),
+    );
+  }
+
   /** The layout as an application keeps it: a string, read back as the model. */
   protected readonly savedLayout = signal('');
   protected saveLayout(): void {

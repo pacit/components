@@ -218,6 +218,7 @@ from what the browser really gets.
 ./table PctTableColumnChooser item
 ./table PctTableColumnParts options
 ./table PctTableColumnParts separator
+./table PctTableEditingParts editor
 ./table PctTableFilterParts filter
 ./table PctTableHeader icon
 ./table PctTableHeader toggle

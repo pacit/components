@@ -1,0 +1,23 @@
+/* A cell open in an editor: the editor covers the cell's padding, so the field stands where the
+   text stood, and an outline of the editor's colour says which cell is open. The outline is
+   inset, so a row's height and its neighbours stay as they were. */
+.pct-data-table__editor {
+  display: flex;
+  margin-block: calc(-1 * var(--pct-table-padding-y));
+  margin-inline: calc(-1 * var(--pct-table-padding-x));
+  padding: 2px;
+  outline: 2px solid var(--pct-table-editor-border);
+  outline-offset: -2px;
+}
+
+.pct-data-table__field {
+  flex: 1;
+  min-inline-size: 0;
+  inline-size: 100%;
+}
+
+@media (forced-colors: active) {
+  .pct-data-table__editor {
+    outline-color: Highlight;
+  }
+}

@@ -15,6 +15,9 @@
 } @if (layout(); as layout) {
 <!-- The columns' layout, made in this view: a header's menu and separator are drawn below. -->
 <ng-container [ngComponentOutlet]="layout.parts" />
+} @if (editing(); as editing) {
+<!-- The editing's parts, made in this view: a cell open draws their editor below. -->
+<ng-container [ngComponentOutlet]="editing.parts" />
 } @let lead = leadSticks(); @let sticks = lead.cells;
 <pct-table-frame
   [focusable]="!grid()"
@@ -387,7 +390,12 @@
           [attr.data-pct-pinned]="sticks[$index]?.pinned"
           [style.--_at.px]="sticks[$index]?.at"
         >
-          @if (cell.slot) {
+          @if (editorOf(row.id, cell.column.id); as editor) {
+          <ng-container
+            [ngTemplateOutlet]="editor"
+            [ngTemplateOutletContext]="{ $implicit: row.row, id: row.id, column: cell.column }"
+          />
+          } @else if (cell.slot) {
           <ng-container
             [ngTemplateOutlet]="cell.slot"
             [ngTemplateOutletContext]="{

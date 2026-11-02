@@ -10,6 +10,7 @@ export * from './data-table-remote';
 export * from './data-table-filters';
 export * from './data-table-columns';
 export * from './data-table-grid';
+export * from './data-table-editing';
 export * from './column-chooser';
 export * from './model/aggregate';
 export * from './model/columns';

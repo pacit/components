@@ -91,6 +91,7 @@ element in the tab order on its own.
 | `options`     | the data table's button that opens a column's menu                           |
 | `separator`   | the data table's handle that resizes a column                                |
 | `item`        | the data table's column chooser's row of a column                            |
+| `editor`      | the data table's cell open in an editor                                      |
 
 ## Theming
 

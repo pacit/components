@@ -409,6 +409,8 @@ export interface PctTexts {
   readonly tableMoveUp: string;
   /** Data table: the button of a column chooser that moves a column down its list. `{column}` stands for its header. */
   readonly tableMoveDown: string;
+  /** Data table: the name of a cell's editor. `{column}` stands for the column's header. */
+  readonly tableEdit: string;
 }
 
 /**
@@ -523,6 +525,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableHide: 'Hide column',
   tableMoveUp: 'Move {column} up',
   tableMoveDown: 'Move {column} down',
+  tableEdit: 'Edit {column}',
 };
 
 /**

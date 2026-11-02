@@ -197,6 +197,9 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
   /** The element in the grid that had the focus last, while the focus is in the grid. */
   private last: HTMLElement | null = null;
 
+  /** While the focus leaves an element, the page holds it for a moment: nothing is lost yet. */
+  private leaving = false;
+
   /**
    * The stop is to take the focus once its line is drawn: `scroll` when a key moved it there,
    * so its row is scrolled to; `stay` when the line it stood in went, so the focus waits on the
@@ -619,7 +622,11 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
     stop: HTMLTableCellElement | null,
   ): void {
     const active = document.activeElement;
-    if (this.last !== null && (active === null || active === document.body)) {
+    if (
+      this.last !== null &&
+      !this.leaving &&
+      (active === null || active === document.body)
+    ) {
       this.last = null;
       this.pending = { kind: 'stay', left: PATIENCE };
     }
@@ -784,6 +791,12 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
     const place = this.placeOf(cell, lines);
     const lone = this.lone(cell);
     if (target !== cell && target !== lone) this.editing = cell;
+    // The focus back on a cell stepped into, by a script or a click beside its controls: the
+    // cell is left, and the keys move the stop again.
+    else if (this.editing === cell) {
+      this.editing = null;
+      this.paint();
+    }
     if (
       this.place?.key !== lines.key(place.line) ||
       this.place?.column !== place.column
@@ -800,7 +813,9 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
       !(next !== null && this.editing.contains(next))
     ) {
       this.editing = null;
+      this.leaving = true;
       this.paint();
+      this.leaving = false;
     }
     // Out of the table — to the page, or to the host's own button or frame: the grid is left.
     if (next !== null && !this.own()?.contains(next)) this.last = null;

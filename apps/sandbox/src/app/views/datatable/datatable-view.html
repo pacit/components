@@ -466,6 +466,69 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Rules edited in place"
+  summary="Enter, F2 or a double press opens a cell; a letter or a digit opens it with what was typed. Enter commits and goes a row down, Tab to the next cell, Escape lets the draft go. The name and the energy are edited in fields of their kinds, the room in a select of the rooms, which commits on a pick. The table proposes, the page applies; Ctrl+Z asks the last edit back."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-editing"
+>
+  <div class="datatable__actions">
+    <pct-switch label="Edit a whole row" [(checked)]="editWhole" />
+    <button
+      pctButton
+      type="button"
+      size="sm"
+      variant="outline"
+      [disabled]="!editor.canUndo()"
+      (click)="editor.undo()"
+    >
+      Undo
+    </button>
+    <button
+      pctButton
+      type="button"
+      size="sm"
+      variant="outline"
+      [disabled]="!editor.canRedo()"
+      (click)="editor.redo()"
+    >
+      Redo
+    </button>
+  </div>
+  <pct-data-table
+    data-testid="table-editing"
+    caption="Rules"
+    locale="en"
+    [pctTableGrid]="editColumns"
+    [pctTableEditing]="editColumns"
+    #editor="pctTableEditing"
+    [editable]="['name', 'room', 'energy']"
+    [rowEdit]="editWhole()"
+    [(editing)]="editCell"
+    (edit)="applyEdit($event)"
+    [rows]="editRules()"
+    [columns]="editColumns"
+    [rowId]="byId"
+  >
+    <ng-template
+      [pctEditor]="editColumns"
+      pctEditorOf="room"
+      let-value="value"
+      let-commit="commit"
+    >
+      <pct-select
+        ariaLabel="Edit Room"
+        [options]="roomOptions"
+        [value]="value()"
+        (valueChange)="value.set($event ?? value()); commit()"
+      />
+    </ng-template>
+  </pct-data-table>
+  <p data-testid="editing-state">
+    <code>{{ editText() }}</code>
+  </p>
+</sbx-demo>
+
+<sbx-demo
   heading="Devices at a glance"
   summary="Striped rows numbered from 1, a faulty device's row in the danger tone, a state toned by its value, and a long name cut to one line with the whole name under the pointer. Every tone repeats a word the row says."
   [reqs]="['req-a11y-forced-colors']"
