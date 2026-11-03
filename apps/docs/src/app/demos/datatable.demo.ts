@@ -10,7 +10,7 @@ interface Device {
 
 const col = pctColumnsOf<Device>();
 
-/** A table built from data: three typed columns, sortable by a press on their headers. */
+/** A table built from data: typed columns, each sortable by a press on its header. */
 @Component({
   selector: 'demo-datatable',
   imports: [PctDataTable],

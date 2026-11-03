@@ -290,6 +290,77 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
           (m) => m.DatatableFilteredDemo,
         ),
     },
+    {
+      key: 'sorting',
+      load: () =>
+        import('./datatable.sorting.demo').then((m) => m.DatatableSortingDemo),
+    },
+    {
+      key: 'cells',
+      load: () =>
+        import('./datatable.cells.demo').then((m) => m.DatatableCellsDemo),
+    },
+    {
+      key: 'states',
+      load: () =>
+        import('./datatable.states.demo').then((m) => m.DatatableStatesDemo),
+    },
+    {
+      key: 'appearance',
+      load: () =>
+        import('./datatable.appearance.demo').then(
+          (m) => m.DatatableAppearanceDemo,
+        ),
+    },
+    {
+      key: 'groups',
+      load: () =>
+        import('./datatable.groups.demo').then((m) => m.DatatableGroupsDemo),
+    },
+    {
+      key: 'details',
+      load: () =>
+        import('./datatable.details.demo').then((m) => m.DatatableDetailsDemo),
+    },
+    {
+      key: 'selection',
+      load: () =>
+        import('./datatable.selection.demo').then(
+          (m) => m.DatatableSelectionDemo,
+        ),
+    },
+    {
+      key: 'column-filters',
+      load: () =>
+        import('./datatable.column-filters.demo').then(
+          (m) => m.DatatableColumnFiltersDemo,
+        ),
+    },
+    {
+      key: 'layout',
+      load: () =>
+        import('./datatable.layout.demo').then((m) => m.DatatableLayoutDemo),
+    },
+    {
+      key: 'grid',
+      load: () =>
+        import('./datatable.grid.demo').then((m) => m.DatatableGridDemo),
+    },
+    {
+      key: 'editing',
+      load: () =>
+        import('./datatable.editing.demo').then((m) => m.DatatableEditingDemo),
+    },
+    {
+      key: 'window',
+      load: () =>
+        import('./datatable.window.demo').then((m) => m.DatatableWindowDemo),
+    },
+    {
+      key: 'paged',
+      load: () =>
+        import('./datatable.paged.demo').then((m) => m.DatatablePagedDemo),
+    },
   ],
   topbar: [
     {
@@ -322,6 +393,15 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
     {
       key: 'sorted',
       load: () => import('./table.sorted.demo').then((m) => m.TableSortedDemo),
+    },
+    {
+      key: 'headers',
+      load: () =>
+        import('./table.headers.demo').then((m) => m.TableHeadersDemo),
+    },
+    {
+      key: 'frame',
+      load: () => import('./table.frame.demo').then((m) => m.TableFrameDemo),
     },
   ],
   breadcrumb: [
