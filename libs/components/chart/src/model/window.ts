@@ -8,7 +8,7 @@
  * A stretch of the horizontal axis, `from` before `to`: instants on a time axis, values on a
  * linear one.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctWindow {
   readonly from: number;
@@ -22,7 +22,7 @@ export interface PctWindow {
  *   (0.5, the middle, by default),
  * - `shift` — a pan, as a share of the new span; positive moves later.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctWindowChange {
   readonly factor?: number;
@@ -39,7 +39,7 @@ export interface PctWindowChange {
  * pctWindowTransform(window, { factor: 2, anchor: 0.25 }, limits, 120_000); // zoom in about the first quarter
  * pctWindowTransform(window, { shift: -0.1 }, limits, 120_000); // a tenth earlier
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctWindowTransform(
   window: PctWindow,
@@ -67,7 +67,7 @@ export function pctWindowTransform(
  * reached `before` moves with the clock to `now` and keeps its span; any other stays where the
  * reader left it.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctWindowFollow(
   window: PctWindow,
@@ -87,7 +87,7 @@ export function pctWindowFollow(
  * @example
  * pctIndicesIn(Float64Array.of(0, 10, 20, 30), { from: 12, to: 18 }); // [1, 3]
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctIndicesIn(
   xs: ArrayLike<number>,

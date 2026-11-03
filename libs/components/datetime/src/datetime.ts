@@ -41,14 +41,14 @@ import {
  * are: `…T13:05` and `…T13:05:00` compare equal, and the arithmetic keeps the shape it was
  * given.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctDateTime = string;
 
 /**
  * The two halves of a datetime — what the field's two texts hold.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctDateTimeParts {
   readonly day: PctDay;
@@ -78,7 +78,7 @@ function split(value: string): number {
  * instant as if it named a wall clock. A `Z`, an offset, a space and a lower-case `t` are all
  * refused here.
  *
- * @since next
+ * @since 0.3.0
  */
 export function isPctDateTime(value: unknown): value is PctDateTime {
   if (typeof value !== 'string') return false;
@@ -98,7 +98,7 @@ export function isPctDateTime(value: unknown): value is PctDateTime {
  * `isPctDateTime` would then refuse four calls away from the join that made it — the day and
  * the time are strings, so the compiler cannot stop `'01.12.2026'` arriving here.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctDateTime(day: PctDay, time: PctTimeOfDay): PctDateTime {
   if (!isPctDay(day) || !isPctTimeOfDay(time))
@@ -113,7 +113,7 @@ export function pctDateTime(day: PctDay, time: PctTimeOfDay): PctDateTime {
  * The two halves of a datetime, each in the shape it was written in. The caller has already
  * established that it is one.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctDateTimeParts(value: PctDateTime): PctDateTimeParts {
   const at = split(value);
@@ -143,7 +143,7 @@ function clockOf(time: PctTimeOfDay): {
  * the policy for the minute a switch skips and the hour it repeats; a form control has no
  * business choosing it.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctDateTimeAsUtc(value: PctDateTime): Date {
   const { day, time } = pctDateTimeParts(value);
@@ -168,7 +168,7 @@ export function pctDateTimeAsUtc(value: PctDateTime): Date {
  * **It is a span with a sign**, where the time's compare is not a ring either: `23:00` on one
  * day is before `01:00` on the next, because the day carries.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctCompareDateTimes(a: PctDateTime, b: PctDateTime): number {
   const left = pctDateTimeParts(a);
@@ -190,7 +190,7 @@ export function pctCompareDateTimes(a: PctDateTime, b: PctDateTime): number {
  * two days. So a reversed pair holds nothing, and the value comes back as it was given — which
  * is how the field treats such bounds, beside a dev-mode warning.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctClampDateTime(
   value: PctDateTime,
@@ -221,7 +221,7 @@ export function pctClampDateTime(
  *
  * The day's domain is the pair's, so a walk off either end of it throws the day's `RangeError`.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctAddDateTimeMinutes(
   value: PctDateTime,
@@ -260,7 +260,7 @@ export function pctAddDateTimeMinutes(
  * `…THH:mm` by default — the minute a wall clock shows until it ticks, never rounded up — or
  * `…THH:mm:ss` for a field that counts seconds.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctNowDateTime(
   now: Date = new Date(),

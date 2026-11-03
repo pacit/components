@@ -6,7 +6,7 @@ import type { PctAnyColumn } from './columns';
  * Read once per question rather than once per row: a table of a thousand rows asks the same
  * question a thousand times.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctQuestionWords(question: string): readonly string[] {
   // `\s` takes the no-break spaces a pasted value carries as well as the ones typed.
@@ -35,7 +35,7 @@ export function pctQuestionWords(question: string): readonly string[] {
  *
  * A question of no words is answered by every row.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctMatches<T>(
   row: T,
@@ -58,7 +58,7 @@ export function pctMatches<T>(
 /**
  * A piece of a cell's text, and whether a word of the question found it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTextPart {
   readonly text: string;
@@ -78,7 +78,7 @@ export interface PctTextPart {
  * @example
  * pctMatchParts('Kitchen lamp', ['kitch']); // [{ text: 'Kitch', match: true }, { text: 'en lamp', match: false }]
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctMatchParts(
   text: string,

@@ -98,7 +98,7 @@ const dropped = new Set<string>();
  * because `setAttribute` with a name from a list cannot be made to run a script, while a
  * string of SVG can ([0083](../../../../docs/decisions/0083-an-icon-source-answers-a-name-with-data-and-the-box-renders-it.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: '[pctSvgAttributes]',
@@ -108,7 +108,7 @@ export class PctSvgAttributes {
    * The attributes to paint, by name. A number is written as its text; an `undefined` is an
    * attribute left out.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly attributes = input.required<
     Readonly<Record<string, string | number | undefined>>
@@ -182,7 +182,7 @@ export class PctSvgAttributes {
  * ([`lesson-86`](../../../../docs/lessons.md#lesson-86), [`lesson-248`](../../../../docs/lessons.md#lesson-248)). The host is `display: contents`,
  * so the `<svg>` is sized by the icon's box as if it stood in it directly.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-svg-icon',
@@ -197,7 +197,7 @@ export class PctSvgIcon {
   /**
    * The drawing, or `null` for a sprite.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly data = input<PctSvgIconData | null>(null);
 
@@ -206,7 +206,7 @@ export class PctSvgIcon {
    * sprite is same-origin by the platform's rule, so the address is a relative path or
    * `http(s):`, and one naming any other scheme is refused.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly href = input<string | null>(null);
 
@@ -245,13 +245,13 @@ export class PctSvgIcon {
 /**
  * What `svgIcons()` takes besides the drawings.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctSvgIconsOptions {
   /**
    * The library's roles under the ids of the drawings given — `{ close: 'x', check: 'check' }`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly roles?: PctIconRoles;
 }
@@ -264,7 +264,7 @@ function isNodes(icon: PctSvgIconInput): icon is readonly PctSvgNode[] {
 /**
  * One drawing in the shape the renderer takes, from any of the three a consumer may hold.
  *
- * @since next
+ * @since 0.3.0
  */
 export function svgIconData(icon: PctSvgIconInput): PctSvgIconData {
   if (isNodes(icon))
@@ -318,7 +318,7 @@ export function svgIconData(icon: PctSvgIconInput): PctSvgIconData {
  *   ),
  * );
  *
- * @since next
+ * @since 0.3.0
  */
 export function svgIcons(
   icons: Readonly<Record<string, PctSvgIconInput>>,
@@ -341,19 +341,19 @@ export function svgIcons(
 /**
  * What `svgSprite()` takes besides the address.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctSvgSpriteOptions {
   /**
    * The library's roles under the sprite's symbol ids.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly roles?: PctIconRoles;
   /**
    * The symbol an id names, when the sprite spells them differently — `(id) => \`i-${id}\``.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly symbol?: (id: string) => string;
 }
@@ -366,7 +366,7 @@ export interface PctSvgSpriteOptions {
  * sprite is same-origin by the platform's rule. Like a font, a sprite answers for EVERY id
  * and so stands last among the sources.
  *
- * @since next
+ * @since 0.3.0
  */
 export function svgSprite(
   url: string,

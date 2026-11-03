@@ -14,7 +14,7 @@ import { PctChartAlign } from './scene';
 /**
  * What charts in sync can share.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctChartShared = 'window' | 'cursor';
 
@@ -44,7 +44,7 @@ const same = (a: unknown, b: unknown): boolean =>
  *   <pct-chart ariaLabel="Heater" style="height: 80px"> … </pct-chart>
  * </div>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   // An attribute on any ancestor: the charts are wherever the layout puts them.
@@ -56,7 +56,7 @@ export class PctChartSync extends PctChartAlign {
    * What the charts share: the window, the cursor, or both (the default, and what an empty
    * attribute means).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly pctChartSync = input<
     readonly PctChartShared[],
@@ -66,14 +66,14 @@ export class PctChartSync extends PctChartAlign {
   /**
    * The charts inside, at any depth.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly charts = contentChildren(PctChart, { descendants: true });
 
   /**
    * The room of the widest value axes on each side of the charts inside.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly room = computed(() => {
     let left = 0;

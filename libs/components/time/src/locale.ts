@@ -24,14 +24,14 @@ import { isPctTimeOfDay, PctTimeOfDay, pctTimeOfDayParts } from './time';
  * `0` and `12`; `h23` and `h24` are twenty-four-hour clocks that write it `0` and `24`. The value
  * is `00:05` under all four — a cycle is how a time is written, never which time it is.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctHourCycle = 'h11' | 'h12' | 'h23' | 'h24';
 
 /**
  * Which part of the written time a position holds.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTimeField = 'hour' | 'minute' | 'second' | 'dayPeriod';
 
@@ -39,7 +39,7 @@ export type PctTimeField = 'hour' | 'minute' | 'second' | 'dayPeriod';
  * The letters a format hint is written with — one per field, from `PCT_TEXTS`, because they are
  * words of the application's language and not facts about the locale (0086 §3).
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTimeLetters {
   readonly hour: string;
@@ -50,7 +50,7 @@ export interface PctTimeLetters {
 /**
  * Everything about writing and reading a time in one language, built once per locale.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTimeFormat {
   /** The locale the platform resolved, which may not be the one asked for. */
@@ -100,7 +100,7 @@ const CACHE = new Map<string, PctTimeFormat>();
 /**
  * How a time is written and read in one language, built once and shared.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTimeFormat(locale: string): PctTimeFormat {
   const cached = CACHE.get(locale);

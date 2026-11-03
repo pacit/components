@@ -16,7 +16,7 @@ import { PctDataTable } from './data-table';
  * @example
  * <pct-data-table pctTablePage [rowOffset]="(page() - 1) * 20" [rowTotal]="total()" [clientSort]="false" [clientFilter]="false" [(sort)]="sort" [rows]="rows()" [columns]="columns" [rowId]="byId" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'pct-data-table[pctTablePage]',
@@ -26,14 +26,14 @@ export class PctTablePage {
   /**
    * How many rows stand before the page's first.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly rowOffset = input(0, { transform: numberAttribute });
 
   /**
    * How many rows there are in all, the page's among them.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly rowTotal = input.required<number, unknown>({
     transform: numberAttribute,

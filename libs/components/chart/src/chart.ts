@@ -95,7 +95,7 @@ import {
  *   <pct-line [data]="humidity" x="at" y="value" name="Humidity" unit="%" />
  * </pct-chart>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector -- an element beside the marks: it configures the scene, draws nothing and holds no content, so a component's template and sheet would be empty
@@ -105,25 +105,25 @@ export class PctAxis {
   /**
    * The unit whose axis this configures, as the series write it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input.required<string>();
   /**
    * A lower end kept whatever the data say.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly floor = input<number | undefined>(undefined);
   /**
    * An upper end kept whatever the data say.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ceiling = input<number | undefined>(undefined);
   /**
    * Zero stays in the domain.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly includeZero = input(false, { transform: booleanAttribute });
   /**
@@ -132,7 +132,7 @@ export class PctAxis {
    * each. A value at or below zero has no logarithm: it is a gap on such an axis, reported in
    * development ([0105](../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly scale = input<'linear' | 'log'>('linear');
 }
@@ -140,7 +140,7 @@ export class PctAxis {
 /**
  * A value axis as the scene lays it out: what a legend or a custom axis reads off `axes()`.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctAxisLayout {
   readonly unit: string;
@@ -179,7 +179,7 @@ interface PctXTick {
  * every series shown there. What the tooltip draws and the cursor's range says, and what a
  * legend of the application's own reads off `reading()`.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctChartReading {
   /** The cursor's position on the horizontal axis. */
@@ -195,7 +195,7 @@ export interface PctChartReading {
 /**
  * One series' value under the cursor.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctChartReadingRow {
   readonly id: string;
@@ -222,7 +222,7 @@ export interface PctChartReadingRow {
 /**
  * The context of a `pctChartTooltip` template: the reading under the cursor.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctChartTooltipContext {
   readonly $implicit: PctChartReading;
@@ -237,7 +237,7 @@ export interface PctChartTooltipContext {
  *   <ng-template pctChartTooltip let-reading>{{ reading.text }} · {{ reading.rows[0].text }}</ng-template>
  * </pct-chart>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   // The template is the slot: a tooltip of the consumer's own, stamped by the scene.
@@ -247,14 +247,14 @@ export class PctChartTooltip {
   /**
    * The template the scene stamps.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly template = inject<TemplateRef<PctChartTooltipContext>>(TemplateRef);
 
   /**
    * Types the template's context for the compiler.
    *
-   * @since next
+   * @since 0.3.0
    */
   static ngTemplateContextGuard(
     directive: PctChartTooltip,
@@ -340,7 +340,7 @@ let measuring: CanvasRenderingContext2D | null | undefined;
  *   <pct-line [data]="heater" x="at" y="on" name="Heater" unit="boolean" curve="step" />
  * </pct-chart>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-chart',
@@ -360,27 +360,27 @@ export class PctChart extends PctChartScene {
    * takes as its caption. A picture with no name is a hole in the page: give this or
    * `ariaLabelledby`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabel = input('');
   /**
    * As `ariaLabel`, for a name that already stands on the page: a heading over the chart.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabelledby = input('');
   /**
    * What the picture shows, in a sentence or two — the trend, the range, what stands out. A
    * reader hears it after the name.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly description = input('');
   /**
    * What the horizontal axis holds: instants (`time`, milliseconds since the epoch) or plain
    * numbers (`linear`).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly x = input<'time' | 'linear' | 'band'>('time');
   override readonly xKind = this.x;
@@ -388,28 +388,28 @@ export class PctChart extends PctChartScene {
    * The unit of a `linear` horizontal axis: written at the axis's end and after the position
    * the cursor reads, as a value axis's unit is; `''` for none.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly xUnit = input('');
   /**
    * The categories of a `band` axis, in order: each a band the bars stand in, labelled by it.
    * A series on such an axis gives `x` as the category's index (its middle is `index + 0.5`).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly categories = input<readonly string[]>([]);
   /**
    * The calendar interval the bars of a time axis stand in — each bar a whole hour, day,
    * week, month or year of `timeZone`. A time axis without one holds no bars.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly interval = input<PctInterval | undefined>(undefined);
   /**
    * The zone whose wall clock the time axis reads: its ticks fall on its whole hours and
    * midnights. The runtime's own when unset — under SSR the server's, so pass it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly timeZone = input<string | undefined>(undefined);
 
@@ -418,7 +418,7 @@ export class PctChart extends PctChartScene {
    * values up the sides; `horizontal` lays it down the left side with the values along the
    * bottom — bars grow to the right, the cursor's line lies across, a drag up and down pans.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly orientation = input<'vertical' | 'horizontal'>('vertical');
 
@@ -428,20 +428,20 @@ export class PctChart extends PctChartScene {
   /**
    * Overrides the application's `LOCALE_ID` for the numbers and times the axes write.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly locale = input('');
   /**
    * Which value axes draw grid lines: the first, every one, or none.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly grid = input<'first' | 'all' | 'none'>('first');
   /**
    * The data are on their way: the chart shows a skeleton of its shape and tells a reader it
    * is busy.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly loading = input(false, { transform: booleanAttribute });
   /**
@@ -449,7 +449,7 @@ export class PctChart extends PctChartScene {
    * ([0101](../../../../docs/decisions/0101-the-window-the-cursor-and-the-selection-are-the-applications-models.md)).
    * A change of the data changes it not.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly window = model<PctWindow | null>(null);
   /**
@@ -457,14 +457,14 @@ export class PctChart extends PctChartScene {
    * `null` for the domain its data give it. The other axes follow it in pixels, so a zoom on
    * two axes keeps the series over one another where they were ([0105](../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly yWindow = model<PctWindow | null>(null);
   /**
    * The ids of the series not drawn. A hidden series keeps its colour and its axis, and adds
    * nothing to the axis's domain.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly hiddenSeries = model<readonly string[]>([]);
   /**
@@ -474,7 +474,7 @@ export class PctChart extends PctChartScene {
    * The pointer, the keys and a reader move it; a change of the window or of the data leaves it
    * where it is.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly cursor = model<number | null>(null);
   /**
@@ -482,7 +482,7 @@ export class PctChart extends PctChartScene {
    * second lets it go, as Enter and Space do at the cursor; the application sets it too
    * ([0101](../../../../docs/decisions/0101-the-window-the-cursor-and-the-selection-are-the-applications-models.md)).
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly selected = model<PctWindow | null>(null);
   /**
@@ -490,7 +490,7 @@ export class PctChart extends PctChartScene {
    * a tap places it and a finger held still drags it. `tap`: only a press or a tap places it.
    * `none`: no cursor at all and no tab stop — a picture alone.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly cursorMode = input<'hover' | 'tap' | 'none'>('hover');
   /**
@@ -498,7 +498,7 @@ export class PctChart extends PctChartScene {
    * `pctChartTooltip` template when there is one; `none` draws none, for a legend that shows
    * the reading instead.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly tooltip = input<'auto' | 'none'>('auto');
   /**
@@ -508,7 +508,7 @@ export class PctChart extends PctChartScene {
    * `yWindow`, and Shift with an arrow up or down pans it; `none` — it stays where the
    * application puts it, and a drag across the plot is the page's.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly zoom = input<'x' | 'xy' | 'none'>('x');
   /**
@@ -517,14 +517,14 @@ export class PctChart extends PctChartScene {
    * colours tell them apart, and the legend and the tooltip draw the pattern beside each name
    * either way ([0102](../../../../docs/decisions/0102-a-series-owns-its-colour-and-the-colour-is-never-its-only-channel.md)).
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly distinct = input<'color' | 'all'>('color');
   /**
    * Where the window returns on a double tap, the `0` key and the zoom buttons' last one: a
    * window, or `null` for all the data.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly defaultWindow = input<PctWindow | null>(null);
   /**
@@ -532,34 +532,34 @@ export class PctChart extends PctChartScene {
    * single-pointer twin of the pinch and the drag. Off, render `pct-chart-zoom` elsewhere, or
    * buttons of your own on `zoomBy`, `panBy` and `home` — removing them removes the twin.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly zoomButtons = input(true, { transform: booleanAttribute });
   /**
    * How far the window can go: it stops at a limit and keeps its span. The data's own span
    * when unset.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly limits = input<PctWindow | null>(null);
   /**
    * The narrowest window, in the axis's units: two minutes on a time axis, a millionth of the
    * data's span on a numeric one, when unset.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly minSpan = input<number | undefined>(undefined);
   /**
    * The window follows the present: while its end touches `now()`, it moves with the clock
    * every second and keeps its span. A window the reader moved back stays where it was put.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly follow = input(false, { transform: booleanAttribute });
   /**
    * The clock `follow` reads: `Date.now` unless a test or a replay gives another.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly now = input<() => number>(() => Date.now());
 
@@ -573,7 +573,7 @@ export class PctChart extends PctChartScene {
   /**
    * The marks inside the chart, in the order they are written.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly marks = contentChildren(PctMark, { descendants: true });
   private readonly axisConfigs = contentChildren(PctAxis, {
@@ -608,14 +608,14 @@ export class PctChart extends PctChartScene {
   /**
    * The locale the axes and the data table write in: `locale`, or the application's.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly effectiveLocale = computed(() => this.locale() || this.appLocale);
 
   /**
    * Every series the marks declare, in the order of the marks.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly series = computed<readonly PctSeriesSpec[]>(() =>
     this.marks().flatMap((mark) => mark.series()),
@@ -692,7 +692,7 @@ export class PctChart extends PctChartScene {
    * Where the value axis of each unit stands. A unit keeps its slot while a series of it
    * stays on the chart.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly slots = this.slotsState.asReadonly();
 
@@ -700,7 +700,7 @@ export class PctChart extends PctChartScene {
    * The span of every series' data, from the first reading to the last (or the end a step is
    * held to); `null` while there is none.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly dataSpan = computed<PctWindow | null>(() => {
     let from = Infinity;
@@ -749,7 +749,7 @@ export class PctChart extends PctChartScene {
   /**
    * See `PctChartScene.groupOf`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override groupOf(group: string): {
     readonly index: number;
@@ -788,7 +788,7 @@ export class PctChart extends PctChartScene {
   /**
    * See `PctChartScene.stackedOf`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override stackedOf(
     stack: string,
@@ -860,7 +860,7 @@ export class PctChart extends PctChartScene {
   /**
    * See `PctChartScene.stackNormalized`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override stackNormalized(stack: string): boolean {
     return this.normalizedStacks().has(stack);
@@ -869,7 +869,7 @@ export class PctChart extends PctChartScene {
   /**
    * See `PctChartScene.areaStackOf`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override areaStackOf(
     stack: string,
@@ -1031,7 +1031,7 @@ export class PctChart extends PctChartScene {
    * The room this chart's value axes take on each side of the plot, in pixels — what
    * `pctChartSync` reads to give charts on one time axis the same plot edges.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly axisRoom = computed(() => {
     if (this.horizontal()) {
@@ -1099,7 +1099,7 @@ export class PctChart extends PctChartScene {
   /**
    * The value axes as drawn.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly axes = computed<readonly PctAxisLayout[]>(() => {
     const { top, bottom } = this.rows();
@@ -1256,7 +1256,7 @@ export class PctChart extends PctChartScene {
    * plot itself in equal strips when no series has an axis (0104). Turned, the strips stand to
    * the right of the plot, side by side.
    *
-   * @since next
+   * @since 0.3.0
    */
   override laneFrame(name: string): PctNoteFrame | null {
     const names = this.lanes();
@@ -1474,7 +1474,7 @@ export class PctChart extends PctChartScene {
   /**
    * The reading under the cursor, `null` without one.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly reading = computed<PctChartReading | null>(() => {
     const x = this.cursor();
@@ -1693,7 +1693,7 @@ export class PctChart extends PctChartScene {
    * The value of a series at `x`, computed as the series is drawn: the reading that holds on
    * a step, the interpolation on a line, `null` in a gap.
    *
-   * @since next
+   * @since 0.3.0
    */
   valueAt(id: string, x: number): number | null {
     return this.markOf(id)?.valueAt(id, x) ?? null;
@@ -1702,7 +1702,7 @@ export class PctChart extends PctChartScene {
   /**
    * The mark that declares a series.
    *
-   * @since next
+   * @since 0.3.0
    */
   markOf(id: string): PctMark | undefined {
     return this.marks().find((m) => m.series().some((s) => s.id === id));
@@ -1711,7 +1711,7 @@ export class PctChart extends PctChartScene {
   /**
    * Where the scene put a note's box, by the box's id — `null` for a box no mark offered.
    *
-   * @since next
+   * @since 0.3.0
    */
   override placedNote(id: string): PctPlacedNote | null {
     return this.notePlacement().find((n) => n.id === id) ?? null;
@@ -1839,7 +1839,7 @@ export class PctChart extends PctChartScene {
    * Zooms the window by `factor` — 2 shows half as much — about `anchor`, a position on the
    * horizontal axis: the cursor when it is in the window, the middle otherwise.
    *
-   * @since next
+   * @since 0.3.0
    */
   zoomBy(factor: number, anchor?: number): void {
     const shown = this.shown();
@@ -1862,7 +1862,7 @@ export class PctChart extends PctChartScene {
   /**
    * Moves the window by `fraction` of its span: −0.1 a tenth earlier, 1 a whole window later.
    *
-   * @since next
+   * @since 0.3.0
    */
   panBy(fraction: number): void {
     this.move({ shift: fraction });
@@ -1871,7 +1871,7 @@ export class PctChart extends PctChartScene {
   /**
    * Returns the window to `defaultWindow`.
    *
-   * @since next
+   * @since 0.3.0
    */
   home(): void {
     this.window.set(this.defaultWindow());
@@ -2221,7 +2221,7 @@ export class PctChart extends PctChartScene {
   /**
    * A value written with its unit as the tooltip writes it; `null` is the gap's word.
    *
-   * @since next
+   * @since 0.3.0
    */
   override writeValue(value: number | null, unit: string): string {
     if (value === null) return this.texts().chartGap;
@@ -2234,7 +2234,7 @@ export class PctChart extends PctChartScene {
   /**
    * A position written as the axis writes it (`short`) or as the tooltip's title does (`full`).
    *
-   * @since next
+   * @since 0.3.0
    */
   override writePosition(x: number, form: 'short' | 'full'): string {
     if (this.x() === 'band')
@@ -2324,7 +2324,7 @@ export class PctChart extends PctChartScene {
   /**
    * A label's width: `measureText`, which matches the SVG's own width (0100, P3).
    *
-   * @since next
+   * @since 0.3.0
    */
   override measure(text: string): number {
     if (measuring === undefined) {

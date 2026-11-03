@@ -3,7 +3,7 @@
  * text box, and where it would rather stand. `auto` takes the first side with room, above
  * first.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctNoteBox {
   readonly id: string;
@@ -17,7 +17,7 @@ export interface PctNoteBox {
 /**
  * Where a note's box stands: its left and top in pixels, and the side of its point it took.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctPlacedNote {
   readonly id: string;
@@ -29,7 +29,7 @@ export interface PctPlacedNote {
 /**
  * The box of the plot the notes stay inside.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctNoteFrame {
   readonly left: number;
@@ -60,7 +60,7 @@ const overlaps = (a: Rect, b: Rect): boolean =>
  * pctPlaceNotes([{ id: 'a', x: 100, y: 80, width: 60, height: 20, prefer: 'auto' }], frame, 8);
  * // [{ id: 'a', left: 70, top: 52, side: 'above' }]
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctPlaceNotes(
   boxes: readonly PctNoteBox[],

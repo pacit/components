@@ -116,14 +116,14 @@ function secondsOf(time: PctTimeOfDay): number {
 /**
  * A predicate on a datetime: `true` refuses it — a slot already taken on a day.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctDateTimePredicate = (value: PctDateTime) => boolean;
 
 /**
  * Which edge of the field the panel lines its own up with.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctDatetimePanelAlign = 'start' | 'end';
 
@@ -167,7 +167,7 @@ export type PctDatetimePanelAlign = 'start' | 'end';
  * // Standalone: quarter hours inside a window of two days, in a locale of its own.
  * <pct-datetime [(value)]="startsAt" step="900" min="2026-12-01T09:00" max="2026-12-02T17:00" locale="en-GB" label="Starts" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-datetime',
@@ -203,7 +203,7 @@ export class PctDatetime
   /**
    * The chosen day and time, or `null` — which it is until both halves hold one.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly value = model<PctDateTime | null>(null);
 
@@ -212,49 +212,49 @@ export class PctDatetime
   /**
    * Blocks the control and greys it — the native `disabled` on both texts, so they leave the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   /**
    * Keeps the value: both texts take the native `readonly` and the button is disabled with them, while the field stays focusable.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly readonly = input(false, { transform: booleanAttribute });
 
   /**
    * The form's verdict; shown only once `touched`, so an empty form does not open red.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly invalid = input(false, { transform: booleanAttribute });
 
   /**
    * Whether the user has left the field once; with `invalid` it gates the error face.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly touched = input(false, { transform: booleanAttribute });
 
   /**
    * Marks the label with the required sign; with `[formField]` it follows the schema's `required()`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly required = input(false, { transform: booleanAttribute });
 
   /**
    * The form's validation errors; the first one's `message` takes the hint's place once the field is touched.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
   /**
    * A verdict without a veto (0087): shown after the error and before the hint once the field is touched, in the warning tone, with `aria-invalid` untouched. Left unbound, the control reads what `pctWarn()` wrote for its own `[formField]`; bound — `[]` included — the list given stands.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly warnings = input<
     readonly ValidationError.WithOptionalFieldTree[] | undefined
@@ -263,14 +263,14 @@ export class PctDatetime
   /**
    * The warnings drawn under the control — the input, or the form's (0087). The chrome reads this one list.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly fieldWarnings = pctFieldWarnings(this.warnings);
 
   /**
    * The native `name` — what a form submission calls the value. It names a hidden input that carries the value as the platform writes one, `YYYY-MM-DDTHH:mm`, and not either text, which are written in the user's language.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly name = input<string>('');
 
@@ -286,42 +286,42 @@ export class PctDatetime
    * is no window** — the platform's reading of a reversed pair on a datetime — so it is a
    * dev-mode warning and the field behaves as if it had no bounds (0090 §5).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly min = input(undefined, { transform: optionalDateTime });
 
   /**
    * The latest day and time — as `min`, a bound on the panel's walk and not a rewrite of what was typed.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly max = input(undefined, { transform: optionalDateTime });
 
   /**
    * The step in seconds — the time's, 60 by default. It decides the columns' rows, whether a seconds column exists and whether the value carries `:ss`, and nothing about typed text. **It counts from midnight on every day**, not from `min`: a bound off the step is moved inward onto it before the columns see it (0090 §5). A step the columns cannot list is refused with a dev-mode warning and read as 60.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly step = input(60, { transform: numberAttribute });
 
   /**
    * Days inside the bounds that cannot be picked — handed to the calendar as it is, so a day it refuses is refused whole, hours included.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly dateDisabled = input<PctDayPredicate | null>(null);
 
   /**
    * Slots inside the bounds that cannot be taken — a meeting room's bookings. The field closes it over the chosen day and asks it of every time on the step, in the columns' rows: an hour is refused when every time in it is. It never reaches the calendar; a day whose every slot it refuses is still a day the grid offers, and a consumer who wants that day greyed says so through `dateDisabled`. A typed value it refuses is kept, and the form's to refuse.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly datetimeDisabled = input<PctDateTimePredicate | null>(null);
 
   /**
    * Emitted when focus leaves the whole field — both texts, the button and the panel — and not when it moves between them; lets the form mark the field as touched.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly touch = output<void>();
 
@@ -330,14 +330,14 @@ export class PctDatetime
   /**
    * The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name. Each text is named by it and a word of its own.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly label = input<string>('');
 
   /**
    * A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly hint = input<string>('');
 
@@ -346,49 +346,49 @@ export class PctDatetime
    * `aria-label` on the tag, because the texts sit inside this template and an ARIA name on the
    * roleless host is ignored. Each text is named by it and a word of its own.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabel = input<string>('');
 
   /**
    * As `ariaLabel`, for a name that already stands somewhere on the page.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabelledby = input<string>('');
 
   /**
    * Overrides the application's `LOCALE_ID` for this field — the order of the two texts, the day's order and the clock all follow it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly locale = input<string>('');
 
   /**
    * Which day the calendar's week starts on, `1` (Monday) … `7` (Sunday). Absent, the locale decides.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly firstDayOfWeek = input(0, { transform: numberAttribute });
 
   /**
    * Whether the two format hints stand in the texts while they are empty (`dd.mm.yyyy` and `hh:mm`).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly showFormat = input(true, { transform: booleanAttribute });
 
   /**
    * Height 28 / 36 / 44 px — the axis every field shares; from `providePctConfig` by default (req-api-config).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**
    * Which edge of the field the panel lines up with.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly panelAlign = input<PctDatetimePanelAlign>('start');
 
@@ -407,7 +407,7 @@ export class PctDatetime
   /**
    * The id of the text that stands first — the one the label points at, whichever half the language writes first.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly controlId = `${this.uid}-control`;
   /** The id of the text that stands second. */
@@ -429,13 +429,13 @@ export class PctDatetime
   /**
    * `for`: the chrome's label points at the first text, so a press on it puts the caret there — and the chrome hands its label's id over as well (`setLabelledBy`), because each text is named by the label AND a word of its own.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly labelStrategy: PctLabelStrategy = 'for';
   /**
    * A click anywhere on the field places the caret — the control is typed into, and the panel is behind a button of its own.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly fieldCursor: PctFieldCursor = 'text';
 
@@ -502,7 +502,7 @@ export class PctDatetime
   /**
    * What the control knows and the form cannot (0070), one sentence at a time: the day's junk, then the time's, then a half left empty. The two halves' sentences are the date field's and the time field's own.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ownErrors = computed<readonly PctValidationError[]>(() => {
     if (this.disabled()) return [];
@@ -853,7 +853,7 @@ export class PctDatetime
   /**
    * The chrome hands over the ids of its hint and error, and both texts describe themselves by them.
    *
-   * @since next
+   * @since 0.3.0
    */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
@@ -862,7 +862,7 @@ export class PctDatetime
   /**
    * The chrome hands over the id of its label, and each text is named by it and a word of its own.
    *
-   * @since next
+   * @since 0.3.0
    */
   setLabelledBy(id: string | null): void {
     this.fieldLabelledBy.set(id);
@@ -871,7 +871,7 @@ export class PctDatetime
   /**
    * Called by signal forms (`focusBoundControl()`, for instance), and by the chrome: the text that stands first.
    *
-   * @since next
+   * @since 0.3.0
    */
   focus(options?: FocusOptions): void {
     this.firstControl()?.focus(options);
@@ -884,7 +884,7 @@ export class PctDatetime
    * set it before it calls this
    * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
-   * @since next
+   * @since 0.3.0
    */
   reset(): void {
     // The halves are split from the value the field holds, as a value from outside is, and
@@ -1186,7 +1186,7 @@ export class PctDatetime
  * returns one — the two shapes Angular's own `min()` takes. One that is not a datetime,
  * `undefined` among them, is no bound, as it is on the field's input.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctDateTimeBound<
   TValue,
@@ -1200,7 +1200,7 @@ export type PctDateTimeBound<
  * native element's reading on a datetime (0090, A8). Each carries the bound it broke, as the
  * bound was written.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctDateTimeBoundError =
   | {
@@ -1218,7 +1218,7 @@ export type PctDateTimeBoundError =
  * The bounds of `pctDateTimeBounds`, and the sentence its errors carry — one for both, or one
  * written from the error, which holds the bound.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctDateTimeBoundsConfig<
   TValue,
@@ -1315,7 +1315,7 @@ function dateTimeBound<TValue, TPathKind extends PathKind>(
  *   });
  * });
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctDateTimeBounds<
   TValue extends PctDateTime | null,

@@ -8,7 +8,7 @@ import { pctHermite, pctMonotoneTangents } from './monotone';
  * - `step-before` — the next reading already holds since the previous one,
  * - `step-middle` — each reading holds halfway to its neighbours.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctCurve =
   'linear' | 'step' | 'step-before' | 'step-middle' | 'monotone';
@@ -17,7 +17,7 @@ export type PctCurve =
  * The index of the last reading at or before `x`, or `-1` before the first. A binary search:
  * the columns are ordered (0099).
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctIndexAt(columns: PctColumns, x: number): number {
   const { xs, length } = columns;
@@ -45,7 +45,7 @@ const valueOf = (y: number): number | null => (Number.isNaN(y) ? null : y);
  * @example
  * pctValueAt(columns, at, 'step', Date.now());
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctValueAt(
   columns: PctColumns,

@@ -22,7 +22,7 @@ const GAP = 4;
  * <pct-span [from]="night" [to]="morning" label="Night tariff" />
  * <pct-span axis="y" [from]="20" [to]="22" unit="°C" label="Comfort" color="2" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-span',
@@ -34,25 +34,25 @@ export class PctSpan extends PctAnnotation {
   /**
    * Where the band starts: a position on the x axis, or a value of `unit` when `axis` is `y`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly from = input.required<number>();
   /**
    * Where the band ends.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly to = input.required<number>();
   /**
    * The axis the band spans: `x`, between two positions, or `y`, between two values of `unit`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly axis = input<'x' | 'y'>('x');
   /**
    * The unit whose axis `from` and `to` are read on when `axis` is `y`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input('');
 
@@ -103,7 +103,7 @@ export class PctSpan extends PctAnnotation {
   /**
    * The name and the two ends, written as values or as positions.
    *
-   * @since next
+   * @since 0.3.0
    */
   override describe(): string {
     const [from, to] =

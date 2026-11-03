@@ -18,7 +18,7 @@ import type { PctWindow } from './window';
 /**
  * A calendar unit a time axis steps by.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTimeUnit =
   'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year';
@@ -26,7 +26,7 @@ export type PctTimeUnit =
 /**
  * A step between two ticks of a time axis: `count` of `unit`.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTimeStep {
   readonly unit: PctTimeUnit;
@@ -67,7 +67,7 @@ const STEPS: readonly PctTimeStep[] = [
  * @example
  * pctTimeStep(86_400_000, 700); // { unit: 'hour', count: 3 }
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTimeStep(
   span: number,
@@ -91,14 +91,14 @@ export function pctTimeStep(
  * label is the time, except at midnight, where it is the date; from a day on it is the date;
  * a month's step writes the month, and the year where the month is January.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTimeLabel = 'time' | 'date' | 'month' | 'year';
 
 /**
  * A tick of a time axis.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTimeTick {
   readonly at: PctInstant;
@@ -163,7 +163,7 @@ function clockOfLocal(value: number): PctWallClock {
  * pctTimeTicks({ from, to }, { unit: 'hour', count: 6 }, 'Europe/Warsaw');
  * // 00:00, 06:00, 12:00, 18:00 of each day, also on the day of twenty-five hours
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTimeTicks(
   window: PctWindow,
@@ -280,7 +280,7 @@ const formats = new Map<string, Intl.DateTimeFormat>();
  * @example
  * pctTimeTickText(tick, { unit: 'hour', count: 3 }, 'pl', 'Europe/Warsaw'); // '15:00'
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTimeTickText(
   tick: PctTimeTick,

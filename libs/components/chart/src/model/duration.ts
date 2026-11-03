@@ -36,7 +36,7 @@ const DurationFormat = (
  * parts as `2 h 15 min`. The length is rounded to whole seconds, and a negative one is
  * written as its length.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctWriteDuration(ms: number, locale: string): string {
   // Whole seconds: the tooltip's words have no room for milliseconds.

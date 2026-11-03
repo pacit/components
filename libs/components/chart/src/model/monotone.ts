@@ -7,7 +7,7 @@
  * one-sided slope corrected by the neighbour's tangent, which keeps the slope's sign because the
  * neighbour's tangent is at most twice the slope.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctMonotoneTangents(
   xs: ArrayLike<number>,
@@ -47,7 +47,7 @@ function endTangent(s: number, next: number): number {
  * The value of the cubic between (`x0`, `y0`) and (`x1`, `y1`) with the tangents `m0` and `m1`
  * at `x`: the same curve the path draws between two readings.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctHermite(
   x0: number,

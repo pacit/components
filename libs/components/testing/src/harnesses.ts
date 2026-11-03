@@ -114,7 +114,7 @@ export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
 /**
  * `pct-card` — `PctCard`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctCardHarness extends PctHarness<
   | 'header'
@@ -146,7 +146,7 @@ export class PctCardHarness extends PctHarness<
 /**
  * `[pctCardTitle]` — `PctCardTitle`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctCardTitleHarness extends PctHarness<never> {
   static override hostSelector = '[pctCardTitle]';
@@ -156,7 +156,7 @@ export class PctCardTitleHarness extends PctHarness<never> {
 /**
  * `[pctCardSubtitle]` — `PctCardSubtitle`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctCardSubtitleHarness extends PctHarness<never> {
   static override hostSelector = '[pctCardSubtitle]';
@@ -166,7 +166,7 @@ export class PctCardSubtitleHarness extends PctHarness<never> {
 /**
  * `a[pctCardLink]` — `PctCardLink`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctCardLinkHarness extends PctHarness<never> {
   static override hostSelector = 'a[pctCardLink]';
@@ -176,7 +176,7 @@ export class PctCardLinkHarness extends PctHarness<never> {
 /**
  * `[pctCardControl]` — `PctCardControl`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctCardControlHarness extends PctHarness<never> {
   static override hostSelector = '[pctCardControl]';
@@ -188,7 +188,7 @@ export class PctCardControlHarness extends PctHarness<never> {
 /**
  * `header[pctTopbar]` — `PctTopbar`: the start, the title's region and the end.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTopbarHarness extends PctHarness<'start' | 'heading' | 'end'> {
   static override hostSelector = 'header[pctTopbar]';
@@ -198,7 +198,7 @@ export class PctTopbarHarness extends PctHarness<'start' | 'heading' | 'end'> {
 /**
  * `[pctTopbarTitle]` — `PctTopbarTitle`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTopbarTitleHarness extends PctHarness<never> {
   static override hostSelector = '[pctTopbarTitle]';
@@ -210,7 +210,7 @@ export class PctTopbarTitleHarness extends PctHarness<never> {
 /**
  * `nav[pctNav]` — `PctNav`: the list inside the landmark.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctNavHarness extends PctHarness<'list'> {
   static override hostSelector = 'nav[pctNav]';
@@ -220,7 +220,7 @@ export class PctNavHarness extends PctHarness<'list'> {
 /**
  * `pct-nav-item` — `PctNavItem`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctNavItemHarness extends PctHarness<never> {
   static override hostSelector = 'pct-nav-item';
@@ -230,7 +230,7 @@ export class PctNavItemHarness extends PctHarness<never> {
 /**
  * `a[pctNavLink]` — `PctNavLink`: the icon and the name.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctNavLinkHarness extends PctHarness<'icon' | 'label'> {
   static override hostSelector = 'a[pctNavLink]';
@@ -242,7 +242,7 @@ export class PctNavLinkHarness extends PctHarness<'icon' | 'label'> {
 /**
  * `dl[pctDescriptionList]` — `PctDescriptionList`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctDescriptionListHarness extends PctHarness<never> {
   static override hostSelector = 'dl[pctDescriptionList]';
@@ -252,7 +252,7 @@ export class PctDescriptionListHarness extends PctHarness<never> {
 /**
  * `div[pctDescription]` — `PctDescription`: the term, the value and the control.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctDescriptionHarness extends PctHarness<
   'term' | 'value' | 'control'
@@ -267,7 +267,7 @@ export class PctDescriptionHarness extends PctHarness<
  * `pct-chart` — `PctChart`: the plot, its two layers, the grid, the value axes' units and the
  * message of an empty chart.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctChartHarness extends PctHarness<
   | 'axis'
@@ -301,7 +301,7 @@ export class PctChartHarness extends PctHarness<
 /**
  * `pct-chart-zoom` — `PctChartZoom`: the five buttons of a chart's window.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctChartZoomHarness extends PctHarness<'zoom'> {
   static override hostSelector = 'pct-chart-zoom';
@@ -312,7 +312,7 @@ export class PctChartZoomHarness extends PctHarness<'zoom'> {
  * `pct-line` — `PctLine`. Its drawing is stamped into the chart's data layer, so its parts are
  * found in the document rather than under its own element.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctLineHarness extends PctHarness<'area' | 'series' | 'swatch'> {
   static override hostSelector = 'pct-line';
@@ -323,7 +323,7 @@ export class PctLineHarness extends PctHarness<'area' | 'series' | 'swatch'> {
  * `pct-bars` — `PctBars`. Its bars and labels are stamped into the chart's data layer, so its
  * parts are found in the document rather than under its own element.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctBarsHarness extends PctHarness<'bar' | 'label' | 'swatch'> {
   static override hostSelector = 'pct-bars';
@@ -334,7 +334,7 @@ export class PctBarsHarness extends PctHarness<'bar' | 'label' | 'swatch'> {
  * `pct-points` — `PctPoints`. Its points are stamped into the chart's data layer, so its parts
  * are found in the document rather than under its own element.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctPointsHarness extends PctHarness<
   'points' | 'point' | 'swatch'
@@ -346,7 +346,7 @@ export class PctPointsHarness extends PctHarness<
 /**
  * `pct-chart-legend` — `PctChartLegend`: the list of a chart's series, a toggle per entry.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctChartLegendHarness extends PctHarness<
   'item' | 'remove' | 'toggle'
@@ -359,7 +359,7 @@ export class PctChartLegendHarness extends PctHarness<
  * `pct-reference` — `PctReference`: a line across the plot at a value or a position. Its
  * drawing is stamped into the chart's data layer, so its parts are found in the document.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctReferenceHarness extends PctHarness<'reference' | 'swatch'> {
   static override hostSelector = 'pct-reference';
@@ -370,7 +370,7 @@ export class PctReferenceHarness extends PctHarness<'reference' | 'swatch'> {
  * `pct-span` — `PctSpan`: a band across the plot between two values or two positions. Its
  * drawing is stamped into the chart's data layer, so its parts are found in the document.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctSpanHarness extends PctHarness<'span' | 'swatch'> {
   static override hostSelector = 'pct-span';
@@ -381,7 +381,7 @@ export class PctSpanHarness extends PctHarness<'span' | 'swatch'> {
  * `pct-note` — `PctNote`: a text on a point of the plot. Its drawing is stamped into the
  * chart's data layer, so its parts are found in the document.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctNoteHarness extends PctHarness<'note' | 'swatch'> {
   static override hostSelector = 'pct-note';
@@ -392,7 +392,7 @@ export class PctNoteHarness extends PctHarness<'note' | 'swatch'> {
  * `pct-now` — `PctNow`: the line of the present moment across the plot. Its drawing is
  * stamped into the chart's data layer, so its parts are found in the document.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctNowHarness extends PctHarness<'now' | 'swatch'> {
   static override hostSelector = 'pct-now';
@@ -403,7 +403,7 @@ export class PctNowHarness extends PctHarness<'now' | 'swatch'> {
  * `pct-band` — `PctBand`: a band of states along the horizontal axis, a block per segment.
  * Its drawing is stamped into the chart's data layer, so its parts are found in the document.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctBandHarness extends PctHarness<'band' | 'segment' | 'swatch'> {
   static override hostSelector = 'pct-band';
@@ -414,7 +414,7 @@ export class PctBandHarness extends PctHarness<'band' | 'segment' | 'swatch'> {
  * `pct-area` — `PctArea`: a series drawn as an area, alone from zero or on a stack. Its drawing
  * is stamped into the chart's data layer, so its parts are found in the document.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctAreaHarness extends PctHarness<'area' | 'series' | 'swatch'> {
   static override hostSelector = 'pct-area';
@@ -426,7 +426,7 @@ export class PctAreaHarness extends PctHarness<'area' | 'series' | 'swatch'> {
  * close. Its drawing is stamped into the chart's data layer, so its parts are found in the
  * document.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctRangeHarness extends PctHarness<
   'spread' | 'candle' | 'wick' | 'body' | 'swatch'
@@ -445,7 +445,7 @@ export class PctRangeHarness extends PctHarness<
  * `pct-box` — `PctBox`: a distribution per position as a box with whiskers and outliers. Its
  * drawing is stamped into the chart's data layer, so its parts are found in the document.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctBoxHarness extends PctHarness<
   'box' | 'median' | 'whisker' | 'outlier' | 'swatch'
@@ -562,7 +562,7 @@ export class PctDateHarness extends PctHarness<
 /**
  * `pct-datetime` — `PctDatetime`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctDatetimeHarness extends PctHarness<
   | 'date-control'
@@ -774,7 +774,7 @@ export class PctHeroHarness extends PctHarness<never> {
 /**
  * `pct-icon` — `PctIcon`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctIconHarness extends PctHarness<never> {
   static override hostSelector = 'pct-icon';
@@ -1109,7 +1109,7 @@ export class PctSwitchHarness extends PctHarness<
 /**
  * `table[pctTable]` — `PctTable`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTableHarness extends PctHarness<never> {
   static override hostSelector = 'table[pctTable]';
@@ -1119,7 +1119,7 @@ export class PctTableHarness extends PctHarness<never> {
 /**
  * `caption[pctCaption]` — `PctTableCaption`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTableCaptionHarness extends PctHarness<never> {
   static override hostSelector = 'caption[pctCaption]';
@@ -1129,7 +1129,7 @@ export class PctTableCaptionHarness extends PctHarness<never> {
 /**
  * `th[pctHeader]` — `PctTableHeader`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTableHeaderHarness extends PctHarness<'icon' | 'toggle'> {
   static override hostSelector = 'th[pctHeader]';
@@ -1139,7 +1139,7 @@ export class PctTableHeaderHarness extends PctHarness<'icon' | 'toggle'> {
 /**
  * `td[pctCell]` — `PctTableCell`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTableCellHarness extends PctHarness<never> {
   static override hostSelector = 'td[pctCell]';
@@ -1164,7 +1164,7 @@ const NOT_THE_LABEL =
  * cell by its row and its header's label, and a press on a header — the table's own, not those
  * of a data table nested in one of its cells, which a harness of its own reads.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctDataTableHarness extends PctHarness<
   | 'details'
@@ -1212,7 +1212,7 @@ export class PctDataTableHarness extends PctHarness<
    * The headers' labels, in the order the columns stand: the text a user sees, without the
    * place of a later sort key. The column of row numbers is headed `#`.
    *
-   * @since next
+   * @since 0.3.0
    */
   async headers(): Promise<string[]> {
     const heads = await this.locatorForAll(HEADS)();
@@ -1227,7 +1227,7 @@ export class PctDataTableHarness extends PctHarness<
    * disclosure's, empty, and the row's number when the table numbers its rows. An open row's
    * details are not a row.
    *
-   * @since next
+   * @since 0.3.0
    */
   async rows(): Promise<string[][]> {
     const rows = await this.locatorForAll(DATA_ROWS)();
@@ -1242,7 +1242,7 @@ export class PctDataTableHarness extends PctHarness<
    * The cell of the row at `row`, counted from 0 among the rows drawn, under the header whose
    * label is `header`; throws naming the labels or the count when there is none.
    *
-   * @since next
+   * @since 0.3.0
    */
   async cell(row: number, header: string): Promise<TestElement> {
     const labels = await this.headers();
@@ -1265,7 +1265,7 @@ export class PctDataTableHarness extends PctHarness<
    * Presses the sort button of the column headed `header`, with Shift held when `shift` is
    * set — the press that adds the column as a later key. Throws when the column does not sort.
    *
-   * @since next
+   * @since 0.3.0
    */
   async sortBy(
     header: string,
@@ -1290,7 +1290,7 @@ export class PctDataTableHarness extends PctHarness<
    * held when `shift` is set — the press that picks the rows between it and the last one
    * pressed. Throws when the table picks no rows.
    *
-   * @since next
+   * @since 0.3.0
    */
   async toggleSelection(
     row: number,
@@ -1314,7 +1314,7 @@ export class PctDataTableHarness extends PctHarness<
    * Presses the header's checkbox, which picks every row the filter left, or drops them when
    * all are picked. Throws when the table picks no rows, or one row at a time.
    *
-   * @since next
+   * @since 0.3.0
    */
   async selectAll(): Promise<void> {
     const input = await this.locatorForOptional(
@@ -1331,7 +1331,7 @@ export class PctDataTableHarness extends PctHarness<
   /**
    * The rows picked, as their places among the rows drawn, counted from 0.
    *
-   * @since next
+   * @since 0.3.0
    */
   async selectedRows(): Promise<number[]> {
     const rows = await this.locatorForAll(DATA_ROWS)();
@@ -1363,7 +1363,7 @@ export class PctDataTableHarness extends PctHarness<
 /**
  * `pct-table-column-chooser` — `PctTableColumnChooser`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTableColumnChooserHarness extends PctHarness<'item'> {
   static override hostSelector = 'pct-table-column-chooser';
@@ -1373,7 +1373,7 @@ export class PctTableColumnChooserHarness extends PctHarness<'item'> {
 /**
  * `pct-table-frame` — `PctTableFrame`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTableFrameHarness extends PctHarness<never> {
   static override hostSelector = 'pct-table-frame';
@@ -1419,7 +1419,7 @@ export class PctThemeHarness extends PctHarness<never> {
 /**
  * `pct-time` — `PctTime`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTimeHarness extends PctHarness<
   'control' | 'error' | 'hint' | 'label' | 'panel' | 'toggle' | 'warning'
@@ -1439,7 +1439,7 @@ export class PctTimeHarness extends PctHarness<
 /**
  * `pct-time-columns` — `PctTimeColumns`.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctTimeColumnsHarness extends PctHarness<'column' | 'option'> {
   static override hostSelector = 'pct-time-columns';

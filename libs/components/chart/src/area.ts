@@ -55,7 +55,7 @@ interface PctAreaColumns {
  * <pct-area [data]="rows" x="at" y="gas" name="Gas" unit="kW" stack="energy" />
  * <pct-area [data]="rows" x="at" y="solar" name="Solar" unit="kW" stack="energy" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-area',
@@ -67,51 +67,51 @@ export class PctArea<T> extends PctMark {
   /**
    * The rows, ordered by `x`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly data = input.required<readonly T[]>();
   /**
    * The position of a row: a key of the row or a function of it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly x = input.required<PctAccessor<NoInfer<T>, number>>();
   /**
    * The value of a row: a key of the row or a function of it; `null` is a gap.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly y = input.required<PctAccessor<NoInfer<T>, number | null>>();
   /**
    * What the legend, the tooltip and the table call the series.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly name = input.required<string>();
   /**
    * The series' key, stable across changes of data; the name when unset.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly id = input('');
   /**
    * The unit of the values, which decides the value axis. A normalized area's unit is `%`
    * whatever is set here, and the value in this unit is written beside its share.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input('');
   /**
    * How the readings are joined: `linear`, `monotone`, `step`, `step-before`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly curve = input<PctCurve>('linear');
   /**
    * The series' colour: a palette place from 1 to 8, or any CSS colour. Unset, the series
    * takes the next free place.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly color = input<
     number | string | undefined,
@@ -121,7 +121,7 @@ export class PctArea<T> extends PctMark {
    * The stack the area stands on: areas naming one stack stand on each other in the order of
    * their declaration. Unset, the area stands on zero alone.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly stack = input('');
   /**
@@ -129,13 +129,13 @@ export class PctArea<T> extends PctMark {
    * total, in percent, and the unit is `%`. Set on any member, it holds for the whole stack. An
    * area alone normalized is a hundred everywhere it has a value.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly normalize = input(false, { transform: booleanAttribute });
   /**
    * How far the last reading of a step holds: `now`, for data written when they change.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly end = input<number | null>(null);
 
@@ -178,7 +178,7 @@ export class PctArea<T> extends PctMark {
   /**
    * See `PctMark.stacked`: the named stack, or the series' own when it is normalized alone.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly stacked = computed(() =>
     this.stack() || this.normalize()
@@ -326,7 +326,7 @@ export class PctArea<T> extends PctMark {
    * See `PctMark.extent`: on a stack, the series' top and bottom in the window; alone, its
    * values.
    *
-   * @since next
+   * @since 0.3.0
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     if (id !== this.key()) return null;
@@ -353,7 +353,7 @@ export class PctArea<T> extends PctMark {
    * See `PctMark.valueAt`: the value read as the area is drawn; a normalized area's share, in
    * percent.
    *
-   * @since next
+   * @since 0.3.0
    */
   override valueAt(id: string, x: number): number | null {
     if (id !== this.key()) return null;
@@ -367,7 +367,7 @@ export class PctArea<T> extends PctMark {
   /**
    * See `PctMark.drawnAt`: the top of the series on its stack.
    *
-   * @since next
+   * @since 0.3.0
    */
   override drawnAt(id: string, x: number): number | null {
     const tops = this.tops();
@@ -380,7 +380,7 @@ export class PctArea<T> extends PctMark {
    * See `PctMark.readAt`: a normalized area reads its share and, after it in brackets, its
    * value in the unit the data came in.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readAt(id: string, x: number, bare = false): string | null {
     if (id !== this.key() || !this.normalized()) return null;
@@ -393,7 +393,7 @@ export class PctArea<T> extends PctMark {
   /**
    * See `PctMark.rowValueAt`: the value of the rows, whatever the stack makes of it.
    *
-   * @since next
+   * @since 0.3.0
    */
   override rowValueAt(id: string, x: number): number | null {
     return id === this.key()
@@ -404,7 +404,7 @@ export class PctArea<T> extends PctMark {
   /**
    * See `PctMark.readings`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readings(): PctColumns {
     return this.readingsOf();
@@ -412,7 +412,7 @@ export class PctArea<T> extends PctMark {
   /**
    * See `PctMark.pyramidOf`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override pyramidOf(): PctPyramid {
     return this.pyramid();

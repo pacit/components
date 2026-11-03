@@ -8,7 +8,7 @@
  * The keys of `T` whose value is a `V`: what a mark's `x` and `y` accept as a column name, so
  * a misspelt key or a column of the wrong type fails to compile.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctKey<T, V> = keyof {
   // `as` makes the mapping a filter of keys rather than a homomorphic map: over a tuple or an
@@ -20,7 +20,7 @@ export type PctKey<T, V> = keyof {
  * A coordinate read from a row: a column of the right type, or a function of the row and its
  * index.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctAccessor<T, V> = PctKey<T, V> | ((row: T, index: number) => V);
 
@@ -28,7 +28,7 @@ export type PctAccessor<T, V> = PctKey<T, V> | ((row: T, index: number) => V);
  * Readings in two columns, ordered along `xs`. A `NaN` in `ys` is a gap: nothing was read from
  * there until the next reading.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctColumns {
   readonly xs: Float64Array;
@@ -39,7 +39,7 @@ export interface PctColumns {
 /**
  * The function an accessor stands for.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctRead<T, V>(
   accessor: PctAccessor<T, V>,
@@ -59,7 +59,7 @@ export function pctRead<T, V>(
  * pctColumnsOf(readings, 'at', 'value');
  * pctColumnsOf(pairs, (p) => p[0], (p) => p[1]);
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctColumnsOf<T>(
   rows: readonly T[],
@@ -91,7 +91,7 @@ export function pctColumnsOf<T>(
  * columns are in order. A mark reports it in development rather than sorting: the rows must
  * come ordered (0099).
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctFirstUnordered(columns: PctColumns): number {
   const { xs, length } = columns;

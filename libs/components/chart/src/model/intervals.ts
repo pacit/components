@@ -10,7 +10,7 @@ import type { PctWindow } from './window';
  * A calendar interval a band of bars is cut into: each bar stands for one of them, from its
  * first moment in a zone to the next interval's.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctInterval = 'hour' | 'day' | 'week' | 'month' | 'year';
 
@@ -104,7 +104,7 @@ function nextClock(
  * @example
  * pctIntervalStart(Date.UTC(2026, 9, 25, 15, 30), 'day', 'Europe/Warsaw'); // 2026-10-24T22:00Z
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctIntervalStart(
   at: PctInstant,
@@ -128,7 +128,7 @@ export function pctIntervalStart(
  * year's first day — twenty-five hours on the day the clocks go back, twenty-three on the day
  * they go forward.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctIntervalNext(
   start: PctInstant,
@@ -148,7 +148,7 @@ export function pctIntervalNext(
  * @example
  * pctIntervals({ from, to }, 'day', 'Europe/Warsaw'); // one span per calendar day of Warsaw
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctIntervals(
   window: PctWindow,
@@ -174,7 +174,7 @@ export function pctIntervals(
  * and the day (`Mon 26`), the week's first date (`26/10`), the month (`Oct`) or the year, in
  * `locale` and `timeZone`.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctIntervalText(
   start: PctInstant,

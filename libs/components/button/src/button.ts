@@ -177,7 +177,7 @@ export class PctButton {
    * mode says so once when nothing names it
    * ([0085](../../../../docs/decisions/0085-an-icon-only-button-is-a-face-and-its-name-is-written-on-it.md)).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly iconOnly = input(false, { transform: booleanAttribute });
 

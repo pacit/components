@@ -26,7 +26,7 @@ interface PctLevel {
  * it holds is the decimation's business, and the one fact it shows is how many readings it was
  * built over, so a pyramid of other columns is told apart and not read.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctPyramid {
   readonly length: number;
@@ -40,7 +40,7 @@ const LEVELS = new WeakMap<PctPyramid, readonly PctLevel[]>();
  * as two more columns, once per change of data: a series that grows reading by reading pays it
  * on every reading (0100, P2d).
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctPyramid(columns: PctColumns): PctPyramid {
   const { ys, length } = columns;
@@ -100,7 +100,7 @@ function lowerBound(xs: Float64Array, length: number, x: number): number {
  * the logarithm of the readings rather than the readings: an axis that rescales on every frame
  * of a pan does not walk the series (0100). A gap is no reading.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctRangeExtent(
   columns: PctColumns,
@@ -156,7 +156,7 @@ export function pctRangeExtent(
  * @example
  * const drawn = pctDecimate(columns, window, plotWidth, pyramid);
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctDecimate(
   columns: PctColumns,

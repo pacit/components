@@ -18,14 +18,14 @@
  * `Date.prototype.getTime()` return. A number rather than a `Date`, because it is immutable, it
  * compares with `<`, and a chart of sixty thousand points holds sixty thousand of them.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctInstant = number;
 
 /**
  * The fields a wall clock shows. `month` counts from 1, `hour` from 0 to 23.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctWallClock {
   readonly year: number;
@@ -44,7 +44,7 @@ export interface PctWallClock {
  * - `earlier` — the earlier reading in both,
  * - `later` — the later reading in both.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctDisambiguation = 'compatible' | 'earlier' | 'later';
 
@@ -82,7 +82,7 @@ function clockOf(timeZone: string | undefined): Intl.DateTimeFormat {
  * pctWallClockOf(Date.UTC(2026, 9, 25, 0, 30), 'Europe/Warsaw');
  * // { year: 2026, month: 10, day: 25, hour: 2, minute: 30, second: 0, millisecond: 0 }
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctWallClockOf(
   at: PctInstant,
@@ -114,7 +114,7 @@ export function pctWallClockOf(
  *
  * Years from 1 on, as `pctWallClockOf` reads them.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctInstantOf(
   clock: Pick<PctWallClock, 'year' | 'month' | 'day'> & Partial<PctWallClock>,
@@ -165,7 +165,7 @@ function utc(
 /**
  * How an instant is written relative to another.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctRelativeOptions {
   /** The zone whose calendar counts the days, weeks, months and years. The runtime's own when unset. */
@@ -179,7 +179,7 @@ export interface PctRelativeOptions {
 /**
  * A formatter made once and called per value.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctRelativeFormat {
   /** `at` as seen from `now`. The caller owns `now`, so a list ticks on its own clock and a test on a fixed one. */
@@ -200,7 +200,7 @@ export interface PctRelativeFormat {
  * const when = pctRelativeFormat('en', { timeZone: 'Europe/Warsaw' });
  * when.format(due, Date.now()); // 'in 6 days', 'tomorrow', '3 hours ago'
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctRelativeFormat(
   locale: string,

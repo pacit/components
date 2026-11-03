@@ -34,7 +34,7 @@ import {
  * A value a line changes its colour at: from `at` up, the line is drawn in `color`, a palette
  * place from 1 to 8 or any CSS colour.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctThreshold {
   readonly at: number;
@@ -71,7 +71,7 @@ interface PctLineSegment {
  * @example
  * <pct-line [data]="readings" x="at" y="value" name="Supply air" unit="°C" curve="step" [end]="now" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-line',
@@ -83,53 +83,53 @@ export class PctLine<T> extends PctMark {
   /**
    * The rows, ordered by `x`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly data = input.required<readonly T[]>();
   /**
    * Where a row stands on the horizontal axis: a numeric column, or a function of the row.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly x = input.required<PctAccessor<NoInfer<T>, number>>();
   /**
    * A row's value: a numeric column that may be `null`, or a function of the row.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly y =
     input.required<PctAccessor<NoInfer<T>, number | null | undefined>>();
   /**
    * The series' name, which the axes, the legend and the data table write.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly name = input.required<string>();
   /**
    * The series' identity, which its colour, its axis and its hidden state follow. The name
    * when unset.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly id = input('');
   /**
    * The unit of the values, which decides the value axis: `°C`, `kWh`, `%`; `''` for a plain
    * number, `boolean` for a yes/no axis.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input('');
   /**
    * How a reading passes to the next: `linear`, or a step — `step` holds a reading until the
    * next one, which is right for data written when they change.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly curve = input<PctCurve>('linear');
   /**
    * The area between the line and zero is filled, and zero stays on the axis.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly area = input(false, { transform: booleanAttribute });
   /**
@@ -139,7 +139,7 @@ export class PctLine<T> extends PctMark {
    * A place written as text (`color="3"`) is the place; a number outside 1 to 8 is no place,
    * and the series takes the next free one.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly color = input<
     number | string | undefined,
@@ -149,7 +149,7 @@ export class PctLine<T> extends PctMark {
    * How far the last reading of a step holds: `now`, for data written when they change, whose
    * last value is still the value. Unset, a step ends at its last reading.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly end = input<number | null>(null);
   /**
@@ -161,7 +161,7 @@ export class PctLine<T> extends PctMark {
    * @example
    * [threshold]="[{ at: 24, color: 'tomato' }]"
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly threshold = input<readonly PctThreshold[]>([]);
 
@@ -329,7 +329,7 @@ export class PctLine<T> extends PctMark {
   /**
    * See `PctMark.extent`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     return id === this.key()
@@ -346,7 +346,7 @@ export class PctLine<T> extends PctMark {
   /**
    * See `PctMark.valueAt`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override valueAt(id: string, x: number): number | null {
     return id === this.key()
@@ -357,7 +357,7 @@ export class PctLine<T> extends PctMark {
   /**
    * See `PctMark.readings`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readings(): PctColumns {
     return this.readingsOf();
@@ -365,7 +365,7 @@ export class PctLine<T> extends PctMark {
   /**
    * See `PctMark.pyramid`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override pyramidOf(): PctPyramid {
     return this.pyramid();
@@ -385,7 +385,7 @@ export class PctLine<T> extends PctMark {
  * Reads a series' `color`: a whole number from 1 to 8, or its text, is a palette place; any
  * other text is a CSS colour; anything else is no colour, and the series takes a free place.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctSeriesColor(
   value: number | string | null | undefined,

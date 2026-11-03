@@ -75,7 +75,7 @@ const OUTLIERS_LISTED = 6;
  * @example
  * <pct-box [data]="days" x="at" values="readings" name="Latency" unit="ms" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-box',
@@ -87,20 +87,20 @@ export class PctBox<T> extends PctMark {
   /**
    * The rows, ordered by `x`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly data = input.required<readonly T[]>();
   /**
    * The position of a row: a key of the row or a function of it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly x = input.required<PctAccessor<NoInfer<T>, number>>();
   /**
    * The values of a row: a key of the row or a function of it, giving the numbers the box is
    * computed from; none, or none finite, is a gap.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly values =
     input.required<
@@ -109,26 +109,26 @@ export class PctBox<T> extends PctMark {
   /**
    * What the legend, the tooltip and the table call the series.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly name = input.required<string>();
   /**
    * The series' key, stable across changes of data; the name when unset.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly id = input('');
   /**
    * The unit of the values, which decides the value axis.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input('');
   /**
    * The series' colour: a palette place from 1 to 8, or any CSS colour. Unset, the series
    * takes the next free place.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly color = input<
     number | string | undefined,
@@ -283,7 +283,7 @@ export class PctBox<T> extends PctMark {
    * See `PctMark.extent`: from the lowest value to the highest in the window, the outliers
    * among them.
    *
-   * @since next
+   * @since 0.3.0
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     if (id !== this.key()) return null;
@@ -304,7 +304,7 @@ export class PctBox<T> extends PctMark {
   /**
    * See `PctMark.valueAt`: the median of the box at `x`, held until the next.
    *
-   * @since next
+   * @since 0.3.0
    */
   override valueAt(id: string, x: number): number | null {
     return id === this.key() ? this.read(this.medians(), x) : null;
@@ -313,7 +313,7 @@ export class PctBox<T> extends PctMark {
   /**
    * See `PctMark.notesAt`: the box's low, quartiles, high and outliers on lines of their own.
    *
-   * @since next
+   * @since 0.3.0
    */
   override notesAt(x: number): readonly PctMarkNote[] {
     if (this.hidden()) return [];
@@ -326,7 +326,7 @@ export class PctBox<T> extends PctMark {
   /**
    * See `PctMark.columns`: the low, the quartiles, the high and the outliers, after the median.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly columns = computed<readonly PctMarkColumn[]>(() => {
     if (this.hidden()) return [];
@@ -344,7 +344,7 @@ export class PctBox<T> extends PctMark {
    * See `PctMark.textAt`: the column's value at `x` with the unit; the outliers listed, the
    * first six and a count of the rest, or a gap where there are none.
    *
-   * @since next
+   * @since 0.3.0
    */
   override textAt(id: string, x: number): string | null {
     const key = this.key();
@@ -376,7 +376,7 @@ export class PctBox<T> extends PctMark {
   /**
    * See `PctMark.rowsIn`: a row per box in the window.
    *
-   * @since next
+   * @since 0.3.0
    */
   override rowsIn(id: string, window: PctWindow): readonly number[] | null {
     if (id !== this.key()) return null;
@@ -388,7 +388,7 @@ export class PctBox<T> extends PctMark {
   /**
    * See `PctMark.readings`: the medians, whose positions are the series' readings.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readings(): PctColumns {
     return this.medians();

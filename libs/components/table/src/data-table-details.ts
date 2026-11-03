@@ -23,7 +23,7 @@ import type { PctRowId } from './model/columns';
  *   <ng-template [pctDetails]="columns" let-rule>…</ng-template>
  * </pct-data-table>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'pct-data-table[pctTableDetails]',
@@ -33,14 +33,14 @@ export class PctTableDetails {
   /**
    * The ids of the rows whose details are open.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly details = model<readonly PctRowId[]>([]);
 
   /**
    * No row opens: the disclosure column goes, and the hidden columns stay hidden.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 

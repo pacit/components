@@ -3,7 +3,7 @@ import type { PctAnyColumn } from './columns';
 /**
  * The edge a column is pinned to: it stays there while the rest scroll along the inline axis.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctColumnPin = 'start' | 'end';
 
@@ -19,7 +19,7 @@ export type PctColumnPin = 'start' | 'end';
  * - within an edge, the columns stand in `order`'s order;
  * - a layout that hides every column hides none.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableLayout<Id extends string = string> {
   /** The columns' ids in the order they stand, the hidden ones among them. */
@@ -38,7 +38,7 @@ export interface PctTableLayout<Id extends string = string> {
 /**
  * A column as a layout places it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctPlacedColumn<T> {
   readonly column: PctAnyColumn<T>;
@@ -81,7 +81,7 @@ function fieldOf(value: unknown, key: string): unknown {
  * The narrowest and the widest a column may be made: its `minWidth`, or 120 px with none, and
  * 2000 px.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctColumnWidthBounds<T>(column: PctAnyColumn<T>): {
   readonly min: number;
@@ -96,7 +96,7 @@ export function pctColumnWidthBounds<T>(column: PctAnyColumn<T>): {
 /**
  * A width made to fit a column's bounds, rounded to a whole pixel.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctClampWidth<T>(
   column: PctAnyColumn<T>,
@@ -115,7 +115,7 @@ export function pctClampWidth<T>(
  * pctPlaceColumns(columns, { order: ['power', 'name'], pinned: { start: ['name'] } });
  * // name (pinned to the start), power, then the columns the order does not name
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctPlaceColumns<T>(
   columns: readonly PctAnyColumn<T>[],
@@ -179,7 +179,7 @@ function withOrder<Id extends string>(
  * them; a hidden column itself moves past the next one shown. At the end of its edge, the
  * layout as it was.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctMoveColumn<T, Id extends string>(
   columns: readonly PctAnyColumn<T>[],
@@ -209,7 +209,7 @@ export function pctMoveColumn<T, Id extends string>(
  * Whether the column can move one place along its edge: what a control that moves it is
  * disabled by.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctCanMoveColumn<T>(
   columns: readonly PctAnyColumn<T>[],
@@ -224,7 +224,7 @@ export function pctCanMoveColumn<T>(
 /**
  * The layout with the column hidden, or shown again.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctHideColumn<Id extends string>(
   layout: PctTableLayout<Id>,
@@ -240,7 +240,7 @@ export function pctHideColumn<Id extends string>(
 /**
  * The layout with the column pinned to an edge, or to none for `null`.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctPinColumn<Id extends string>(
   layout: PctTableLayout<Id>,
@@ -261,7 +261,7 @@ export function pctPinColumn<Id extends string>(
  * The layout with the column's width set, in pixels, or taken off for `null`, so the column
  * goes back to its own.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctResizeColumn<Id extends string>(
   layout: PctTableLayout<Id>,

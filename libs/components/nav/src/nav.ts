@@ -38,7 +38,7 @@ import {
  *   </pct-nav-item>
  * </nav>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'nav[pctNav]',
@@ -51,7 +51,7 @@ export class PctNav {}
 /**
  * One screen of the navigation: `role="listitem"`, the step `pct-crumb` is for the breadcrumb.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-nav-item',
@@ -99,7 +99,7 @@ export class PctNavItem {
  *   <pct-icon pctNavIcon name="home" />Rooms
  * </a>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'a[pctNavLink]',

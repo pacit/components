@@ -25,7 +25,7 @@ const DOT = 3;
  * @example
  * <pct-note [x]="opened" [y]="19.2" unit="°C" text="Window opened" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-note',
@@ -37,31 +37,31 @@ export class PctNote extends PctAnnotation {
   /**
    * The point's position on the x axis.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly x = input.required<number>();
   /**
    * The point's value, on the axis of `unit`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly y = input.required<number>();
   /**
    * The unit whose axis `y` is read on.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input('');
   /**
    * The note's text, written in its box; the `label` of the other annotations.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly text = input.required<string>();
   /**
    * The side of the point the box stands on: `above`, `below`, or the first with room.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly position = input<'above' | 'below' | 'auto'>('auto');
 
@@ -98,7 +98,7 @@ export class PctNote extends PctAnnotation {
   /**
    * The one box of this note, for the scene to place with the others.
    *
-   * @since next
+   * @since 0.3.0
    */
   override noteBoxes(): readonly PctNoteBox[] {
     const box = this.box();
@@ -132,7 +132,7 @@ export class PctNote extends PctAnnotation {
   /**
    * The text, then the position and the value in brackets.
    *
-   * @since next
+   * @since 0.3.0
    */
   override describe(): string {
     return this.sentence(

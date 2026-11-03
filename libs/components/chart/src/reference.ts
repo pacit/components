@@ -22,7 +22,7 @@ const GAP = 4;
  * <pct-reference [y]="21" unit="°C" label="Comfort" dash />
  * <pct-reference [x]="noon" label="Noon" color="3" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-reference',
@@ -34,26 +34,26 @@ export class PctReference extends PctAnnotation {
   /**
    * The value the line stands at, on the axis of `unit`; the line is drawn across the plot.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly y = input<number | null>(null);
   /**
    * The unit whose axis `y` is read on: `°C`, `kWh`, `''` for a plain number.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input('');
   /**
    * The position the line stands at, when it marks a moment or a category rather than a
    * value; `y` wins when both are set.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly x = input<number | null>(null);
   /**
    * The line is dashed.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly dash = input(false, { transform: booleanAttribute });
 
@@ -114,7 +114,7 @@ export class PctReference extends PctAnnotation {
   /**
    * The name and the value with its unit, or the position.
    *
-   * @since next
+   * @since 0.3.0
    */
   override describe(): string {
     const y = this.y();

@@ -7,7 +7,7 @@ import { pctQuestionWords } from './question';
  * A column's filter by its text: the rows whose cell's text holds every word, folded as the
  * quick filter folds it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTextFilter {
   readonly text: string;
@@ -16,7 +16,7 @@ export interface PctTextFilter {
 /**
  * A column's filter by a range of numbers, both ends included; an end that is `null` is open.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctRangeFilter {
   readonly from: number | null;
@@ -28,7 +28,7 @@ export interface PctRangeFilter {
  * start of `since` to the end of `until`, both days included; an end that is `null` is open.
  * Days rather than instants, so the state reads the same in a URL as on the screen.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctDayRangeFilter {
   readonly since: PctDay | null;
@@ -42,7 +42,7 @@ export interface PctDayRangeFilter {
  * one read back from a URL matches nothing: values a URL holds are strings, numbers and
  * booleans.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctValuesFilter<V> {
   readonly values: readonly V[];
@@ -53,7 +53,7 @@ export interface PctValuesFilter<V> {
  * column's `filterBy` decides by. What it holds is the application's, as long as it writes
  * to JSON — the table only keeps it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctOwnFilter {
   readonly own: unknown;
@@ -64,7 +64,7 @@ export interface PctOwnFilter {
  * days for a column of numbers, or one of the application's own. Which one a column offers
  * is {@link pctColumnFilterUse}'s to say.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctColumnFilter<V> =
   | PctTextFilter
@@ -78,7 +78,7 @@ export type PctColumnFilter<V> =
  * A filter of any column, whatever its value: the shapes the engine reads before the value's
  * type is known.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctAnyColumnFilter =
   | PctTextFilter
@@ -91,7 +91,7 @@ export type PctAnyColumnFilter =
  * The filters of a table's columns, by id, typed by the map of its columns: a model a URL
  * can hold.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctColumnFilters<M extends Record<string, unknown>> = {
   readonly [Id in keyof M & string]?: PctColumnFilter<M[Id]>;
@@ -101,7 +101,7 @@ export type PctColumnFilters<M extends Record<string, unknown>> = {
  * How a column is filtered: by its text, by values picked from those its rows hold, by a
  * range of numbers, by a range of days, by the application's own state, or not at all.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctColumnFilterUse = 'text' | 'values' | 'range' | 'days' | 'own';
 
@@ -110,7 +110,7 @@ export type PctColumnFilterUse = 'text' | 'values' | 'range' | 'days' | 'own';
  * it has a `filterBy`; else by its kind — a boolean by its values, a number by a range, an
  * instant by a range of days, the rest by the text. `null` when the column is not filtered.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctColumnFilterUse<T>(
   column: PctAnyColumn<T>,
@@ -156,7 +156,7 @@ function shapeOf(filter: unknown): PctColumnFilterUse | null {
  * filter, and a column holding one is not marked as filtered. A state that is none of the
  * five shapes is not empty: it lets nothing through (see {@link pctColumnFilterTest}).
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctFilterIsEmpty(filter: PctAnyColumnFilter): boolean {
   const shape = shapeOf(filter);
@@ -198,7 +198,7 @@ function startOf(day: PctDay | null, timeZone: string | undefined, after = 0) {
  * nothing through rather than everything, so a state that went wrong in a URL shows as no
  * rows, not as a filter that quietly stopped filtering.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctColumnFilterTest<T>(
   column: PctAnyColumn<T>,
@@ -254,7 +254,7 @@ export function pctColumnFilterTest<T>(
  * A value a column's rows hold, with the first row that holds it: the row the table writes
  * the value's text from.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctColumnValue<T> {
   readonly value: unknown;
@@ -265,7 +265,7 @@ export interface PctColumnValue<T> {
  * The values a column's rows hold, each once, in the order the rows first give them, for a
  * filter by values to offer; a cell with no value is `null`, and stands last.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctColumnValues<T>(
   column: PctAnyColumn<T>,

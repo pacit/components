@@ -38,7 +38,7 @@ interface PctDrawnPoint {
   /**
    * The index of the point in the ordered set.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly index: number;
   readonly x: number;
@@ -76,7 +76,7 @@ const SHAPE = 6;
  * **The cursor stands on a point.** The scene puts the cursor on the point nearest to the
  * pointer, and a press on a point emits `pick` with its row.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-points',
@@ -88,44 +88,44 @@ export class PctPoints<T> extends PctMark {
   /**
    * The rows, in any order.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly data = input.required<readonly T[]>();
   /**
    * Where a row stands on the horizontal axis: a key of the row or a function of it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly x = input.required<PctAccessor<NoInfer<T>, number>>();
   /**
    * A row's value; a value that is not a finite number is no point.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly y =
     input.required<PctAccessor<NoInfer<T>, number | null | undefined>>();
   /**
    * The series' name: the legend's entry, the tooltip's row, the reader's sentence.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly name = input.required<string>();
   /**
    * The series' id, where two series share a name; the name otherwise.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly id = input('');
   /**
    * The unit of `y`, which picks the axis; `''` is a plain number.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input('');
   /**
    * A palette place from 1 to 8, or a CSS colour of the consumer's own (0102).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly color = input<
     number | string | undefined,
@@ -134,7 +134,7 @@ export class PctPoints<T> extends PctMark {
   /**
    * A row's size, for bubbles: the mark's area grows with it. Unset, every point is `radius` wide.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly size = input<
     PctAccessor<NoInfer<T>, number | null | undefined> | undefined
@@ -142,37 +142,37 @@ export class PctPoints<T> extends PctMark {
   /**
    * The name of the size in the tooltip and the table; `chartSize` when empty.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly sizeName = input('');
   /**
    * The unit the size is written with.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly sizeUnit = input('');
   /**
    * The radius of a point in pixels, when `size` is not read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly radius = input(4);
   /**
    * The radius of the largest bubble in pixels, when `size` is read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly maxRadius = input(16);
   /**
    * Hollow marks: the series' colour as an outline, for points that overlap.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly hollow = input(false, { transform: booleanAttribute });
   /**
    * A press on a point: the series, the point's index in the ordered set, its row, its `x` and `y`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly pick = output<PctPick<T>>();
 
@@ -200,7 +200,7 @@ export class PctPoints<T> extends PctMark {
   );
   private readonly largest = computed(() => pctLargestSize(this.points()));
 
-  /** @since next */
+  /** @since 0.3.0 */
   override readonly series = computed<readonly PctSeriesSpec[]>(() => [
     {
       id: this.key(),
@@ -212,7 +212,7 @@ export class PctPoints<T> extends PctMark {
     },
   ]);
 
-  /** @since next */
+  /** @since 0.3.0 */
   override readonly span = computed<PctDomain | null>(() => {
     const { xs, length } = this.points();
     return length === 0 ? null : [xs[0], xs[length - 1]];
@@ -302,7 +302,7 @@ export class PctPoints<T> extends PctMark {
   /**
    * The lowest and highest value of the points in the window, for the axis's domain.
    *
-   * @since next
+   * @since 0.3.0
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     if (id !== this.key()) return null;
@@ -320,7 +320,7 @@ export class PctPoints<T> extends PctMark {
   /**
    * The value of the point AT `x` — the cursor stands on points — and none between them.
    *
-   * @since next
+   * @since 0.3.0
    */
   override valueAt(id: string, x: number): number | null {
     if (id !== this.key()) return null;
@@ -331,7 +331,7 @@ export class PctPoints<T> extends PctMark {
   /**
    * The points as columns — the sizes as the values when the size column is asked for.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readings(id: string): PctColumns {
     const points = this.points();
@@ -341,7 +341,7 @@ export class PctPoints<T> extends PctMark {
   /**
    * The size, as a column of words beside the series, while `size` is read and the series shown.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly columns = computed<readonly PctMarkColumn[]>(() =>
     this.sized() && !this.hidden()
@@ -357,7 +357,7 @@ export class PctPoints<T> extends PctMark {
   /**
    * The size of the point AT `x`, written with `sizeUnit`, for the size column of the table.
    *
-   * @since next
+   * @since 0.3.0
    */
   override textAt(id: string, x: number): string | null {
     if (id !== this.sizeKey() || !this.sized()) return null;
@@ -373,7 +373,7 @@ export class PctPoints<T> extends PctMark {
   /**
    * The size of the point under the cursor, as a row of the tooltip under the series' own.
    *
-   * @since next
+   * @since 0.3.0
    */
   override notesAt(x: number): readonly PctMarkNote[] {
     const text = this.textAt(this.sizeKey(), x);
@@ -390,7 +390,7 @@ export class PctPoints<T> extends PctMark {
   /**
    * The drawn point nearest to a pixel, and how far it stands.
    *
-   * @since next
+   * @since 0.3.0
    */
   override nearAt(
     x: number,
@@ -408,7 +408,7 @@ export class PctPoints<T> extends PctMark {
   /**
    * A press within a point's reach picks it: `pick` with its row, and `true`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override pickAt(id: string, x: number, y: number): boolean {
     if (id !== this.key()) return false;

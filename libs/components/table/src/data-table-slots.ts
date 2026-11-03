@@ -6,7 +6,7 @@ import type { PctSortDirection } from './model/order';
 /**
  * What a cell template is handed.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctCellContext<
   T,
@@ -41,7 +41,7 @@ export interface PctCellContext<
  *   <pct-switch [checked]="rule.enabled" (checkedChange)="toggle(rule, $event)" ariaLabel="Enabled" />
  * </ng-template>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[pctCell]',
@@ -54,7 +54,7 @@ export class PctCellTemplate<
   /**
    * The template itself.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly template =
     inject<TemplateRef<PctCellContext<T, M, Id>>>(TemplateRef);
@@ -62,21 +62,21 @@ export class PctCellTemplate<
   /**
    * The table's list of columns. It carries the types into the context and is never read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({ alias: 'pctCell' });
 
   /**
    * The id of the column the template draws, or a list of ids that share it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly pctCellOf = input.required<Id | readonly Id[]>();
 
   /**
    * What the table calls when its content query finds this template.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly read = pctReportOrphanSlot('pctCell');
 
@@ -100,7 +100,7 @@ export class PctCellTemplate<
 /**
  * What a header template is handed.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctHeaderCellContext<
   T,
@@ -121,7 +121,7 @@ export interface PctHeaderCellContext<
  * chevron and its keys, as a slot replaces what is inside and never the role
  * ([0027](../../../../docs/decisions/0027-a-slot-is-a-directive.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[pctHeaderCell]',
@@ -134,7 +134,7 @@ export class PctHeaderCellTemplate<
   /**
    * The template itself.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly template =
     inject<TemplateRef<PctHeaderCellContext<T, M, Id>>>(TemplateRef);
@@ -142,7 +142,7 @@ export class PctHeaderCellTemplate<
   /**
    * The table's list of columns, carrying the types into the context.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({
     alias: 'pctHeaderCell',
@@ -151,14 +151,14 @@ export class PctHeaderCellTemplate<
   /**
    * The id of the column whose header the template draws, or a list of ids.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly pctHeaderCellOf = input.required<Id | readonly Id[]>();
 
   /**
    * What the table calls when its content query finds this template.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly read = pctReportOrphanSlot('pctHeaderCell');
 
@@ -179,7 +179,7 @@ export class PctHeaderCellTemplate<
 /**
  * What the empty-state template is handed.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctEmptyContext {
   /** The quick filter's question; empty when no question has emptied the table — `let-question`. */
@@ -191,7 +191,7 @@ export interface PctEmptyContext {
 /**
  * What the table shows beside itself when it has no row to show, in place of its sentence.
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[pctEmpty]',
@@ -200,14 +200,14 @@ export class PctEmptyTemplate {
   /**
    * The template itself.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly template = inject<TemplateRef<PctEmptyContext>>(TemplateRef);
 
   /**
    * What the table calls when its content query finds this template.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly read = pctReportOrphanSlot('pctEmpty');
 
@@ -224,7 +224,7 @@ export class PctEmptyTemplate {
 /**
  * What a details template is handed.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctDetailsContext<T, M extends Record<string, unknown>> {
   /** The row whose details are open — `let-row`. */
@@ -247,7 +247,7 @@ export interface PctDetailsContext<T, M extends Record<string, unknown>> {
  *   <app-rule-history [rule]="rule" />
  * </ng-template>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[pctDetails]',
@@ -256,21 +256,21 @@ export class PctDetailsTemplate<T, M extends Record<string, unknown>> {
   /**
    * The template itself.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly template = inject<TemplateRef<PctDetailsContext<T, M>>>(TemplateRef);
 
   /**
    * The table's list of columns, carrying the row's type into the context.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({ alias: 'pctDetails' });
 
   /**
    * What the table calls when its content query finds this template.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly read = pctReportOrphanSlot('pctDetails');
 

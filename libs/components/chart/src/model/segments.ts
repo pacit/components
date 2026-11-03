@@ -5,7 +5,7 @@ import type { PctWindow } from './window';
  * A stretch of the horizontal axis in one state: from where it starts to where it ends, the
  * state's key, and the row's place among the rows read.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctSegment {
   readonly from: number;
@@ -20,7 +20,7 @@ export interface PctSegment {
  * out; one whose ends are the same has no length and is left out too; ends in either order
  * are the same segment. The state is read as text, so a number or a boolean is a key as well.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctSegmentsOf<T>(
   rows: readonly T[],
@@ -53,7 +53,7 @@ export function pctSegmentsOf<T>(
  * last segment's end alone, the one that ends there — so the end of the data is still read.
  * `null` where no segment stands.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctSegmentAt(
   segments: readonly PctSegment[],
@@ -71,7 +71,7 @@ export function pctSegmentAt(
  * met: the length of each segment cut to the window, summed. A state no segment of the window
  * holds is absent.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctSegmentTotals(
   segments: readonly PctSegment[],

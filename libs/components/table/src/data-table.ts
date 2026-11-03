@@ -84,7 +84,7 @@ import {
  * The lines in the view, `[start, end)` among the lines drawn, and the ids of the rows among
  * them, in order.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableVisible {
   readonly start: number;
@@ -96,14 +96,14 @@ export interface PctTableVisible {
  * Where a row the table scrolls to stands in the view: at its top, its centre, its bottom, or
  * wherever is nearest from where the view is — the default.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctScrollAlign = 'start' | 'center' | 'end' | 'nearest';
 
 /**
  * How `scrollTo` scrolls.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctScrollToOptions {
   /** Where the row stands in the view; `nearest` by default. */
@@ -115,7 +115,7 @@ export interface PctScrollToOptions {
  * field per feature, so the table's own directives grow it and nothing else does
  * ([0097](../../../../docs/decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableFeature {
   /** The rows' details: which are open, held by the application, and whether any opens. */
@@ -440,7 +440,7 @@ function writerOf(
  *   </ng-template>
  * </pct-data-table>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-data-table',
@@ -475,7 +475,7 @@ export class PctDataTable<
   /**
    * The rows. They are read and never changed: the table filters and orders a copy.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly rows = input<readonly T[]>([]);
 
@@ -483,7 +483,7 @@ export class PctDataTable<
    * The columns, built with `pctColumnsOf<T>()` so every cell template is checked against
    * their ids and their values' types.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>();
 
@@ -492,7 +492,7 @@ export class PctDataTable<
    * and its scroll position when the application hands the table a new list with the same
    * ids. Unique across the rows.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly rowId = input.required<(row: T) => PctRowId>();
 
@@ -500,7 +500,7 @@ export class PctDataTable<
    * The table's name, drawn as its `<caption>`. A table needs a name: this, or
    * `ariaLabelledby`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly caption = input<string>('');
 
@@ -508,7 +508,7 @@ export class PctDataTable<
    * The id of an element that names the table, for a table whose name stands elsewhere on the
    * page. It names the frame too when the frame scrolls.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabelledby = input<string>('');
 
@@ -516,7 +516,7 @@ export class PctDataTable<
    * The table's name in words, for a table with no caption and no element on the page to name
    * it. It names the frame too when the frame scrolls.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabel = input<string>('');
 
@@ -525,7 +525,7 @@ export class PctDataTable<
    * header makes that column the only key, ascending, and turns it the other way on the next;
    * with Shift held it adds the column as the last key, or turns it where it stands.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly sort = model<readonly PctTableSort<keyof M & string>[]>([]);
 
@@ -533,7 +533,7 @@ export class PctDataTable<
    * A third press on a descending column takes it out of the order, so the rows can go back
    * to the order they came in. `false` by default, as the APG's sortable table toggles.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unsortable = input(false, { transform: booleanAttribute });
 
@@ -541,7 +541,7 @@ export class PctDataTable<
    * Whether the table orders the rows by `sort` itself. `false` for rows a server has already
    * ordered: the headers still write `sort`, and the application asks the server.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly clientSort = input(true, { transform: booleanAttribute });
 
@@ -549,7 +549,7 @@ export class PctDataTable<
    * The quick filter's question: every word in it must be found in some column of a row.
    * A question, not a value: the table never writes it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly filter = model<string>('');
 
@@ -557,7 +557,7 @@ export class PctDataTable<
    * Whether the table filters the rows by `filter` itself. `false` for rows a server has
    * already filtered.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly clientFilter = input(true, { transform: booleanAttribute });
 
@@ -565,7 +565,7 @@ export class PctDataTable<
    * A predicate in place of the quick filter's own, asked for every row with the question as
    * it was typed, empty included, so it can answer other filters of the application's too.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly filterWith = input<((row: T, question: string) => boolean) | null>(
     null,
@@ -576,7 +576,7 @@ export class PctDataTable<
    * rows and says it is loading
    * ([0037](../../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly loading = input(false, { transform: booleanAttribute });
 
@@ -584,7 +584,7 @@ export class PctDataTable<
    * The locale the values are written and the text ordered in; the application's `LOCALE_ID`
    * when empty.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly locale = input<string>('');
 
@@ -592,7 +592,7 @@ export class PctDataTable<
    * The instant a relative column counts from. Unset, it is the clock's when the cells are
    * written; an application that wants `in 5 minutes` to tick binds a clock of its own.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly now = input<PctInstant | null>(null);
 
@@ -600,14 +600,14 @@ export class PctDataTable<
    * The header row stays at the top while the rows scroll under it. It needs a frame that
    * scrolls, so it holds when the table is given a height, and `true` by default.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly stickyHeader = input(true, { transform: booleanAttribute });
 
   /**
    * Every other row on a tint, so a wide row is easier to follow across.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly striped = input(false, { transform: booleanAttribute });
 
@@ -615,7 +615,7 @@ export class PctDataTable<
    * A leading column numbering the rows as they stand, from 1: the row a user names when they
    * say "row 12". A cell of data, not the row's header: the row's name is its data.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly rowNumbers = input(false, { transform: booleanAttribute });
 
@@ -623,7 +623,7 @@ export class PctDataTable<
    * The tone a row wears: a tint behind the whole row. Like a column's tone, it repeats what a
    * cell of the row says and never says it alone.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly rowTone = input<((row: T) => PctTone | null) | null>(null);
 
@@ -632,7 +632,7 @@ export class PctDataTable<
    * row stayed. Only where the table's own filter decided: not with `filterWith`, nor with
    * `clientFilter` off, where what matched is not the table's to say.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly highlightMatches = input(true, { transform: booleanAttribute });
 
@@ -643,7 +643,7 @@ export class PctDataTable<
    * poll flashes at every poll. The flash is a motion token's, so a user who asked for less
    * motion sees none.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly highlightChanges = input(false, { transform: booleanAttribute });
 
@@ -714,7 +714,7 @@ export class PctDataTable<
    * Every column's id in the order the table places it, a column the user hid in its place
    * among them: where a grid tells a reader each cell stands.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columnOrder = computed<readonly (keyof M & string)[]>(() => {
     const layout = this.layout();
@@ -802,7 +802,7 @@ export class PctDataTable<
    * The columns a narrow table hid, by id, in the order it hid them: the application writes
    * `2 columns in the details` from this. Their values stand in each row's details.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly hiddenColumns = computed(
     () =>
@@ -965,7 +965,7 @@ export class PctDataTable<
    * How many rows the filter let through: the application writes `12 of 900` from this and
    * the length of its own rows. From a remote source, every row it counts.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly matched = computed(() =>
     this.remote() ? this.given().length : this.filtered().length,
@@ -975,7 +975,7 @@ export class PctDataTable<
    * The ids of the rows the filter let through, in the rows' order: what a selection's
    * `selectAll` picks. From a remote source, those of the rows it has delivered.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly matchedIds = computed(() => {
     const id = this.rowId();
@@ -999,7 +999,7 @@ export class PctDataTable<
    * What the table draws, in order: the application's data, so a list of the rows in view or
    * a count of them is read from here rather than from the DOM.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly lines = computed<readonly PctTableLine<T>[]>(() => {
     const id = this.rowId();
@@ -1056,7 +1056,7 @@ export class PctDataTable<
    * The ids of the columns the table draws, in their order: neither the user nor a narrow
    * frame hid them. Where an editor's Tab goes next.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly shownColumns = computed<readonly (keyof M & string)[]>(() =>
     this.shown().map(({ column }) => column.id as keyof M & string),
@@ -1227,7 +1227,7 @@ export class PctDataTable<
    * Every group's key, those inside a collapsed group too: what the groups directive's
    * `collapseAll` collapses.
    *
-   * @since next
+   * @since 0.3.0
    */
   groupKeys(): readonly string[] {
     return pctLines(this.ordered(), this.rowId(), {
@@ -1334,7 +1334,7 @@ export class PctDataTable<
    * of a column with no filter. Empty without it. What a remote source is asked under,
    * beside `sort` and `filter`, so a server and the table answer the same question.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columnFilters = computed<
     Readonly<Record<string, PctAnyColumnFilter>>
@@ -1353,7 +1353,7 @@ export class PctDataTable<
    * a number in its unit and the locale's digits, an instant on its clock, a boolean as its
    * word; `''` for a column the table does not have.
    *
-   * @since next
+   * @since 0.3.0
    */
   textOf(row: T, column: string): string {
     const at = this.columns().findIndex((one) => one.id === column);
@@ -1585,7 +1585,7 @@ export class PctDataTable<
    * How far the frame is scrolled, in pixels: written by the frame's own listener, so a
    * scroll does not run change detection on every frame of it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly scrolled = this.scrolledTo.asReadonly();
 
@@ -1595,7 +1595,7 @@ export class PctDataTable<
    * is `rows.length`. Read by an `IntersectionObserver`, so it is empty until the browser has
    * laid the table out, and under SSR.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly visible = this.seen.asReadonly();
 
@@ -2110,7 +2110,7 @@ export class PctDataTable<
    * the table has drawn anything, and never taken back: a directive on the host lives as long
    * as the table does.
    *
-   * @since next
+   * @since 0.3.0
    */
   contribute(feature: PctTableFeature): void {
     this.contributed.update((features) => ({ ...features, ...feature }));
@@ -2174,7 +2174,7 @@ export class PctDataTable<
    * waits for them, so a position is restored by naming the row right after binding the rows.
    * A sticky header is not drawn over it: the frame keeps the header's height clear.
    *
-   * @since next
+   * @since 0.3.0
    */
   scrollTo(id: PctRowId, options: PctScrollToOptions = {}): void {
     this.pending.set({ id, align: options.align ?? 'nearest' });
@@ -2184,7 +2184,7 @@ export class PctDataTable<
    * Shows the row with `id`: opens what hides it and scrolls it into view. With nothing that
    * can hide a row yet, it is `scrollTo`.
    *
-   * @since next
+   * @since 0.3.0
    */
   reveal(id: PctRowId): void {
     const groups = this.contributed().groups;

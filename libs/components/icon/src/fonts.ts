@@ -6,7 +6,7 @@ import type { PctIconSource } from './source.types';
  * dresses every component, and what a consumer overrides when their version spells one
  * differently (`times` became `xmark` between FontAwesome 5 and 6).
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctIconRoles = Readonly<
   Partial<Record<PctIconName, string | undefined>>
@@ -21,14 +21,14 @@ export type PctIconRoles = Readonly<
  * select's arrow and leaves every other component as it ships, `[]` dresses none — the font
  * draws your ids, and the library draws its own.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctIconRoleSelection = PctIconRoles | readonly PctIconName[];
 
 /**
  * What every font adapter takes besides its own knobs.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctIconFontRoles {
   /**
@@ -36,7 +36,7 @@ export interface PctIconFontRoles {
    * the roles to dress and nothing else. Left out, an adapter dresses all ten and a font of
    * your own dresses none.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly roles?: PctIconRoleSelection;
 }
@@ -45,25 +45,25 @@ export interface PctIconFontRoles {
  * How an icon font keys its glyphs, for a font this entrypoint has no adapter of its own
  * for — or for the application's own.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctIconFontOptions extends PctIconFontRoles {
   /**
    * The classes an id becomes — `(id) => \`my my-${id}\``.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly class: (id: string) => string;
   /**
    * The text written in the span, for a font that reads a ligature.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly text?: (id: string) => string;
   /**
    * Inline style every glyph carries — the variation axes of a variable font.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly style?: Readonly<Record<string, string>>;
 }
@@ -82,7 +82,7 @@ export interface PctIconFontOptions extends PctIconFontRoles {
  * @example
  * providePctIcons(iconFont({ class: (id) => `acme acme-${id}`, roles: { close: 'cross' } }))
  *
- * @since next
+ * @since 0.3.0
  */
 export function iconFont(options: PctIconFontOptions): PctIconSource {
   const { class: classOf, text, style, roles } = options;
@@ -135,21 +135,21 @@ function adapterRoles(
 /**
  * What FontAwesome's stylesheet is told, besides the roles.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctFontAwesomeOptions extends PctIconFontRoles {
   /**
    * The style every glyph is drawn in — `solid` by default, `regular` or `brands` in the
    * free set, more in the paid ones. It becomes the `fa-<style>` class of version 6.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly style?: string;
   /**
    * The first class outright, for a stylesheet that spells it differently — the three-letter
    * prefixes of version 5, `far` for the regular style. Replaces `fa-<style>` when given.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly prefix?: string;
 }
@@ -161,7 +161,7 @@ export interface PctFontAwesomeOptions extends PctIconFontRoles {
  * (`req-api-icons-custom`). The role map is version 6's; a version 5 stylesheet takes
  * `prefix: 'far'` and `roles: { close: 'times' }`.
  *
- * @since next
+ * @since 0.3.0
  */
 export function fontAwesome(
   options: PctFontAwesomeOptions = {},
@@ -199,7 +199,7 @@ export function fontAwesome(
 /**
  * PrimeIcons, as classes: `<pct-icon icon="bell">` is `<i class="pi pi-bell">`.
  *
- * @since next
+ * @since 0.3.0
  */
 export function primeIcons(options: PctIconFontRoles = {}): PctIconSource {
   return iconFont({
@@ -234,7 +234,7 @@ export function primeIcons(options: PctIconFontRoles = {}): PctIconSource {
 /**
  * Bootstrap Icons, as classes: `<pct-icon icon="bell">` is `<i class="bi bi-bell">`.
  *
- * @since next
+ * @since 0.3.0
  */
 export function bootstrapIcons(options: PctIconFontRoles = {}): PctIconSource {
   return iconFont({
@@ -297,7 +297,7 @@ function materialRoles(): Readonly<Record<PctIconName, string>> {
 /**
  * Which of the Material Icons fonts is loaded.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctMaterialIconsVariant =
   'filled' | 'outlined' | 'round' | 'sharp' | 'two-tone';
@@ -305,14 +305,14 @@ export type PctMaterialIconsVariant =
 /**
  * What the Material Icons font is told, besides the roles.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctMaterialIconsOptions extends PctIconFontRoles {
   /**
    * The font loaded — `filled` by default, which is the `material-icons` class; the others
    * are `material-icons-<variant>`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly variant?: PctMaterialIconsVariant;
 }
@@ -321,7 +321,7 @@ export interface PctMaterialIconsOptions extends PctIconFontRoles {
  * Material Icons, the ligature font: `<pct-icon icon="home">` is
  * `<span class="material-icons">home</span>`.
  *
- * @since next
+ * @since 0.3.0
  */
 export function materialIcons(
   options: PctMaterialIconsOptions = {},
@@ -339,7 +339,7 @@ export function materialIcons(
 /**
  * Which of the Material Symbols fonts is loaded.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctMaterialSymbolsVariant = 'outlined' | 'rounded' | 'sharp';
 
@@ -347,25 +347,25 @@ export type PctMaterialSymbolsVariant = 'outlined' | 'rounded' | 'sharp';
  * What the Material Symbols font is told, besides the roles: the axes of a variable font.
  * An axis left out is left to the stylesheet.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctMaterialSymbolsOptions extends PctIconFontRoles {
   /**
    * The font loaded — `outlined` by default; the class is `material-symbols-<variant>`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly variant?: PctMaterialSymbolsVariant;
   /**
    * The `FILL` axis: filled glyphs, or outlines.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly fill?: boolean;
   /**
    * The `wght` axis, 100 to 700.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly weight?: number;
 }
@@ -375,7 +375,7 @@ export interface PctMaterialSymbolsOptions extends PctIconFontRoles {
  * `<span class="material-symbols-outlined">home</span>`, with `font-variation-settings`
  * for the axes given.
  *
- * @since next
+ * @since 0.3.0
  */
 export function materialSymbols(
   options: PctMaterialSymbolsOptions = {},

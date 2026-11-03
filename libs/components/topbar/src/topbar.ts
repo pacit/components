@@ -10,7 +10,7 @@ import { Component } from '@angular/core';
  * @example
  * <h1 pctTopbarTitle>Living room</h1>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: '[pctTopbarTitle]',
@@ -45,7 +45,7 @@ export class PctTopbarTitle {}
  *   <button pctButton pctTopbarEnd variant="ghost">Sign out</button>
  * </header>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'header[pctTopbar]',

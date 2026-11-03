@@ -6,7 +6,7 @@ import type { PctCurve } from './value-at';
 /**
  * How a path is written.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctPathOptions {
   /**
@@ -152,7 +152,7 @@ const start = (run: Run, transpose: boolean, reverse = false) => {
  * @example
  * path.setAttribute('d', pctLinePath(drawn, xScale, yScale, 'step', { end: now }));
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctLinePath(
   columns: PctColumns,
@@ -177,7 +177,7 @@ export function pctLinePath(
  * domain's minimum): each run between two gaps closed down to the baseline on its own, so a
  * gap leaves no area under it.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctAreaPath(
   columns: PctColumns,
@@ -205,7 +205,7 @@ export function pctAreaPath(
  * run between two gaps closed on its own. A gap in either is a gap in both: a band has no
  * edge to stand on alone.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctBandPath(
   columns: PctColumns,

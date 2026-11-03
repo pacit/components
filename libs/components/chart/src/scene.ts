@@ -27,7 +27,7 @@ import type { PctWindow } from './model/window';
  * consumer's own (`place` `custom`, `color` set). The rows of a reading and the entries of a
  * legend carry it, and a mark's swatch draws it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctSeriesIdentity {
   readonly id: string;
@@ -40,7 +40,7 @@ export interface PctSeriesIdentity {
 /**
  * The context of a mark's swatch template: the series, and the form asked for.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctSwatchContext {
   readonly $implicit: PctSeriesIdentity;
@@ -53,7 +53,7 @@ export interface PctSwatchContext {
  * triangle, a diamond, a triangle on its point, a plus, a hexagon and a star — eight shapes a
  * reader with no colour tells apart, and the dash patterns of `line.scss` their twins (0102).
  *
- * @since next
+ * @since 0.3.0
  */
 export const PCT_SERIES_MARKERS: readonly string[] = [
   'M6 1a5 5 0 1 1 0 10a5 5 0 1 1 0-10z',
@@ -69,7 +69,7 @@ export const PCT_SERIES_MARKERS: readonly string[] = [
 /**
  * A series as a mark declares it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctSeriesSpec {
   /** Stable across changes of data: the colour, the axis and the hidden state follow it. */
@@ -91,7 +91,7 @@ export interface PctSeriesSpec {
 /**
  * The scene as a mark sees it: what to draw with.
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   // A base: no selector and no host of its own; the scene that extends it has both.
@@ -100,51 +100,51 @@ export abstract class PctChartScene {
   /**
    * The horizontal scale, or `null` before the scene knows its size or has a window.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly xScale: Signal<PctScale | null>;
   /**
    * The vertical scale of each unit on the chart.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly yScales: Signal<ReadonlyMap<string, PctScale>>;
   /**
    * The window the plot shows.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly shown: Signal<PctWindow | null>;
   /**
    * The x axis's length in pixels — the plot's width, or its height in a horizontal chart:
    * what a mark decimates its readings to.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly plotWidth: Signal<number>;
   /**
    * The plot's edges in pixels of the picture, whichever way the x axis runs: what a mark that
    * draws across the whole plot — a reference line, a band — spans.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly frame: Signal<PctNoteFrame>;
   /**
    * The grid a path is rounded to: `1 / devicePixelRatio`.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly pixel: Signal<number>;
   /**
    * The palette place of each series, from 1 to 8.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly places: Signal<ReadonlyMap<string, number>>;
   /**
    * The ids of the series not drawn.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly hiddenSeries: Signal<readonly string[]>;
 
@@ -152,20 +152,20 @@ export abstract class PctChartScene {
    * Whether the lines draw their dash patterns always (`all`) or only where the colours are
    * gone, under forced colours (`color`, the default): the second channel of 0102.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly distinct: Signal<'color' | 'all'>;
 
   /**
    * The zone whose wall clock the time axis reads, and the locale the chart writes in.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly timeZone: Signal<string | undefined>;
   /**
    * The locale the chart writes in.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly effectiveLocale: Signal<string>;
 
@@ -174,7 +174,7 @@ export abstract class PctChartScene {
    * (`interval` on the scene) or one per category (`categories`); empty on a scene with
    * neither, where no bar can stand.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly bands: Signal<readonly PctWindow[]>;
 
@@ -182,14 +182,14 @@ export abstract class PctChartScene {
    * What the horizontal axis holds: instants (`time`), numbers (`linear`) or the categories'
    * bands (`band`) — what a mark writes a stretch of it as: a duration, or a number.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly xKind: Signal<'time' | 'linear' | 'band'>;
 
   /**
    * The calendar interval the bars of a time axis stand in, `undefined` without bars.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly interval: Signal<PctInterval | undefined>;
 
@@ -198,21 +198,21 @@ export abstract class PctChartScene {
    * side (`horizontal`), the value axes turned with it. A mark draws its x pixel as an `x` in
    * the first and as a `y` in the second.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly orientation: Signal<'vertical' | 'horizontal'>;
 
   /**
    * The height of a line of the chart's text, in pixels: what a label takes across its axis.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly lineHeight: Signal<number>;
 
   /**
    * The width of a text in the chart's font, in pixels: what a mark thins its labels by.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract measure(text: string): number;
 
@@ -220,7 +220,7 @@ export abstract class PctChartScene {
    * The interval selected on the chart, or `null`: a bar's band, or a span the application
    * set (0101).
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly selected: Signal<PctWindow | null>;
 
@@ -228,7 +228,7 @@ export abstract class PctChartScene {
    * Where a bar mark's group stands among the groups on the scene: its index, and how many
    * there are, so the groups of one band stand side by side.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract groupOf(group: string): {
     readonly index: number;
@@ -239,7 +239,7 @@ export abstract class PctChartScene {
    * Where a stacked series' bars stand in their stack at each band: `from` and `to` per band,
    * `null` where the series has no bar (`pctStack`).
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract stackedOf(
     stack: string,
@@ -252,7 +252,7 @@ export abstract class PctChartScene {
    * `NaN` where it has none and the ones above stand as on a zero (`pctStackColumns`). `null`
    * for a series on no stack of the scene.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract areaStackOf(
     stack: string,
@@ -267,7 +267,7 @@ export abstract class PctChartScene {
    * Whether a stack of areas is drawn as shares of its total: so when any member asks for it
    * (`PctMark.stacked`), and every member then stands in percent.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract stackNormalized(stack: string): boolean;
 
@@ -275,21 +275,21 @@ export abstract class PctChartScene {
    * A value written as the axes and the tooltip write it: the number in the scene's locale
    * with its unit, `On` or `Off` for a boolean.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract writeValue(value: number | null, unit: string): string;
   /**
    * A position written as the axes and the tooltip write it: a time of the scene's zone, a
    * band's label, or a number. `short` is the tooltip's form, `full` the range's.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract writePosition(x: number, form: 'short' | 'full'): string;
   /**
    * Where a note's box stands, once the scene has placed every mark's notes together so that
    * none covers another (`pctPlaceNotes`); `null` for a note the scene does not hold.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract placedNote(id: string): PctPlacedNote | null;
   /**
@@ -298,7 +298,7 @@ export abstract class PctChartScene {
    * `null` for a lane no mark asked for. A scene with no series lends the lanes the whole
    * plot (0104).
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract laneFrame(name: string): PctNoteFrame | null;
 }
@@ -307,7 +307,7 @@ export abstract class PctChartScene {
  * The layer of the data a mark draws in: `back` under the series (a band of the plot), `data`
  * among them, `front` over them (a reference line, a note).
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctMarkLayer = 'back' | 'data' | 'front';
 
@@ -316,7 +316,7 @@ export type PctMarkLayer = 'back' | 'data' | 'front';
  * legend lists it by its name with the mark's swatch, and its toggle writes the id into the
  * chart's `hiddenSeries`, which the mark reads to hide.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctLegendExtra extends PctSeriesIdentity {
   readonly name: string;
@@ -325,7 +325,7 @@ export interface PctLegendExtra extends PctSeriesIdentity {
 /**
  * A mark as the scene sees it.
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   // A base: no selector and no host of its own; each mark that extends it has both.
@@ -334,19 +334,19 @@ export abstract class PctMark {
   /**
    * The drawing, stamped into the scene's data layer. Every element in it is written `svg:`.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly template: Signal<TemplateRef<unknown>>;
   /**
    * The series the mark brings to the axes, the legend and the data table.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly series: Signal<readonly PctSeriesSpec[]>;
   /**
    * The positions the mark's data span, for the window shown when none is set.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly span: Signal<PctDomain | null>;
 
@@ -355,25 +355,25 @@ export abstract class PctMark {
    * — for the legend (`form` `swatch`) and for a marker on the cursor's line or in the tooltip
    * (`form` `marker`). Stamped with a `PctSwatchContext`.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly swatch: Signal<TemplateRef<PctSwatchContext>>;
   /**
    * The lowest and highest value a series shows in `window`, as drawn.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract extent(id: string, window: PctWindow): PctDomain | null;
   /**
    * The value of a series at `x`, as drawn.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract valueAt(id: string, x: number): number | null;
   /**
    * The readings of a series, for the data table.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readings(id: string): PctColumns;
 
@@ -381,7 +381,7 @@ export abstract class PctMark {
    * The pyramid of a series' readings, which decimates them at the cost of the pixels; `null`
    * when the mark keeps none, and the readings are scanned.
    *
-   * @since next
+   * @since 0.3.0
    */
   pyramidOf(id: string): PctPyramid | null {
     void id;
@@ -392,7 +392,7 @@ export abstract class PctMark {
    * The group and the stack a mark's bars stand in, or `null` for a mark that draws no bars.
    * Marks of one group stand side by side in a band; marks of one stack stand on each other.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly band: Signal<{
     readonly group: string;
@@ -404,7 +404,7 @@ export abstract class PctMark {
    * total, or `null` for a mark that stacks no area. Marks naming one stack stand on each other
    * in the order of their declaration, at the positions any of them has a reading at.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly stacked: Signal<{
     readonly stack: string;
@@ -414,7 +414,7 @@ export abstract class PctMark {
   /**
    * A series' values, one per band of the scene, for the stacks: `null` where it has none.
    *
-   * @since next
+   * @since 0.3.0
    */
   valuesIn(
     id: string,
@@ -428,7 +428,7 @@ export abstract class PctMark {
    * The positions worth a row of the data table, or `null` for a mark whose readings are
    * decimated into rows: a bar mark answers its bands' starts.
    *
-   * @since next
+   * @since 0.3.0
    */
   rowsIn(id: string, window: PctWindow): readonly number[] | null {
     void id;
@@ -440,7 +440,7 @@ export abstract class PctMark {
    * The band at `x`, for the selection: the interval a bar stands in, or `null` where nothing
    * of this mark is to select.
    *
-   * @since next
+   * @since 0.3.0
    */
   bandAt(id: string, x: number): PctWindow | null {
     void id;
@@ -452,7 +452,7 @@ export abstract class PctMark {
    * What a press at a position of the plot picks of this series: the index of the bar there
    * when the press is on it, or `null`. The mark emits its `pick`.
    *
-   * @since next
+   * @since 0.3.0
    */
   pickAt(id: string, x: number, y: number): boolean {
     void id;
@@ -465,7 +465,7 @@ export abstract class PctMark {
    * The notes the mark adds to the reading at `x`, after the series' rows: a bars mark with a
    * compared period writes the difference between the two. The default has none.
    *
-   * @since next
+   * @since 0.3.0
    */
   /**
    * The point of this mark nearest to (`x`, `y`) in the layer's pixels — its position on the
@@ -475,7 +475,7 @@ export abstract class PctMark {
    * ([0105](../../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
    * The default: nothing to offer.
    *
-   * @since next
+   * @since 0.3.0
    */
   nearAt(
     x: number,
@@ -490,7 +490,7 @@ export abstract class PctMark {
    * The rows a mark adds to the tooltip under the series' own — a bubble's size, a band's state.
    * The default: none.
    *
-   * @since next
+   * @since 0.3.0
    */
   notesAt(x: number): readonly PctMarkNote[] {
     void x;
@@ -501,7 +501,7 @@ export abstract class PctMark {
    * The layer the mark's drawing is stamped into: `data`, among the series, unless the mark
    * says otherwise.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly layer: Signal<PctMarkLayer> =
     signal<PctMarkLayer>('data').asReadonly();
@@ -512,7 +512,7 @@ export abstract class PctMark {
    * `band-height`; marks that name the same lane share it. The mark reads the strip from
    * `PctChartScene.laneFrame` (0104).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly lane: Signal<string | null> = signal<string | null>(
     null,
@@ -522,7 +522,7 @@ export abstract class PctMark {
    * The columns of text the mark adds to the data table beside the series' columns of numbers
    * — a state band's states — each written at a row by `textAt`. The default has none.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns: Signal<readonly PctMarkColumn[]> = signal<
     readonly PctMarkColumn[]
@@ -531,7 +531,7 @@ export abstract class PctMark {
   /**
    * The text of one of the mark's `columns` at `x`, or `null` for a gap.
    *
-   * @since next
+   * @since 0.3.0
    */
   textAt(id: string, x: number): string | null {
     void id;
@@ -545,7 +545,7 @@ export abstract class PctMark {
    * carries the unit — `3 – 11`. `null` hands the writing to the scene, which writes `valueAt`
    * with the series' unit.
    *
-   * @since next
+   * @since 0.3.0
    */
   readAt(id: string, x: number, bare = false): string | null {
     void id;
@@ -559,7 +559,7 @@ export abstract class PctMark {
    * share: what a stack sums. `valueAt` by default; a normalized area, whose `valueAt` is its
    * share, answers with the row's value here.
    *
-   * @since next
+   * @since 0.3.0
    */
   rowValueAt(id: string, x: number): number | null {
     return this.valueAt(id, x);
@@ -570,7 +570,7 @@ export abstract class PctMark {
    * stacked area, so the cursor's marker stands on the drawing. `null` puts the marker at the
    * value.
    *
-   * @since next
+   * @since 0.3.0
    */
   drawnAt(id: string, x: number): number | null {
     void id;
@@ -582,7 +582,7 @@ export abstract class PctMark {
    * What the mark adds to the picture's description for a reader, who sees no reference line
    * and no note: a sentence, or `''` for a mark whose series the data table already gives.
    *
-   * @since next
+   * @since 0.3.0
    */
   describe(): string {
     return '';
@@ -592,7 +592,7 @@ export abstract class PctMark {
    * The boxes of the mark's notes, for the scene to place together with every other mark's
    * (`pctPlaceNotes`). A mark with no notes has none.
    *
-   * @since next
+   * @since 0.3.0
    */
   noteBoxes(): readonly PctNoteBox[] {
     return [];
@@ -602,7 +602,7 @@ export abstract class PctMark {
    * The entries the mark adds to the legend beside its series: none, unless the mark is an
    * annotation asked to stand there (`legend`).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly legendEntries: Signal<readonly PctLegendExtra[]> = signal<
     readonly PctLegendExtra[]
@@ -615,7 +615,7 @@ export abstract class PctMark {
  * legend entry of the same id shows its text as the value; without one it is words alone, and
  * the legend does not list it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctMarkNote {
   /** Unique among the notes of the chart: the series' key and what the note is about. */
@@ -633,7 +633,7 @@ export interface PctMarkNote {
  * A column of text a mark adds to the data table (`PctMark.columns`): its id, which `textAt`
  * is asked by, and its header.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctMarkColumn {
   readonly id: string;
@@ -644,7 +644,7 @@ export interface PctMarkColumn {
  * What aligns the plots of charts that share a time axis: the room the widest value axes take
  * on each side. `pctChartSync` provides it; a scene takes the larger of its own room and this.
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   // A base: no selector and no host of its own; `pctChartSync` extends it and has both.
@@ -653,7 +653,7 @@ export abstract class PctChartAlign {
   /**
    * The room on each side, in pixels.
    *
-   * @since next
+   * @since 0.3.0
    */
   abstract readonly room: Signal<{
     readonly left: number;

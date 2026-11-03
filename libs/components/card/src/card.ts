@@ -22,7 +22,7 @@ import { PctSkeleton } from '@pacit/components/skeleton';
  * @example
  * <h3 pctCardTitle><a pctCardLink routerLink="/devices/heat-pump">Heat pump</a></h3>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'a[pctCardLink]',
@@ -45,7 +45,7 @@ export class PctCardLink {}
  * @example
  * <pct-switch pctCardControl label="Enabled" [(checked)]="enabled" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: '[pctCardControl]',
@@ -64,7 +64,7 @@ export class PctCardControl {}
  * @example
  * <h3 pctCardTitle>Heat pump</h3>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: '[pctCardTitle]',
@@ -80,7 +80,7 @@ export class PctCardTitle {}
  * @example
  * <p pctCardSubtitle>Utility room</p>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: '[pctCardSubtitle]',
@@ -118,7 +118,7 @@ export class PctCardSubtitle {}
  *   <span pctCardFooter>Updated a moment ago</span>
  * </pct-card>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-card',
@@ -138,7 +138,7 @@ export class PctCard {
    * Whether the card's content is on its way: the body gives way to the skeleton, and the
    * card is `aria-busy` until it arrives. The header and the footer stay.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly loading = input(false, { transform: booleanAttribute });
 
@@ -147,7 +147,7 @@ export class PctCard {
    * danger icon; `null` or `''` for none. `loading` wins while both are set: the answer is not
    * in yet.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly error = input<string | null>(null);
 
@@ -156,7 +156,7 @@ export class PctCard {
    * The card stands on the skin's disabled surface and keeps its controls working; say why in
    * the card's own words, because colours are the eye's alone.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly muted = input(false, { transform: booleanAttribute });
 

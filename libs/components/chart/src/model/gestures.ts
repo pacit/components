@@ -2,7 +2,7 @@
  * What a pointer did, as the gesture machine reads it: a press, a move, a lift, the page taking
  * it back, or a press held still long enough (`hold`, which the caller raises on a timer).
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctPointerInput {
   readonly type: 'down' | 'move' | 'up' | 'cancel' | 'hold';
@@ -22,7 +22,7 @@ export interface PctPointerInput {
  * where it began, once or twice; `hold` places the cursor under a finger held still, and
  * `drag` moves it there.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctGestureAction =
   | { readonly type: 'pan'; readonly dx: number; readonly shiftY: number }
@@ -46,7 +46,7 @@ export type PctGestureAction =
  * (`pending`), moving the window (`pan`, `pinch`), carrying the cursor (`hold`), or given to the
  * page (`page`, a vertical drag the page scrolls with).
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctGestureState {
   readonly mode: 'idle' | 'pending' | 'pan' | 'pinch' | 'hold' | 'page';
@@ -68,7 +68,7 @@ export interface PctGestureState {
 /**
  * The thresholds of the gestures, in pixels and milliseconds.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctGestureRules {
   /** How far a press moves before it is a drag, not a tap. */
@@ -82,7 +82,7 @@ export interface PctGestureRules {
 /**
  * The thresholds the chart uses: 8 px of slop, a double tap within 300 ms and 24 px (0101).
  *
- * @since next
+ * @since 0.3.0
  */
 export const PCT_GESTURE_RULES: PctGestureRules = {
   slop: 8,
@@ -93,7 +93,7 @@ export const PCT_GESTURE_RULES: PctGestureRules = {
 /**
  * No gesture.
  *
- * @since next
+ * @since 0.3.0
  */
 export const PCT_GESTURE_IDLE: PctGestureState = {
   mode: 'idle',
@@ -129,7 +129,7 @@ function spread(
  * @example
  * const { state, action } = pctGestureStep(state, { type: 'move', id, x, y, mouse, at });
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctGestureStep(
   state: PctGestureState,

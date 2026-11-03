@@ -39,7 +39,7 @@ import { isPctTimeOfDay, isPctTimeStep, pctNow, PctTimeOfDay } from './time';
 /**
  * One row of a column, with everything the template and the walk need already decided.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTimeRow {
   /**
@@ -65,7 +65,7 @@ export interface PctTimeRow {
 /**
  * One column — one field of the time, one `role="listbox"`, one tab stop.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTimeColumn {
   /** Which field of the time the column holds. */
@@ -81,7 +81,7 @@ export interface PctTimeColumn {
  * A predicate on a time of day: `true` refuses it. The columns ask it of every time on the step,
  * once per change of the step, the bounds or the predicate itself.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTimePredicate = (time: PctTimeOfDay) => boolean;
 
@@ -136,7 +136,7 @@ const MINUTE = 60;
  * @example
  * <pct-time-columns [(value)]="time" step="900" min="09:00" max="17:00" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-time-columns',
@@ -159,28 +159,28 @@ export class PctTimeColumns {
   /**
    * The chosen time, or `null`. Every movement in a column writes it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly value = model<PctTimeOfDay | null>(null);
 
   /**
    * The earliest time a row may stand for; absent means no bound on that side. Later than `max`, the two are a window across midnight.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly min = input(undefined, { transform: optionalTime });
 
   /**
    * The latest time a row may stand for; absent means no bound on that side — the other half of `min`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly max = input(undefined, { transform: optionalTime });
 
   /**
    * The step in seconds, counted from `min` — 60 by default, as the native attribute's. A step the columns cannot list (one that does not divide a minute, an hour or a day) is refused with a dev-mode warning and read as 60.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly step = input(60, { transform: numberAttribute });
 
@@ -191,49 +191,49 @@ export class PctTimeColumns {
    * skipped by the walk; an hour or a half of the day is refused when every time in it is. A
    * value it refuses is kept: the walk starts from the nearest time it lets through.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly timeDisabled = input<PctTimePredicate | null>(null);
 
   /**
    * Freezes the columns: no row can be taken, the walk stops, and `aria-disabled` says so.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   /**
    * Overrides the application's `LOCALE_ID`, as on `<pct-time>` — the clock, the digits and the day-period words follow it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly locale = input<string>('');
 
   /**
    * Scales the rows with the field sizes, so a panel matches the field it opens from; from `providePctConfig` by default (req-api-config).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**
    * The accessible name of the group the columns stand in; a panel that owns them names itself instead.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabel = input<string>('');
 
   /**
    * As `ariaLabel`, for a name that already stands somewhere on the page.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabelledby = input<string>('');
 
   /**
    * A time was chosen **by the user** — `Enter` or `Space` in a column — which is not the same event as `value` changing: every movement changes the value, and only this closes a panel.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly timePicked = output<PctTimeOfDay>();
 
@@ -384,7 +384,7 @@ export class PctTimeColumns {
    * Focuses the hour column — what a panel calls the moment it opens. The hour is where a time is
    * changed first, wherever the language writes it; the other columns are a Tab away.
    *
-   * @since next
+   * @since 0.3.0
    */
   focusCursor(): void {
     const lists = this.lists().map((ref) => ref.nativeElement);

@@ -159,7 +159,7 @@ export class PctCalendar {
    * datetime field hands it the month a half that is not a date names, so `31.02.2026` opens on
    * February (0090 §2).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly startAt = input(undefined, { transform: optionalDay });
 

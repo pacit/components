@@ -42,7 +42,7 @@ import { pctQuestionWords } from './model/question';
 /**
  * What a filter template is handed: the state the column holds, and how to change it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctFilterContext<
   T,
@@ -70,7 +70,7 @@ export interface PctFilterContext<
  *   <button pctButton type="button" [attr.aria-pressed]="state === 0" (click)="set(0)">Ground</button>
  * </ng-template>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[pctFilter]',
@@ -83,7 +83,7 @@ export class PctFilterTemplate<
   /**
    * The template itself.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly template =
     inject<TemplateRef<PctFilterContext<T, M, Id>>>(TemplateRef);
@@ -91,21 +91,21 @@ export class PctFilterTemplate<
   /**
    * The table's list of columns. It carries the types into the context and is never read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({ alias: 'pctFilter' });
 
   /**
    * The id of the column the template filters, or a list of ids that share it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly pctFilterOf = input.required<Id | readonly Id[]>();
 
   /**
    * What the filters' directive calls when its content query finds this template.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly read = pctReportOrphanSlot('pctFilter');
 
@@ -165,7 +165,7 @@ const LINKS = /* @__PURE__ */ new WeakMap<object, Link>();
  * @example
  * <pct-data-table [pctTableColumnFilters]="columns" [(columnFilters)]="filters" filterRow …>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'pct-data-table[pctTableColumnFilters]',
@@ -178,7 +178,7 @@ export class PctTableColumnFilters<T, M extends Record<string, unknown>> {
    * The table's list of columns, which carries the ids and the values' types the filters'
    * state is typed by. Never read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({
     alias: 'pctTableColumnFilters',
@@ -188,7 +188,7 @@ export class PctTableColumnFilters<T, M extends Record<string, unknown>> {
    * The filters of the columns, by id: what each one lets through. A column that holds none
    * is not filtered, nor is one whose filter is empty.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columnFilters = model<PctColumnFilters<M>>({});
 
@@ -196,7 +196,7 @@ export class PctTableColumnFilters<T, M extends Record<string, unknown>> {
    * A row of filters under the headers: each column's control where the column stands, the
    * same as its panel's, holding the same state.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly filterRow = input(false, { transform: booleanAttribute });
 
@@ -341,7 +341,7 @@ export class PctTableColumnFilters<T, M extends Record<string, unknown>> {
   /**
    * Clears a column's filter, or every column's when no id is given.
    *
-   * @since next
+   * @since 0.3.0
    */
   clear(column?: keyof M & string): void {
     if (column === undefined) this.columnFilters.set({});
@@ -356,7 +356,7 @@ export class PctTableColumnFilters<T, M extends Record<string, unknown>> {
  * in the table. `pctTableColumnFilters` makes it, so it has no selector: there is no tag to
  * write.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   imports: [
@@ -385,14 +385,14 @@ export class PctTableFilterParts {
   /**
    * What a header holds beside its label: the column's filter button and its panel.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly head = viewChild.required<TemplateRef<unknown>>('head');
 
   /**
    * What a column's cell holds in the row of filters: its control.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly cell = viewChild.required<TemplateRef<unknown>>('cell');
 

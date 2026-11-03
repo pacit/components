@@ -18,7 +18,7 @@ import type { PctSeriesIdentity, PctSwatchContext } from './scene';
 /**
  * One entry of a legend: the series, its swatch and what the legend writes beside it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctLegendEntry extends PctSeriesIdentity {
   readonly name: string;
@@ -34,7 +34,7 @@ export interface PctLegendEntry extends PctSeriesIdentity {
 /**
  * The context of a `pctLegendItem` template: the entry, and what toggles it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctLegendItemContext {
   readonly $implicit: PctLegendEntry;
@@ -47,7 +47,7 @@ export interface PctLegendItemContext {
  * let-toggle="toggle">` inside `pct-chart-legend`, stamped in place of the default row, inside
  * the list item.
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   // The template is the slot: a row of the consumer's own, stamped by the legend.
@@ -57,14 +57,14 @@ export class PctLegendItem {
   /**
    * The template the legend stamps.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly template = inject<TemplateRef<PctLegendItemContext>>(TemplateRef);
 
   /**
    * Types the template's context for the compiler.
    *
-   * @since next
+   * @since 0.3.0
    */
   static ngTemplateContextGuard(
     directive: PctLegendItem,
@@ -91,7 +91,7 @@ export class PctLegendItem {
  * <pct-chart #chart ariaLabel="Supply air"> … </pct-chart>
  * <pct-chart-legend [chart]="chart" value="latest" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-chart-legend',
@@ -111,46 +111,46 @@ export class PctChartLegend {
   /**
    * The chart whose series the legend lists.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly chart = input.required<PctChart>();
   /**
    * The list's name, which a reader announces on entering it: `chartLegend` ("Series") when
    * unset. Two legends on one page take names that tell them apart.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabel = input('');
   /**
    * As `ariaLabel`, for a name that already stands on the page: the chart's heading.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabelledby = input('');
   /**
    * What stands beside a name while no cursor is on the chart: the latest reading in the
    * window, the sum or the mean of the readings there, or nothing.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly value = input<'latest' | PctSummary | 'none'>('none');
   /**
    * The entries in a row that wraps, or one under another.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly layout = input<'row' | 'column'>('row');
   /**
    * Each entry gets a second button that takes the series off the chart: it emits `remove`
    * with the series' id, and the application drops the mark.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly removable = input(false, { transform: booleanAttribute });
   /**
    * The id of the series whose remove button was pressed.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly remove = output<string>();
 
@@ -167,7 +167,7 @@ export class PctChartLegend {
   /**
    * The entries, in the chart's order.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly entries = computed<readonly PctLegendEntry[]>(() => {
     const chart = this.chart();

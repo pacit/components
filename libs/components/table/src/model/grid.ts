@@ -4,7 +4,7 @@
  * move down from a column a line spans comes back to that column on the next line that
  * splits it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctGridPlace {
   readonly line: number;
@@ -14,7 +14,7 @@ export interface PctGridPlace {
 /**
  * A cell of a line, by the first column it covers and how many it spans.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctGridCellSpan {
   readonly start: number;
@@ -25,7 +25,7 @@ export interface PctGridCellSpan {
  * What a move is made over: how many lines there are, the cells of the lines drawn, and how
  * many lines a page holds.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctGridMap {
   readonly lines: number;
@@ -39,7 +39,7 @@ export interface PctGridMap {
  * A move of the tab stop: along a line, to a line above or below, to an end of the line, to
  * the grid's first or last cell, or by a page.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctGridMove =
   | 'next'
@@ -64,7 +64,7 @@ export type PctGridMove =
  * pctGridKey({ key: 'ArrowLeft', shiftKey: false, ctrlKey: false, metaKey: false, altKey: false }, true);
  * // { move: 'next', extend: false }
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctGridKey(
   event: Pick<
@@ -106,7 +106,7 @@ const TURNED: Readonly<Partial<Record<PctGridMove, PctGridMove>>> = {
  * The cell of a line that covers a column: the last that starts at it or before, so a
  * column past the line's last cell is that cell's. -1 for a line of no cells.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctGridCellAt(
   cells: readonly PctGridCellSpan[],
@@ -126,7 +126,7 @@ export function pctGridCellAt(
  * pctGridMove({ lines: 3, cellsOf: () => [{ start: 0, span: 1 }, { start: 1, span: 2 }], page: 10 }, { line: 0, column: 0 }, 'next');
  * // { line: 0, column: 1 }
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctGridMove(
   map: PctGridMap,

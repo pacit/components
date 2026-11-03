@@ -3,7 +3,7 @@
  * value stacks up from zero on what is positive under it, a negative one down from zero on
  * what is negative, so a stack with both reads as two columns meeting at zero.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctStacked {
   readonly from: number;
@@ -18,7 +18,7 @@ export interface PctStacked {
  * @example
  * pctStack([[1, 2], [3, null]]); // [[{0→1}, {0→2}], [{1→4}, null]]
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctStack(
   values: readonly (readonly (number | null)[])[],
@@ -47,7 +47,7 @@ export function pctStack(
  * The lowest and the highest end of a stack over every position, with zero: what its value
  * axis has to show. `null` when nothing is stacked.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctStackExtent(
   stacked: readonly (readonly (PctStacked | null)[])[],
@@ -66,7 +66,7 @@ export function pctStackExtent(
 /**
  * A series' place in a stack of columns: where it starts and where it ends at each position.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctStackColumns {
   readonly from: Float64Array;
@@ -81,7 +81,7 @@ export interface PctStackColumns {
  * is its share of the position's total in percent, and a position whose total is zero is a
  * gap for every series.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctStackColumns(
   values: readonly Float64Array[],
