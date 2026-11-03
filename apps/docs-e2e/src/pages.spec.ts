@@ -616,6 +616,35 @@ test.describe('The pages', () => {
   });
 
   /**
+   * A chart takes its width from its container and the table under it brings one of its own:
+   * shrink-wrapped in the flex stage, the demo grew to the table and ran past the card's edge
+   * (measured: 5px past the stage at a 1366px window, 13px in this runner's). And the content pass titled each chart
+   * example by the comment over its data — "Midnight in Warsaw on 28 October 2026" on seven
+   * of ten — because it read the JSDoc from the file's first `/**` to the decorator.
+   */
+  test('the chart examples fit their stage and carry their own titles', async ({
+    page,
+  }) => {
+    await visit(page, '/components/chart');
+    const examples = page.locator('.example');
+    await expect(examples).toHaveCount(10);
+    for (const example of await examples.all()) {
+      await example.scrollIntoViewIfNeeded();
+      const stage = example.locator('.example__stage');
+      await expect(stage.locator('pct-chart').first()).toBeVisible();
+      const [inside, right, demoRight] = await stage.evaluate((el) => {
+        const demo = el.firstElementChild?.getBoundingClientRect();
+        const r = el.getBoundingClientRect();
+        return [!!demo, r.right, demo?.right ?? 0];
+      });
+      expect(inside).toBe(true);
+      const id = (await example.getAttribute('id')) ?? '';
+      expect(demoRight, id).toBeLessThanOrEqual(right);
+      await expect(example.locator('h3')).not.toContainText(/Midnight|\*\//);
+    }
+  });
+
+  /**
    * The control the reader presses stays where it was pressed (lesson-249). A demo the press
    * RESIZES — a strip whose host was as wide as the chosen panel, a stack that grows when a
    * section opens, a skeleton swapped for a taller paragraph — used to slide inside the
