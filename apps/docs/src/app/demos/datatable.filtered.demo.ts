@@ -11,7 +11,12 @@ interface Device {
 
 const col = pctColumnsOf<Device>();
 
-/** The quick filter: every word in some column of the row, searched in the text it shows. */
+/**
+ * Quick filter
+ *
+ * The `filter` model keeps the rows with every word in some column, searched in the text the
+ * cells show, and marks the words found. `matched()` counts what is left.
+ */
 @Component({
   selector: 'demo-datatable-filtered',
   imports: [PctDataTable, PctField, PctText],

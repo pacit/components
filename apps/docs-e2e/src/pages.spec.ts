@@ -4,6 +4,38 @@ import { visit } from './support/dom';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+/**
+ * Every example on the page holds `inner`, and neither its demo nor its stage ends past the
+ * card — a table frame scrolls what is wider, so the frame's edge is what is measured. The
+ * card and not the stage: in the narrow layout the stage's `auto` column grew with the table,
+ * so a demo inside its stage still ran past the card.
+ */
+async function expectExamplesFit(
+  page: Page,
+  inner: string,
+  count: number,
+): Promise<void> {
+  const examples = page.locator('.example');
+  await expect(examples).toHaveCount(count);
+  for (const example of await examples.all()) {
+    await example.scrollIntoViewIfNeeded();
+    const stage = example.locator('.example__stage');
+    await expect(stage.locator(inner).first()).toBeVisible();
+    const [card, stageRight, demoRight] = await example.evaluate((el) => {
+      const s = el.querySelector('.example__stage');
+      const demo = s?.firstElementChild?.getBoundingClientRect();
+      return [
+        el.getBoundingClientRect().right,
+        s?.getBoundingClientRect().right ?? Infinity,
+        demo?.right ?? Infinity,
+      ];
+    });
+    const id = (await example.getAttribute('id')) ?? '';
+    expect(stageRight, `${id}: the stage`).toBeLessThanOrEqual(card);
+    expect(demoRight, `${id}: the demo`).toBeLessThanOrEqual(stageRight);
+  }
+}
+
 const WCAG_22_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 // The registers' sizes, read from the same tracked sources the content pass reads — the
@@ -627,23 +659,27 @@ test.describe('The pages', () => {
     page,
   }) => {
     await visit(page, '/components/chart');
-    const examples = page.locator('.example');
-    await expect(examples).toHaveCount(10);
-    for (const example of await examples.all()) {
-      await example.scrollIntoViewIfNeeded();
-      const stage = example.locator('.example__stage');
-      await expect(stage.locator('pct-chart').first()).toBeVisible();
-      const [inside, right, demoRight] = await stage.evaluate((el) => {
-        const demo = el.firstElementChild?.getBoundingClientRect();
-        const r = el.getBoundingClientRect();
-        return [!!demo, r.right, demo?.right ?? 0];
-      });
-      expect(inside).toBe(true);
-      const id = (await example.getAttribute('id')) ?? '';
-      expect(demoRight, id).toBeLessThanOrEqual(right);
-      await expect(example.locator('h3')).not.toContainText(/Midnight|\*\//);
-    }
+    await expectExamplesFit(page, 'pct-chart', 10);
+    const titles = await page.locator('.example h3').allTextContents();
+    expect(titles.filter((title) => /Midnight|\*\//.test(title))).toEqual([]);
   });
+
+  /**
+   * The same measure on the two table pages, whose examples show one feature each: a table
+   * brings a width of its own, as a chart's table did, and a narrow window is where it ran
+   * past the card. A wider table scrolls inside its frame, and the frame stays in the stage.
+   */
+  for (const [path, inner, count] of [
+    ['/components/datatable', 'pct-data-table', 14],
+    ['/components/table', 'table[pcttable]', 3],
+  ] as const)
+    test(`the examples on ${path} fit their stage at a phone's width`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await visit(page, path);
+      await expectExamplesFit(page, inner, count);
+    });
 
   /**
    * The control the reader presses stays where it was pressed (lesson-249). A demo the press

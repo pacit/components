@@ -3,7 +3,6 @@ import {
   PctTable,
   PctTableCaption,
   PctTableCell,
-  PctTableFrame,
   PctTableHeader,
   PctTableSort,
 } from '@pacit/components/table';
@@ -18,50 +17,38 @@ const ROOMS = [
 type Column = 'room' | 'temperature' | 'humidity';
 
 /**
- * Sorted by the headers, ordered by you
+ * Sortable headers
  *
- * The headers with a `sortKey` propose an order into one `sort` model, and the component that
- * owns the rows puts them in it. The frame scrolls the table when the page is too narrow for
- * it, and only then is it a region with a tab stop.
+ * A header with a `sortKey` becomes a button that proposes an order into the table's `sort`
+ * model; the page puts its rows in it. `aria-sort` stands on the sorted header alone.
  */
 @Component({
   selector: 'demo-table-sorted',
-  imports: [
-    PctTable,
-    PctTableCaption,
-    PctTableHeader,
-    PctTableCell,
-    PctTableFrame,
-  ],
-  styles: ':host { display: block; }',
+  imports: [PctTable, PctTableCaption, PctTableHeader, PctTableCell],
   template: `
-    <pct-table-frame>
-      <table pctTable [(sort)]="sort">
-        <caption pctCaption>
-          Rooms
-        </caption>
-        <thead>
+    <table pctTable [(sort)]="sort">
+      <caption pctCaption>
+        Rooms
+      </caption>
+      <thead>
+        <tr>
+          <th pctHeader scope="col" sortKey="room">Room</th>
+          <th pctHeader scope="col" sortKey="temperature" numeric>
+            Temperature (°C)
+          </th>
+          <th pctHeader scope="col" sortKey="humidity" numeric>Humidity (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.id) {
           <tr>
-            <th pctHeader scope="col" sortKey="room">Room</th>
-            <th pctHeader scope="col" sortKey="temperature" numeric>
-              Temperature (°C)
-            </th>
-            <th pctHeader scope="col" sortKey="humidity" numeric>
-              Humidity (%)
-            </th>
+            <th pctHeader scope="row">{{ row.room }}</th>
+            <td pctCell numeric>{{ row.temperature.toFixed(1) }}</td>
+            <td pctCell numeric>{{ row.humidity }}</td>
           </tr>
-        </thead>
-        <tbody>
-          @for (row of rows(); track row.id) {
-            <tr>
-              <th pctHeader scope="row">{{ row.room }}</th>
-              <td pctCell numeric>{{ row.temperature.toFixed(1) }}</td>
-              <td pctCell numeric>{{ row.humidity }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </pct-table-frame>
+        }
+      </tbody>
+    </table>
   `,
 })
 export class TableSortedDemo {
