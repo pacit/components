@@ -42,7 +42,8 @@ const charge = Array.from({ length: 17 }, (_, i) => ({
 /**
  * Stacked areas
  *
- * `stack` piles areas on each other, `normalize` shows them as shares, and `curve="monotone"` smooths the line without overshooting.
+ * `stack` piles areas on each other, `normalize` shows them as shares, and `curve="monotone"`
+ * smooths the line without overshooting.
  */
 @Component({
   selector: 'demo-chart-areas',

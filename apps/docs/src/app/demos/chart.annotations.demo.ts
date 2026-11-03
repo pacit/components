@@ -22,7 +22,8 @@ const supply = [
 /**
  * Annotations
  *
- * A span, a reference line, a note, a "now" marker and a colour `threshold` — marks that add context without being a series.
+ * A span, a reference line, a note, a "now" marker and a colour `threshold` — marks that add
+ * context without being a series.
  */
 @Component({
   selector: 'demo-chart-annotations',

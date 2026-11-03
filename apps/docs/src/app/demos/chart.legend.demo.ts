@@ -23,7 +23,8 @@ const fan = [
 /**
  * Legend
  *
- * `pct-chart-legend` lists the series with their swatches and latest values. Press an entry to hide or show its series.
+ * `pct-chart-legend` lists the series with their swatches and latest values. Press an entry to hide
+ * or show its series.
  */
 @Component({
   selector: 'demo-chart-legend',

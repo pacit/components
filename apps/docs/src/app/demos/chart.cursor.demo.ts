@@ -17,7 +17,8 @@ const outdoor = [
 /**
  * Reading the cursor
  *
- * Point, tap, or Tab and the arrow keys move the cursor between readings. The cursor is a model and `reading()` gives its values to the page.
+ * Point, tap, or Tab and the arrow keys move the cursor between readings. The cursor is a model and
+ * `reading()` gives its values to the page.
  */
 @Component({
   selector: 'demo-chart-cursor',

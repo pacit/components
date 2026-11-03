@@ -69,7 +69,8 @@ const bins = pctBin(hourly.flatMap((h) => h.times).slice(0, 400));
 /**
  * Ranges, candles, box plots and a histogram
  *
- * `pct-range` draws a low–high band, or candles with `open` and `close`; `pct-box` draws box plots; `pctBin` with `pct-bars` makes a histogram.
+ * `pct-range` draws a low–high band, or candles with `open` and `close`; `pct-box` draws box plots;
+ * `pctBin` with `pct-bars` makes a histogram.
  */
 @Component({
   selector: 'demo-chart-ranges',

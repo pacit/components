@@ -45,7 +45,8 @@ const rooms: Room[] = [
 /**
  * Scatter and bubbles
  *
- * `pct-points` draws a mark per row; `size` turns them into bubbles. `zoom="xy"` zooms both axes and `pick` reports the pressed point.
+ * `pct-points` draws a mark per row; `size` turns them into bubbles. `zoom="xy"` zooms both axes
+ * and `pick` reports the pressed point.
  */
 @Component({
   selector: 'demo-chart-points',

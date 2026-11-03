@@ -21,7 +21,8 @@ const lastMonth = [14.2, 15.1, 13.8, 16.4, 15.9, 14.7, 13.2].map(
 /**
  * Bars with comparison and selection
  *
- * `pct-bars` per interval, with a previous period laid beside it through `compare`. Press a bar to select it; the table adds a sum in its foot.
+ * `pct-bars` per interval, with a previous period laid beside it through `compare`. Press a bar to
+ * select it; the table adds a sum in its foot.
  */
 @Component({
   selector: 'demo-chart-bars',

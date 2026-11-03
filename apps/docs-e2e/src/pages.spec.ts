@@ -618,9 +618,10 @@ test.describe('The pages', () => {
   /**
    * A chart takes its width from its container and the table under it brings one of its own:
    * shrink-wrapped in the flex stage, the demo grew to the table and ran past the card's edge
-   * (measured: 5px past the stage at a 1366px window, 13px in this runner's). And the content pass titled each chart
-   * example by the comment over its data — "Midnight in Warsaw on 28 October 2026" on seven
-   * of ten — because it read the JSDoc from the file's first `/**` to the decorator.
+   * (measured: 5px past the stage at a 1366px window, 13px in this runner's). And the content
+   * pass titled each chart example by the comment over its data — "Midnight in Warsaw on 28
+   * October 2026" on seven of ten — because it read the JSDoc from the file's first `/**` to
+   * the decorator.
    */
   test('the chart examples fit their stage and carry their own titles', async ({
     page,

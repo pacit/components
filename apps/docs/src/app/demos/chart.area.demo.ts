@@ -13,7 +13,8 @@ const outdoor = [
 /**
  * Area on a fixed axis
  *
- * `area` fills a line down to its axis; `pct-axis` with `floor` and `ceiling` holds the scale steady whatever the data.
+ * `area` fills a line down to its axis; `pct-axis` with `floor` and `ceiling` holds the scale
+ * steady whatever the data.
  */
 @Component({
   selector: 'demo-chart-area',

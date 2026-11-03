@@ -37,7 +37,8 @@ const modes = [
 /**
  * State band
  *
- * `pct-band` draws states over time in a lane of its own, with a legend entry and a table column for each state.
+ * `pct-band` draws states over time in a lane of its own, with a legend entry and a table column
+ * for each state.
  */
 @Component({
   selector: 'demo-chart-band',

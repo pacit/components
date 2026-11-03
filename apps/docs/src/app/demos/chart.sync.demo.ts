@@ -23,7 +23,8 @@ const heater = [
 /**
  * Synchronised charts
  *
- * `pctChartSync` keeps charts in step: zoom, pan and the cursor follow across them, and the plot edges line up.
+ * `pctChartSync` keeps charts in step: zoom, pan and the cursor follow across them, and the plot
+ * edges line up.
  */
 @Component({
   selector: 'demo-chart-sync',
