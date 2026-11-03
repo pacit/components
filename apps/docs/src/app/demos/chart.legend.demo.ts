@@ -21,12 +21,9 @@ const fan = [
 ];
 
 /**
- * A legend
+ * Legend
  *
- * The series as a list beside the picture: each entry its swatch — the colour, the dash and
- * the marker the series is told apart by — its name, its unit where the chart holds more than
- * one, and the latest reading. Press an entry to hide the series and press it again to show
- * it; with a cursor on the chart the entries write the reading under it instead.
+ * `pct-chart-legend` lists the series with their swatches and latest values. Press an entry to hide or show its series.
  */
 @Component({
   selector: 'demo-chart-legend',

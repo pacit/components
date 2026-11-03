@@ -16,7 +16,7 @@ const fan = [
   { at: START + 18 * HOUR, value: 450 },
 ];
 
-/** Supply air and the fan's power through a day: two units, two axes, the data as a table. */
+/** Two series on two value axes, one per unit, with the data table under the picture. */
 @Component({
   selector: 'demo-chart',
   imports: [PctChart, PctLine, PctChartTable],

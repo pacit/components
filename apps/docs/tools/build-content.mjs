@@ -1449,11 +1449,18 @@ const sectionsOf = (html) =>
 
 const demoRegistry = readFileSync(join(DEMOS_DIR, 'index.ts'), 'utf8');
 
-/** The JSDoc above a demo's `@Component`: the first line is the title, the rest the prose. */
+/**
+ * The JSDoc above a demo's `@Component`: the first line is the title, the rest the prose.
+ * The block is the one that ENDS right above the decorator — a lazy match from the first
+ * `/**` ran from a demo's first comment, the one over its data, to the decorator, and the
+ * chart page's examples were titled "Midnight in Warsaw…" with their data as the prose.
+ */
 const demoDoc = (text) => {
-  const doc = jsdocText(
-    text.match(/(\/\*\*[\s\S]*?\*\/)\s*@Component/)?.[1] ?? '',
-  );
+  // The first decorator that has one: a file may hold a helper component above the demo.
+  const doc =
+    [...text.matchAll(/^@Component/gm)]
+      .map((m) => docBefore(text, m.index))
+      .find((d) => d !== null) ?? '';
   const [title, ...rest] = doc.split('\n');
   return {
     title: title.trim(),

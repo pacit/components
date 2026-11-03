@@ -35,14 +35,9 @@ const modes = [
 }));
 
 /**
- * A band of states
+ * State band
  *
- * `pct-band` draws the heat pump's mode as a block per segment in a lane of its own under
- * the plot: no series, no axis. The tooltip names the mode under the cursor and how long it
- * held, the legend lists the modes with a toggle each, the table gets a column with a row per
- * segment, and a reader hears how long each mode held. A chart holding a band alone is a
- * band of states with a time axis; `lane="plot"` tints the whole plot behind the series
- * instead.
+ * `pct-band` draws states over time in a lane of its own, with a legend entry and a table column for each state.
  */
 @Component({
   selector: 'demo-chart-band',

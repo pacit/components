@@ -22,11 +22,7 @@ const supply = [
 /**
  * Annotations
  *
- * The marks that bring no series: a band under the line for the night tariff, a dashed
- * reference line at the comfort setting, a note on the hour the window was opened, the moment
- * the report was taken, and the line itself in another colour over 22 °C (`threshold`). None
- * has an axis or a column in the table; a reader hears them in the picture's description, and
- * the two asked to stand in the legend can be hidden there.
+ * A span, a reference line, a note, a "now" marker and a colour `threshold` — marks that add context without being a series.
  */
 @Component({
   selector: 'demo-chart-annotations',

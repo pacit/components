@@ -22,12 +22,9 @@ const lastMonth = [
 ].map((energy, i) => ({ at: february(i + 1), energy }));
 
 /**
- * Bars by day, compared with the month before
+ * Bars with comparison and selection
  *
- * A bar per calendar day of Warsaw, and February laid beside March by position: the first of
- * February next to the first of March, twenty-eight bars beside thirty-one. Press a bar to
- * select its day, or put the cursor on it and press Enter; the table under the picture has a
- * row per day and the month's sum in its foot.
+ * `pct-bars` per interval, with a previous period laid beside it through `compare`. Press a bar to select it; the table adds a sum in its foot.
  */
 @Component({
   selector: 'demo-chart-bars',

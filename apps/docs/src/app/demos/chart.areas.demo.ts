@@ -40,14 +40,9 @@ const charge = Array.from({ length: 17 }, (_, i) => ({
 }));
 
 /**
- * Areas on a stack, as shares, and a monotone curve
+ * Stacked areas
  *
- * `pct-area` draws a series from zero, or on a `stack`: areas naming one stack stand on each
- * other, the sum the picture's top; a gap in one is a zero for the ones above it and a gap for
- * itself, and a hidden series leaves the stack. The tooltip reads each series' own value and
- * the marker stands on the drawing. `normalize` draws the stack as shares of each position's
- * total, a hundred tall, and reads the share with the value in brackets. `curve="monotone"`
- * joins readings with a cubic that never overshoots them, and the tooltip reads that curve.
+ * `stack` piles areas on each other, `normalize` shows them as shares, and `curve="monotone"` smooths the line without overshooting.
  */
 @Component({
   selector: 'demo-chart-areas',

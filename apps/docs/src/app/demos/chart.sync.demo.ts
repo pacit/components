@@ -21,11 +21,9 @@ const heater = [
 ];
 
 /**
- * Two charts in step
+ * Synchronised charts
  *
- * A series over a band of states: two charts and `pctChartSync` on what holds them. Drag, pinch
- * or zoom either and the other follows; the cursor stands on both; and the plots share their
- * edges although the power's axis in W is wider than the heater's yes/no one.
+ * `pctChartSync` keeps charts in step: zoom, pan and the cursor follow across them, and the plot edges line up.
  */
 @Component({
   selector: 'demo-chart-sync',
