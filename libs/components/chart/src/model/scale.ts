@@ -7,7 +7,7 @@
 /**
  * The span of values a scale covers, the lower first.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctDomain = readonly [min: number, max: number];
 
@@ -15,14 +15,14 @@ export type PctDomain = readonly [min: number, max: number];
  * The span of positions a scale maps onto, in pixels. The start is where the domain's minimum
  * lands, so a vertical axis passes its bottom first: `[height, 0]`.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctScaleRange = readonly [start: number, end: number];
 
 /**
  * A continuous scale.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctScale {
   readonly domain: PctDomain;
@@ -43,7 +43,7 @@ export interface PctScale {
  * y.map(10); // 225
  * y.invert(150); // 20
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctLinear(domain: PctDomain, range: PctScaleRange): PctScale {
   const [d0, d1] = domain;
@@ -65,7 +65,7 @@ export function pctLinear(domain: PctDomain, range: PctScaleRange): PctScale {
  * A logarithmic scale, base 10. Its domain is above zero; a value at or below zero has no
  * position, and maps to `NaN`, which a path reads as a gap.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctLog(domain: PctDomain, range: PctScaleRange): PctScale {
   const inner = pctLinear(
@@ -84,7 +84,7 @@ export function pctLog(domain: PctDomain, range: PctScaleRange): PctScale {
  * Categories laid side by side: each takes a slot of equal width, and its band stands in the
  * middle of the slot with `inner` of the slot left free, split between its two sides.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctBandScale {
   readonly count: number;
@@ -110,7 +110,7 @@ export interface PctBandScale {
  * days.band(0); // [2, 18]
  * days.indexAt(30); // 1
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctBand(
   count: number,

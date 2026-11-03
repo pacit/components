@@ -9,7 +9,7 @@
  * measured adds the estimate, so a range's height is its measured sum and the estimate for
  * each of the rest.
  *
- * @since next
+ * @since 0.3.0
  */
 export class PctLineHeights {
   /** The height measured for each line, or `undefined` while it has not been. */
@@ -39,7 +39,7 @@ export class PctLineHeights {
   /**
    * The height of every line together.
    *
-   * @since next
+   * @since 0.3.0
    */
   get total(): number {
     return this.offsetOf(this.count);
@@ -48,7 +48,7 @@ export class PctLineHeights {
   /**
    * The height line `index` counts at: measured, or the estimate.
    *
-   * @since next
+   * @since 0.3.0
    */
   heightOf(index: number): number {
     return this.measured[index] ?? this.estimate;
@@ -58,7 +58,7 @@ export class PctLineHeights {
    * Writes the height measured for line `index`, or `undefined` to count it at the estimate
    * again, and returns by how much the line's height changed.
    *
-   * @since next
+   * @since 0.3.0
    */
   set(index: number, height: number | undefined): number {
     const was = this.measured[index];
@@ -76,7 +76,7 @@ export class PctLineHeights {
   /**
    * Where line `index` starts: the height of every line before it. `count` gives the total.
    *
-   * @since next
+   * @since 0.3.0
    */
   offsetOf(index: number): number {
     let sum = 0;
@@ -113,7 +113,7 @@ export class PctLineHeights {
    * The first line that ends past `y`: the line standing at that height, lines of no height
    * before it passed over. `count` when no line does.
    *
-   * @since next
+   * @since 0.3.0
    */
   indexAt(y: number): number {
     return this.reach(y, false);
@@ -122,7 +122,7 @@ export class PctLineHeights {
   /**
    * The first line that starts at `y` or below it; `count` when none does.
    *
-   * @since next
+   * @since 0.3.0
    */
   firstFrom(y: number): number {
     return y <= 0 ? 0 : Math.min(this.count, this.reach(y, true) + 1);
@@ -133,7 +133,7 @@ export class PctLineHeights {
  * What the window is computed from: the lines' heights, where the view stands and how tall it
  * is, and the tallest space the window may take.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctWindowInput {
   readonly heights: PctLineHeights;
@@ -152,7 +152,7 @@ export interface PctWindowInput {
  * `space` for all of it. `total` is the lines' own height, which `space` is unless it is over
  * the limit, and `top` is where the view's top stands among the lines.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctWindow {
   readonly start: number;
@@ -190,7 +190,7 @@ function linesTop(
  * stand where that map puts them under the view, so a pixel of scroll moves them by more than a
  * pixel, and the overscan is cut where the space above or below has no room for it.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctWindow(of: PctWindowInput): PctWindow {
   const { heights, scrollTop, overscan } = of;
@@ -238,7 +238,7 @@ export function pctWindow(of: PctWindowInput): PctWindow {
  * Where a line stands in the view a scroll brings it to: at the view's top, its centre, its
  * bottom, or wherever is nearest from where the view is.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctWindowAlign = 'start' | 'center' | 'end' | 'nearest';
 
@@ -249,7 +249,7 @@ export type PctWindowAlign = 'start' | 'center' | 'end' | 'nearest';
  * for `nearest`; the top is never past the last full view. `within` moves a `start` that many
  * pixels into the line: what keeps the line the view's top is in where it was.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctWindowScroll(
   of: PctWindowInput & {

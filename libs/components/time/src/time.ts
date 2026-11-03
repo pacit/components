@@ -23,7 +23,7 @@
  * seconds the shape could not carry. The clamp moves nothing: it hands back one of the times it
  * was given, as it was written.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTimeOfDay = string;
 
@@ -47,7 +47,7 @@ const DAY = 86_400;
  * The three fields of a time, as numbers on a 24-hour clock. `second` is `0` for a time written
  * without seconds — the two shapes are one time.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTimeOfDayParts {
   readonly hour: number;
@@ -69,7 +69,7 @@ export interface PctTimeOfDayParts {
  *   a person types a time into is not a stopwatch, and a third shape would be a third way for
  *   two equal times to be two strings.
  *
- * @since next
+ * @since 0.3.0
  */
 export function isPctTimeOfDay(value: unknown): value is PctTimeOfDay {
   if (typeof value !== 'string') return false;
@@ -101,7 +101,7 @@ function within(value: number, max: number): boolean {
  * arithmetic that does come round at midnight has names of its own — `pctAddMinutes` and
  * `pctAddSeconds` — so nothing here has to guess which of the two a caller meant.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTimeOfDay(
   hour: number,
@@ -125,7 +125,7 @@ export function pctTimeOfDay(
 /**
  * The three fields of a time. The caller has already established that it is one.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTimeOfDayParts(time: PctTimeOfDay): PctTimeOfDayParts {
   const m = shapeOf(time) as RegExpExecArray;
@@ -186,7 +186,7 @@ function whole(n: number, unit: string): void {
  * `HH:mm` by default — the minute a wall clock shows until it ticks, never rounded up — or
  * `HH:mm:ss` for a field that counts seconds.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctNow(now: Date = new Date(), seconds = false): PctTimeOfDay {
   return pctTimeOfDay(
@@ -205,7 +205,7 @@ export function pctNow(now: Date = new Date(), seconds = false): PctTimeOfDay {
  * comes round — `Temporal.PlainTime`'s answer (0086, B4). The datetime value will add on the
  * pair instead, so its day carries; this is the time's own arithmetic and only the time's.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctAddSeconds(time: PctTimeOfDay, n: number): PctTimeOfDay {
   whole(n, 'seconds');
@@ -219,7 +219,7 @@ export function pctAddSeconds(time: PctTimeOfDay, n: number): PctTimeOfDay {
  * `n` minutes on (or back), and the clock comes round: `23:30` plus 45 minutes is `00:15`. The
  * shape is kept — a whole minute never moves the seconds.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctAddMinutes(time: PctTimeOfDay, n: number): PctTimeOfDay {
   whole(n, 'minutes');
@@ -235,7 +235,7 @@ export function pctAddMinutes(time: PctTimeOfDay, n: number): PctTimeOfDay {
  * crosses midnight belongs to a day, and only a datetime has one — `PlainTime` says `23:00`
  * until `01:00` is `-PT22H` (0086, B4).
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctCompareTimes(a: PctTimeOfDay, b: PctTimeOfDay): number {
   const away = read(a).total - read(b).total;
@@ -253,7 +253,7 @@ export function pctCompareTimes(a: PctTimeOfDay, b: PctTimeOfDay): number {
  * next. A clamp invents no time: it hands back the one it was given or a bound it was told, as
  * written — and a time equal to a bound in another shape is inside, so it comes back itself.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctClampTime(
   time: PctTimeOfDay,
@@ -287,7 +287,7 @@ export function pctClampTime(
  * arrives as anything at all, and a step is already a number — which a guard would narrow to
  * `never` when it is not a step, in the very branch that warns about it.
  *
- * @since next
+ * @since 0.3.0
  */
 export function isPctTimeStep(step: number): boolean {
   // One clause per kind of step and no range between them: a step past a minute never divides
@@ -320,7 +320,7 @@ function stepOf(step: number): void {
  * native element keeps the value and flags `stepMismatch` beside it. This predicate is what the
  * validator and the columns agree on.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTimeOnStep(
   time: PctTimeOfDay,
@@ -342,7 +342,7 @@ export function pctTimeOnStep(
  * to `00:00`. This is the ring's answer, for an application's own walk or a suggestion beside a
  * validator's message.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctSnapToStep(
   time: PctTimeOfDay,

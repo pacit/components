@@ -74,7 +74,7 @@ function optionalTime(value: unknown): PctTimeOfDay | undefined {
 /**
  * Which edge of the field the panel lines its own up with.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTimePanelAlign = 'start' | 'end';
 
@@ -111,7 +111,7 @@ export type PctTimePanelAlign = 'start' | 'end';
  * // Standalone: quarter hours inside office hours, in a locale of its own.
  * <pct-time [(value)]="time" step="900" min="09:00" max="17:00" locale="en-US" label="Time" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-time',
@@ -141,7 +141,7 @@ export class PctTime
   /**
    * The chosen time, or `null` when the field is empty.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly value = model<PctTimeOfDay | null>(null);
 
@@ -150,49 +150,49 @@ export class PctTime
   /**
    * Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   /**
    * Keeps the value: the input takes the native `readonly` and the clock button is disabled with it, while the field stays focusable.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly readonly = input(false, { transform: booleanAttribute });
 
   /**
    * The form's verdict; shown only once `touched`, so an empty form does not open red.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly invalid = input(false, { transform: booleanAttribute });
 
   /**
    * Whether the user has left the field once; with `invalid` it gates the error face.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly touched = input(false, { transform: booleanAttribute });
 
   /**
    * Marks the label with the required sign; with `[formField]` it follows the schema's `required()`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly required = input(false, { transform: booleanAttribute });
 
   /**
    * The form's validation errors; the first one's `message` takes the hint's place once the field is touched.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
   /**
    * A verdict without a veto (0087): shown after the error and before the hint once the field is touched, in the warning tone, with `aria-invalid` untouched. Left unbound, the control reads what `pctWarn()` wrote for its own `[formField]`; bound — `[]` included — the list given stands.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly warnings = input<
     readonly ValidationError.WithOptionalFieldTree[] | undefined
@@ -201,14 +201,14 @@ export class PctTime
   /**
    * The warnings drawn under the control — the input, or the form's (0087). The chrome reads this one list.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly fieldWarnings = pctFieldWarnings(this.warnings);
 
   /**
    * The native `name` — what a form submission calls the value.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly name = input<string>('');
 
@@ -223,28 +223,28 @@ export class PctTime
    * midnight, `22:00` to `06:00` — the reading the HTML specification gives a time input, and
    * all three engines implement it (0086, A12).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly min = input(undefined, { transform: optionalTime });
 
   /**
    * The latest time — as `min`, a bound on the panel's walk and not a rewrite of what was typed.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly max = input(undefined, { transform: optionalTime });
 
   /**
    * The step in seconds, counted from `min` — 60 by default, like the native attribute. It decides what the panel's columns offer (`900` is the minutes `00 15 30 45`), whether a seconds column exists and the value carries `:ss` — and nothing about typed text: a time off the step is a time, and the form's to refuse (0086 §5). A step the columns cannot list is refused with a dev-mode warning and read as 60.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly step = input(60, { transform: numberAttribute });
 
   /**
    * Emitted on blur — lets the form mark the field as touched.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly touch = output<void>();
 
@@ -253,14 +253,14 @@ export class PctTime
   /**
    * The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly label = input<string>('');
 
   /**
    * A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly hint = input<string>('');
 
@@ -269,42 +269,42 @@ export class PctTime
    * `aria-label` on the tag, because the textbox sits inside this template and an ARIA name
    * on the roleless host is ignored.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabel = input<string>('');
 
   /**
    * As `ariaLabel`, for a name that already stands somewhere on the page.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabelledby = input<string>('');
 
   /**
    * Overrides the application's `LOCALE_ID` for this field — and with it the clock: `en-US` counts twelve hours and `en-GB` twenty-four, and `en-US-u-hc-h23` forces the second on the first.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly locale = input<string>('');
 
   /**
    * Whether the format hint stands in the field while it is empty (`hh:mm`).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly showFormat = input(true, { transform: booleanAttribute });
 
   /**
    * Height 28 / 36 / 44 px — the axis every field shares; from `providePctConfig` by default (req-api-config).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**
    * Which edge of the field the panel lines up with.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly panelAlign = input<PctTimePanelAlign>('start');
 
@@ -319,7 +319,7 @@ export class PctTime
   /**
    * The id of the text input the label points at.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly controlId = `${this.uid}-control`;
   protected readonly hintId = `${this.uid}-hint`;
@@ -334,14 +334,14 @@ export class PctTime
   /**
    * `for`: the chrome's label points at the input above.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly labelStrategy: PctLabelStrategy = 'for';
   /**
    * A click anywhere on the field places the caret — the control is typed into, and the
    * columns are behind a button of their own.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly fieldCursor: PctFieldCursor = 'text';
 
@@ -365,7 +365,7 @@ export class PctTime
   /**
    * Text in the field that is not a time. The form sees `null` and calls the field empty, so the control says this itself.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ownErrors = computed<readonly PctValidationError[]>(() =>
     this.malformed() ? [{ message: this.texts().timeMalformed }] : [],
@@ -515,7 +515,7 @@ export class PctTime
   /**
    * The chrome hands over the ids of its hint and error, and the input describes itself by them.
    *
-   * @since next
+   * @since 0.3.0
    */
   setDescribedBy(ids: string | null): void {
     this.fieldDescribedBy.set(ids);
@@ -524,7 +524,7 @@ export class PctTime
   /**
    * Called by signal forms (`focusBoundControl()`, for instance), and by the chrome.
    *
-   * @since next
+   * @since 0.3.0
    */
   focus(options?: FocusOptions): void {
     this.control().nativeElement.focus(options);
@@ -536,7 +536,7 @@ export class PctTime
    * and a signal form's `reset(value)` has set it before it calls this
    * ([0092](../../../../docs/decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)).
    *
-   * @since next
+   * @since 0.3.0
    */
   reset(): void {
     // None of these writes is the value's, so the form hears nothing — a commit here reached
@@ -694,7 +694,7 @@ export class PctTime
  * the two shapes Angular's own `min()` takes. One that is not a time, `undefined` among them, is
  * no bound, as it is on the field's input.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTimeBound<TValue, TPathKind extends PathKind = PathKind.Root> =
   | PctTimeOfDay
@@ -707,7 +707,7 @@ export type PctTimeBound<TValue, TPathKind extends PathKind = PathKind.Root> =
  * native element's reading, "under **and** over" (0086, A12). Each carries the bound it broke,
  * as the bound was written.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTimeBoundError =
   | {
@@ -725,7 +725,7 @@ export type PctTimeBoundError =
  * The bounds of `pctTimeBounds`, and the sentence its errors carry — one for both, or one
  * written from the error, which holds the bound.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTimeBoundsConfig<
   TValue,
@@ -864,7 +864,7 @@ function timeBound<TValue, TPathKind extends PathKind>(
  *   pctTimeBounds(p.shift, { min: '22:00', max: '06:00' }); // the night, across midnight
  * });
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTimeBounds<
   TValue extends PctTimeOfDay | null,

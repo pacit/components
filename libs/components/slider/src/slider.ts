@@ -165,7 +165,7 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
   /**
    * A verdict without a veto (0087): shown after the error and before the hint once the field is touched, in the warning tone, with `aria-invalid` untouched. Left unbound, the control reads what `pctWarn()` wrote for its own `[formField]`; bound — `[]` included — the list given stands.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly warnings = input<
     readonly ValidationError.WithOptionalFieldTree[] | undefined
@@ -174,7 +174,7 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
   /**
    * The warnings drawn under the control — the input, or the form's (0087). The chrome reads this one list.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly fieldWarnings = pctFieldWarnings(this.warnings);
 

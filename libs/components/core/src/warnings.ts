@@ -28,7 +28,7 @@ import {
  * `fieldTree`, which is why the tree is optional here and the chrome follows it nowhere
  * ([0087](../../../../docs/decisions/0087-a-warning-is-a-verdict-without-a-veto.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctWarning = ValidationError.WithOptionalFieldTree;
 
@@ -69,7 +69,7 @@ const WARNING_SCHEMAS = /* @__PURE__ */ createMetadataKey(
  * });
  * f.amount().metadata(PCT_WARNINGS)?.(); // [{ kind: 'big' }] at 20 000, [] at 5
  *
- * @since next
+ * @since 0.3.0
  */
 export const PCT_WARNINGS = /* @__PURE__ */ createManagedMetadataKey(
   (
@@ -122,7 +122,7 @@ export const PCT_WARNINGS = /* @__PURE__ */ createManagedMetadataKey(
  *   valueOf(p.start) > value() ? { kind: 'order', message: 'Ends before it starts' } : undefined,
  * );
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctWarn<TValue, TPathKind extends PathKind = PathKind.Root>(
   path: SchemaPath<TValue, SchemaPathRules.Supported, TPathKind>,
@@ -152,7 +152,7 @@ export function pctWarn<TValue, TPathKind extends PathKind = PathKind.Root>(
  * control. An empty list bound through the input is an answer, not an absence — an
  * application with a sentence of its own, or none, says so and the form's list is not read.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctFieldWarnings(
   bound: Signal<readonly PctWarning[] | undefined>,

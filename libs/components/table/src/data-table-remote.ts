@@ -50,7 +50,7 @@ const LINKS = /* @__PURE__ */ new WeakMap<object, Link>();
  * What a remote source is asked for: a block of rows, `[from, to)`, in the order and under
  * the question the table holds.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableRequest<Id extends string = string> {
   /** The first row of the block. */
@@ -72,7 +72,7 @@ export interface PctTableRequest<Id extends string = string> {
  * What a remote source answers: the rows of the block asked for, and how many rows there are
  * in all under the question.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableAnswer<T> {
   readonly rows: readonly T[];
@@ -83,7 +83,7 @@ export interface PctTableAnswer<T> {
  * Loads a block of rows. `signal` aborts when the table no longer needs the block: the order
  * or the question changed, or the view left it before it came.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTableLoad<T, Id extends string = string> = (
   request: PctTableRequest<Id>,
@@ -112,7 +112,7 @@ export type PctTableLoad<T, Id extends string = string> = (
  * @example
  * <pct-data-table pctTableWindow [pctTableRemote]="load" [columns]="columns" [rowId]="byId" [(sort)]="sort" style="block-size: 30rem" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'pct-data-table[pctTableRemote]',
@@ -129,7 +129,7 @@ export class PctTableRemote<T, Id extends string = string> {
    * Loads a block of the rows. The ids it orders by are its own type's: the columns the
    * source can sort.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly load = input.required<PctTableLoad<T, Id>>({
     alias: 'pctTableRemote',
@@ -139,14 +139,14 @@ export class PctTableRemote<T, Id extends string = string> {
    * How many rows a block holds: what one request asks for. A whole number of at least one;
    * anything else is the default.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly blockSize = input(100, { transform: sizeOf });
 
   /**
    * A new order or question keeps the scroll where it was, rather than going back to the top.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly keepScroll = input(false, { transform: booleanAttribute });
 
@@ -171,14 +171,14 @@ export class PctTableRemote<T, Id extends string = string> {
   /**
    * How many rows the source counts, as its last answer said; 0 before the first.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly total = this.count.asReadonly();
 
   /**
    * A block is in flight.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly loading = computed(() =>
     [...this.blocks().values()].some((block) => block.state === 'loading'),
@@ -188,7 +188,7 @@ export class PctTableRemote<T, Id extends string = string> {
    * What the load of a block threw, while a block the table holds has failed; `null` while
    * none has. A failed block the view leaves is let go, and asked again when it comes back.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly error = computed(() => {
     for (const block of this.blocks().values())
@@ -293,7 +293,7 @@ export class PctTableRemote<T, Id extends string = string> {
    * Asks again for the blocks in view, keeping their rows until the answer, and lets the rest
    * go: they are asked for when the view comes back to them.
    *
-   * @since next
+   * @since 0.3.0
    */
   refresh(): void {
     const wanted = this.wanted();
@@ -306,7 +306,7 @@ export class PctTableRemote<T, Id extends string = string> {
   /**
    * Lets every row go and asks for the blocks in view, the scroll staying where it is.
    *
-   * @since next
+   * @since 0.3.0
    */
   invalidate(): void {
     this.clear();
@@ -442,7 +442,7 @@ export class PctTableRemote<T, Id extends string = string> {
  * table, so a table that loads nothing from a server carries none of it (0097).
  * `pctTableRemote` makes it, so it has no selector: there is no tag to write.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   imports: [PctButton],
@@ -458,7 +458,7 @@ export class PctTableRemoteParts {
   /**
    * What a failed block says, given the block: the sentence and its retry.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly failure = viewChild.required<TemplateRef<unknown>>('failure');
 

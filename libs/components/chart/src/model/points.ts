@@ -5,7 +5,7 @@ import type { PctWindow } from './window';
  * The points of a series, ordered by `x` — the rows a scatter plots, which come in no order of
  * their own — each with the row it was read from and the size it carries.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctPointSet extends PctColumns {
   /** The size read off each row, `NaN` where the row gave none or no accessor was given. */
@@ -20,7 +20,7 @@ export interface PctPointSet extends PctColumns {
  * at one `x` in their own order. A scatter's rows come in no order, so a point set sorts where
  * a line's columns refuse to ([0105](../../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctPointsOf<T>(
   data: readonly T[],
@@ -63,7 +63,7 @@ export function pctPointsOf<T>(
  * The largest size of a point set, or `0` when no point carries one — the size every bubble's
  * area is measured against.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctLargestSize(points: PctPointSet): number {
   let largest = 0;
@@ -79,7 +79,7 @@ export function pctLargestSize(points: PctPointSet): number {
  * size covers twice the ground, `max` for the largest size and never under `min` — a size of
  * none, of zero or below draws the smallest bubble, not nothing ([0105](../../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctPointRadius(
   size: number,
@@ -98,7 +98,7 @@ export function pctPointRadius(
  * thousand rows in a plot of 600 by 300 draw at most 45 000 marks, and a cloud of them far
  * fewer.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctThinPoints(
   xs: ArrayLike<number>,
@@ -131,7 +131,7 @@ const CELLS = 1_048_576;
  * distance — `null` with no point. The cursor of a scatter stands on the nearest point, not on
  * the pointer's `x` ([0105](../../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctNearestPoint(
   xs: ArrayLike<number>,
@@ -155,7 +155,7 @@ export function pctNearestPoint(
  * The run of a point set inside `window`, as the index of its first point and the one past its
  * last: `[start, end)`, empty when none falls in it. Two binary searches over the ordered `xs`.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctPointsIn(
   points: PctColumns,
@@ -170,7 +170,7 @@ export function pctPointsIn(
 /**
  * The first index whose `x` is at least `value` — past it, with `after`.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctPointAt(points: PctColumns, x: number): number {
   const at = lowerBound(points.xs, points.length, x);

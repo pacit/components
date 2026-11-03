@@ -4,7 +4,7 @@ import { pctIsEmptyValue } from './order';
  * How a column sums up a set of rows: the sum, the mean, the least or the greatest of its
  * numbers, how many values it holds, or a function of the values.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctAggregate<V> =
   | 'sum'
@@ -23,7 +23,7 @@ export type PctAggregate<V> =
  * pctAggregate([12, null, 30], 'sum'); // 42
  * pctAggregate([12, null, 30], 'count'); // 2
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctAggregate<V>(
   values: readonly V[],

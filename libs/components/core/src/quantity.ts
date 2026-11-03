@@ -10,7 +10,7 @@
 /**
  * How a quantity is written.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctQuantityOptions {
   /**
@@ -37,7 +37,7 @@ export interface PctQuantityOptions {
  * A formatter made once and called per value. Making one costs far more than calling it, so a
  * component builds it in a `computed` and a table of a thousand rows calls it a thousand times.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctQuantityFormat {
   format(value: number): string;
@@ -54,7 +54,7 @@ export interface PctQuantityFormat {
  * energy.format(17899.7); // '17 899,7 kWh', the spaces no-break
  * pctQuantityFormat('en', { unit: 'percent', signDisplay: 'exceptZero' }).format(12); // '+12%'
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctQuantityFormat(
   locale: string,

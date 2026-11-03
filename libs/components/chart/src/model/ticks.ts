@@ -13,7 +13,7 @@ import { pctSteps } from './steps';
  * pctNiceStep(37, 5); // 10
  * pctNiceStep(0.8, 4); // 0.2
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctNiceStep(span: number, target: number): number {
   const raw = span / target;
@@ -36,7 +36,7 @@ export function pctNiceStep(span: number, target: number): number {
  * The digits after the decimal point a tick of `step` needs, for a step of 1, 2 or 5 times a
  * power of ten: none from 1 up, one for 0.5, two for 0.05.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctFractionDigits(step: number): number {
   return step > 0 ? Math.max(0, Math.ceil(-Math.log10(step) - 1e-9)) : 0;
@@ -49,7 +49,7 @@ export function pctFractionDigits(step: number): number {
  * @example
  * pctTicks([0, 37], 5); // [0, 10, 20, 30]
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTicks(domain: PctDomain, target: number): readonly number[] {
   const [min, max] = domain;
@@ -76,7 +76,7 @@ const clean = (value: number) => Number(value.toPrecision(15));
  * @example
  * pctNice([3.2, 36.5], 5); // [0, 40]
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctNice(domain: PctDomain, target: number): PctDomain {
   const [min, max] = domain;
@@ -97,7 +97,7 @@ export function pctNice(domain: PctDomain, target: number): PctDomain {
  * so with no positive floor in sight the axis shows the three decades under its top — the
  * consumer's `floor` says better ([0105](../../../../../docs/decisions/0105-a-point-is-picked-by-distance-and-the-y-window-is-the-first-axiss.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctLogDomain(lo: number, hi: number): PctDomain {
   if (!(hi > 0)) return [1, 10];
@@ -111,7 +111,7 @@ export function pctLogDomain(lo: number, hi: number): PctDomain {
  * `target`, the decades alone when they do not, and every k-th decade when even those are too
  * many. A domain inside one decade falls back to the linear ticks.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctLogTicks(
   domain: PctDomain,

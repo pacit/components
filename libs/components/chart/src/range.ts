@@ -74,7 +74,7 @@ const BODY_SHARE = 0.6;
  * <pct-range [data]="days" x="at" low="min" high="max" name="Temperature" unit="°C" />
  * <pct-range [data]="days" x="at" low="l" high="h" open="o" close="c" name="PCT" unit="€" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-range',
@@ -86,62 +86,62 @@ export class PctRange<T> extends PctMark {
   /**
    * The rows, ordered by `x`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly data = input.required<readonly T[]>();
   /**
    * The position of a row: a key of the row or a function of it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly x = input.required<PctAccessor<NoInfer<T>, number>>();
   /**
    * The low of a row: a key of the row or a function of it; `null` is a gap.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly low = input.required<PctAccessor<NoInfer<T>, number | null>>();
   /**
    * The high of a row: a key of the row or a function of it; `null` is a gap.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly high = input.required<PctAccessor<NoInfer<T>, number | null>>();
   /**
    * The open of a row, which with `close` turns the band into candles.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly open = input<PctAccessor<NoInfer<T>, number | null> | null>(null);
   /**
    * The close of a row, which with `open` turns the band into candles.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly close = input<PctAccessor<NoInfer<T>, number | null> | null>(null);
   /**
    * What the legend, the tooltip and the table call the series.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly name = input.required<string>();
   /**
    * The series' key, stable across changes of data; the name when unset.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly id = input('');
   /**
    * The unit of the values, which decides the value axis.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input('');
   /**
    * How a band's edges are joined: `linear`, `monotone`, `step`, `step-before`. Candles hold
    * each reading until the next whatever is set here.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly curve = input<PctCurve>('linear');
   /**
@@ -149,7 +149,7 @@ export class PctRange<T> extends PctMark {
    * takes the next free place. A candle's body is the skin's rise or fall colour whatever the
    * series' own.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly color = input<
     number | string | undefined,
@@ -158,7 +158,7 @@ export class PctRange<T> extends PctMark {
   /**
    * How far the last reading of a stepped band holds: `now`, for data written when they change.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly end = input<number | null>(null);
 
@@ -329,7 +329,7 @@ export class PctRange<T> extends PctMark {
   /**
    * See `PctMark.extent`: from the lowest low to the highest high in the window.
    *
-   * @since next
+   * @since 0.3.0
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     if (id !== this.key()) return null;
@@ -343,7 +343,7 @@ export class PctRange<T> extends PctMark {
   /**
    * See `PctMark.valueAt`: a band's high, a candle's close.
    *
-   * @since next
+   * @since 0.3.0
    */
   override valueAt(id: string, x: number): number | null {
     if (id !== this.key()) return null;
@@ -359,7 +359,7 @@ export class PctRange<T> extends PctMark {
    * See `PctMark.readAt`: a band reads `low – high`, bare in a cell; a candle reads its close,
    * as a number.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readAt(id: string, x: number, bare = false): string | null {
     if (id !== this.key() || this.candles()) return null;
@@ -373,7 +373,7 @@ export class PctRange<T> extends PctMark {
   /**
    * See `PctMark.notesAt`: a candle's open, high and low on lines of their own.
    *
-   * @since next
+   * @since 0.3.0
    */
   override notesAt(x: number): readonly PctMarkNote[] {
     if (!this.candles() || this.hidden()) return [];
@@ -386,7 +386,7 @@ export class PctRange<T> extends PctMark {
   /**
    * See `PctMark.columns`: a candle's open, high and low, after the series' close.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly columns = computed<readonly PctMarkColumn[]>(() => {
     if (!this.candles() || this.hidden()) return [];
@@ -401,7 +401,7 @@ export class PctRange<T> extends PctMark {
   /**
    * See `PctMark.textAt`: the column's value at `x`, written with the unit.
    *
-   * @since next
+   * @since 0.3.0
    */
   override textAt(id: string, x: number): string | null {
     const key = this.key();
@@ -421,7 +421,7 @@ export class PctRange<T> extends PctMark {
   /**
    * See `PctMark.rowsIn`: a row per candle in the window; a band is decimated like a line.
    *
-   * @since next
+   * @since 0.3.0
    */
   override rowsIn(id: string, window: PctWindow): readonly number[] | null {
     if (id !== this.key() || !this.candles()) return null;
@@ -433,7 +433,7 @@ export class PctRange<T> extends PctMark {
   /**
    * See `PctMark.readings`: the highs, whose positions are the series' readings.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readings(): PctColumns {
     return this.highs();

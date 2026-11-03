@@ -36,7 +36,7 @@ import type {
  * What an editor template is handed: the row, the draft its control edits, and the two ends
  * of the edit.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctEditorContext<
   T,
@@ -81,7 +81,7 @@ export interface PctEditorContext<
  *   <pct-select [options]="rooms" [value]="value()" (valueChange)="value.set($event ?? value())" ariaLabel="Room" />
  * </ng-template>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[pctEditor]',
@@ -94,7 +94,7 @@ export class PctEditorTemplate<
   /**
    * The template itself.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly template =
     inject<TemplateRef<PctEditorContext<T, M, Id>>>(TemplateRef);
@@ -102,21 +102,21 @@ export class PctEditorTemplate<
   /**
    * The table's list of columns. It carries the types into the context and is never read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({ alias: 'pctEditor' });
 
   /**
    * The id of the column the template edits, or a list of ids that share it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly pctEditorOf = input.required<Id | readonly Id[]>();
 
   /**
    * What the editing calls when its content query finds this template.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly read = pctReportOrphanSlot('pctEditor');
 
@@ -142,7 +142,7 @@ export class PctEditorTemplate<
  * Typed by the column's id, so the value of `power` is the type of `power` — or `null`, a
  * number's field emptied, and the value it gives back on an undo.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTableChange<M extends Record<string, unknown>> = {
   readonly [Id in keyof M & string]: {
@@ -157,7 +157,7 @@ export type PctTableChange<M extends Record<string, unknown>> = {
  * every cell an edit of the whole row changed — and what made it: an editor committed, or
  * `undo()` and `redo()` asking for a value back.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableEdit<T, M extends Record<string, unknown>> {
   readonly id: PctRowId;
@@ -252,7 +252,7 @@ const PATIENCE = 10;
  * @example
  * <pct-data-table [pctTableGrid]="columns" [pctTableEditing]="columns" [editable]="['name', 'power']" (edit)="apply($event)" …>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'pct-data-table[pctTableEditing]',
@@ -272,7 +272,7 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
    * The table's list of columns, which carries the ids and the values' types the edits are
    * typed by. Never read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({
     alias: 'pctTableEditing',
@@ -282,7 +282,7 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
    * Which cells may be edited: the ids of the columns whose every cell may, or a question
    * asked of each row and column.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly editable = input.required<
     readonly (keyof M & string)[] | ((row: T, id: keyof M & string) => boolean)
@@ -291,14 +291,14 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
   /**
    * Enter opens every editable cell of the row, and the row's changes are committed together.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly rowEdit = input(false, { transform: booleanAttribute });
 
   /**
    * How many committed edits `undo()` can ask back; `0` keeps none.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly history = input(20, { transform: numberAttribute });
 
@@ -307,14 +307,14 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
    * has the focus. Set, the cell opens, if it may be edited; set to `null`, the editor closes
    * and its draft goes.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly editing = model<PctTableDataCell<keyof M & string> | null>(null);
 
   /**
    * An edit committed, or asked back: the application writes the rows it makes.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly edit = output<PctTableEdit<T, M>>();
 
@@ -324,14 +324,14 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
   /**
    * Whether `undo()` has an edit to ask back.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly canUndo = computed(() => this.past().length > 0);
 
   /**
    * Whether `redo()` has an edit to ask again.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly canRedo = computed(() => this.future().length > 0);
 
@@ -429,7 +429,7 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
   /**
    * Asks for the last committed edit back: an edit of its own, the values turned round.
    *
-   * @since next
+   * @since 0.3.0
    */
   undo(): void {
     const entry = this.past().at(-1);
@@ -451,7 +451,7 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
   /**
    * Asks again for the last edit `undo()` asked back.
    *
-   * @since next
+   * @since 0.3.0
    */
   redo(): void {
     const entry = this.future().at(-1);
@@ -1026,7 +1026,7 @@ function editorOf(target: EventTarget | null): HTMLElement | null {
  * of its kind. The table makes it in its own view, out of the paint, so a table that edits
  * nothing carries none of it (0097).
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   imports: [NgTemplateOutlet, PctNumber, PctText],
@@ -1042,7 +1042,7 @@ export class PctTableEditingParts {
   /**
    * What a cell open holds: its editor.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly editor = viewChild.required<TemplateRef<unknown>>('editor');
 

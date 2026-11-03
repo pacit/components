@@ -19,7 +19,7 @@
  * `latn` in chromium 149 and to `mymr` in firefox 151 and webkit 26.5 — measured — so a table of
  * digits per locale would be wrong in one engine of three whichever way it was filled in.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctDigitsOf(
   locale: string,
@@ -57,7 +57,7 @@ export function pctDigitsOf(
  * by name, and a platform that will not take it is not an error worth throwing over: the ASCII
  * digits are then what the number is written in, which is what the field falls back to as well.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctNumberFormat(
   locale: string,
@@ -92,7 +92,7 @@ export function pctNumberFormat(
  * control proved it dead: `ar-EG` writes its date separator as `U+200F /`, and every character
  * that is not a digit already separates.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctToLatinDigits(
   text: string,

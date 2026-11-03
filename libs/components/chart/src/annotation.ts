@@ -32,7 +32,7 @@ const NO_READINGS: PctColumns = {
  * apart by a `label` and a `color`, and a reader hears it in the picture's description
  * ([0099](../../../../docs/decisions/0099-a-chart-is-scales-the-marks-share-and-a-ready-chart-is-a-recipe.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   // A base: no selector and no host of its own; each annotation that extends it has both.
@@ -41,21 +41,21 @@ export abstract class PctAnnotation extends PctMark {
   /**
    * The text written by the drawing, and the sentence's subject in the description.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly label = input('');
   /**
    * The identity the legend's toggle hides the annotation by (`hiddenSeries`): the label when
    * unset.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly id = input('');
   /**
    * The colour: a palette place from 1 to 8, or any CSS colour. The skin's own colour for the
    * kind of annotation when unset.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly color = input<
     number | string | undefined,
@@ -64,7 +64,7 @@ export abstract class PctAnnotation extends PctMark {
   /**
    * The annotation stands in the legend too, named by its label, with a toggle that hides it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly legend = input(false, { transform: booleanAttribute });
 
@@ -83,7 +83,7 @@ export abstract class PctAnnotation extends PctMark {
   /**
    * No series: no extent.
    *
-   * @since next
+   * @since 0.3.0
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     void id;
@@ -94,7 +94,7 @@ export abstract class PctAnnotation extends PctMark {
   /**
    * No series: no value.
    *
-   * @since next
+   * @since 0.3.0
    */
   override valueAt(id: string, x: number): number | null {
     void id;
@@ -105,7 +105,7 @@ export abstract class PctAnnotation extends PctMark {
   /**
    * No series: no readings.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readings(id: string): PctColumns {
     void id;

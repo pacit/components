@@ -3,7 +3,7 @@
  * the third and fourth outside them. Four is the most a plot holds before the axes take more
  * room than the data.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctAxisSlot = 'left' | 'right' | 'left-outer' | 'right-outer';
 
@@ -25,7 +25,7 @@ const ORDER: readonly PctAxisSlot[] = [
  * let slots = pctAxisSlots(['°C', 'W'], new Map()); // °C left, W right
  * slots = pctAxisSlots(['W', '%'], slots); // W right, % left
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctAxisSlots(
   units: readonly string[],
@@ -50,7 +50,7 @@ export function pctAxisSlots(
  * Whether a series of `unit` fits on a chart whose axes stand as `slots`: it does when its unit
  * already has a slot or one is free.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctAxisFits(
   slots: ReadonlyMap<string, PctAxisSlot>,

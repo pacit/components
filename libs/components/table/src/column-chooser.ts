@@ -40,7 +40,7 @@ import {
  * @example
  * <pct-table-column-chooser [columns]="columns" [(layout)]="layout" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-table-column-chooser',
@@ -65,28 +65,28 @@ export class PctTableColumnChooser<T, M extends Record<string, unknown>> {
   /**
    * The table's list of columns: the ones listed, and the ids the layout is typed by.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>();
 
   /**
    * How the user laid the columns out — the table's `layout`, bound to the same model.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly layout = model<PctTableLayout<keyof M & string>>({});
 
   /**
    * The id of an element that names the list, a heading above it most often.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabelledby = input<string>('');
 
   /**
    * The list's name in words, for a list with no element on the page to name it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabel = input<string>('');
 

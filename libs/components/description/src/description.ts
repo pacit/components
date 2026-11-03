@@ -30,7 +30,7 @@ import { nextPctId } from '@pacit/components/core';
  *   </div>
  * </dl>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'dl[pctDescriptionList]',
@@ -56,7 +56,7 @@ export class PctDescriptionList {}
  *   <pct-switch pctDescriptionControl [ariaLabelledby]="heating.termId" [(checked)]="on" />
  * </div>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'div[pctDescription]',
@@ -71,7 +71,7 @@ export class PctDescription {
   /**
    * The `id` of the term's `<dt>`: the name a control in this pair is labelled by.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly termId = nextPctId('pct-description-term');
 

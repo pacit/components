@@ -80,7 +80,7 @@ const LINKS = /* @__PURE__ */ new WeakMap<object, Link>();
  * @example
  * <pct-data-table [pctTableColumns]="columns" [(layout)]="layout" …>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'pct-data-table[pctTableColumns]',
@@ -93,7 +93,7 @@ export class PctTableColumns<T, M extends Record<string, unknown>> {
   /**
    * The table's list of columns, which carries the ids the layout is typed by. Never read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({
     alias: 'pctTableColumns',
@@ -103,7 +103,7 @@ export class PctTableColumns<T, M extends Record<string, unknown>> {
    * How the user laid the columns out: their order, their widths, the ones hidden and the
    * ones pinned. Empty, every column stands as `columns` gives it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly layout = model<PctTableLayout<keyof M & string>>({});
 
@@ -148,7 +148,7 @@ export class PctTableColumns<T, M extends Record<string, unknown>> {
    * only those — or every column shown when no id is given. Measured in the browser: on the
    * server, nothing.
    *
-   * @since next
+   * @since 0.3.0
    */
   fit(column?: keyof M & string): void {
     const table = this.host.nativeElement.querySelector<HTMLTableElement>(
@@ -197,7 +197,7 @@ export class PctTableColumns<T, M extends Record<string, unknown>> {
    * Lays the columns out as `columns` gives them: every width, place, pin and hidden column
    * forgotten.
    *
-   * @since next
+   * @since 0.3.0
    */
   reset(): void {
     this.layout.set({});
@@ -209,7 +209,7 @@ export class PctTableColumns<T, M extends Record<string, unknown>> {
  * menu and its separator — and the handlers of both. Declared here, rendered there.
  * `pctTableColumns` makes it, so it has no selector: there is no tag to write.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   imports: [PctIcon, PctMenu, PctMenuItem, PctMenuTrigger],
@@ -228,7 +228,7 @@ export class PctTableColumnParts {
   /**
    * What a header holds beside its label: the column's menu and its separator.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly head = viewChild.required<TemplateRef<unknown>>('head');
 

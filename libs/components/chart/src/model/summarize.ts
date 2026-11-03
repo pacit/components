@@ -6,7 +6,7 @@ import type { PctWindow } from './window';
  * What a legend writes beside a series with no cursor on the chart: the sum or the mean of
  * its readings in the window, or none.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctSummary = 'sum' | 'mean';
 
@@ -17,7 +17,7 @@ export type PctSummary = 'sum' | 'mean';
  * @example
  * pctSummarize(columns, window, 'mean');
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctSummarize(
   columns: PctColumns,

@@ -89,7 +89,7 @@ export type PctIconName =
  * answers an id with data — a font's classes, an SVG drawing, a component — and may name
  * the roles in its own vocabulary ([0083](../../../../docs/decisions/0083-an-icon-source-answers-a-name-with-data-and-the-box-renders-it.md)).
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctIconSetOrSource = Type<unknown> | PctIconSource;
 
@@ -112,7 +112,7 @@ export const PCT_ICONS = new InjectionToken<Type<unknown>>('PCT_ICONS');
  * `providePctIcons(…)` provides ([0083](../../../../docs/decisions/0083-an-icon-source-answers-a-name-with-data-and-the-box-renders-it.md)).
  * A source holds no markup at all, which is why it can be a plain object.
  *
- * @since next
+ * @since 0.3.0
  */
 export const PCT_ICON_SOURCES = new InjectionToken<
   readonly PctIconSetOrSource[]
@@ -206,7 +206,7 @@ class PctIconComponentSource implements PctIconSource {
   /**
    * The template names, each under itself: a set's roles are the names it registered.
    *
-   * @since next
+   * @since 0.3.0
    */
   get roles(): Readonly<Partial<Record<PctIconName, string>>> {
     return Object.fromEntries(
@@ -409,7 +409,7 @@ export class PctIcon {
    * answer for. `string` until the application augments `PctIconIds`, and then exactly its
    * keys. Not for a component of the library: those name a role.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly icon = input<PctIconId | null>(null);
 
@@ -419,7 +419,7 @@ export class PctIcon {
    * so a tone here never speaks alone; what it cannot do is tell two states apart by colour
    * on one and the same glyph ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly tone = input<PctTone | null>(null);
 
@@ -428,7 +428,7 @@ export class PctIcon {
    * and the right one beside text. The steps are tokens, so a theme moves them
    * (`req-token-override`); any other size is `font-size` on the box.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly size = input<PctSize | null>(null);
 
@@ -438,7 +438,7 @@ export class PctIcon {
    * hidden from the accessibility tree, which is right for every icon that stands beside
    * the words it repeats.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly label = input<string | null>(null);
 

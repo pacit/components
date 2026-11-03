@@ -13,7 +13,7 @@ import type { PctRowId } from './columns';
  * - `details`: the details of the row before it, the full width of the table.
  * - `group`: the heading of a group of rows.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTableLine<T> =
   | {
@@ -45,7 +45,7 @@ export type PctTableLine<T> =
  * One level of grouping: the value rows are grouped by, and the label a group is headed with,
  * written from its first row.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctGroupBy<T> {
   readonly value: (row: T) => unknown;
@@ -56,7 +56,7 @@ export interface PctGroupBy<T> {
  * What opens below or inside a row: its details, and its children in a tree; and the groups
  * the rows stand in.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctLinesOptions<T> {
   /**
@@ -94,7 +94,7 @@ function keyed(value: unknown): unknown {
  * @example
  * pctGroupKey([0, 'Hall']); // '[0,"Hall"]'
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctGroupKey(values: readonly unknown[]): string {
   return JSON.stringify(values.map(keyed));
@@ -110,7 +110,7 @@ export function pctGroupKey(values: readonly unknown[]): string {
  * not lines at all, so the count of lines is the count a reader can reach. An `undefined` in
  * `rows` is a hole: only a remote source writes one, and nothing sorts or filters it.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctLines<T>(
   rows: readonly (T | undefined)[],
@@ -200,7 +200,7 @@ export function pctLines<T>(
  * The key `@for` tracks a line by: its kind and its key, so a hole `1` and a row `1`, or a
  * row and its details, are never one line to Angular, and a row id `1` and `'1'` stay two.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctLineKey<T>(line: PctTableLine<T>): string {
   return `${line.kind}:${JSON.stringify(line.key)}`;

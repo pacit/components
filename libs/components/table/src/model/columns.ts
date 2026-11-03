@@ -9,7 +9,7 @@ import type { PctAggregate } from './aggregate';
  * What names a row across renders: the key `@for` tracks, and the one selection, details and
  * focus hold on to when the application hands the table a new list every few seconds.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctRowId = string | number;
 
@@ -17,7 +17,7 @@ export type PctRowId = string | number;
  * How a column of instants is written: as a wall clock by `format`, or relative to now
  * ("in 5 minutes") when `relative` is set.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctInstantCellOptions {
   /**
@@ -45,7 +45,7 @@ export interface PctInstantCellOptions {
  * addresses may be declared an instant: that is the consumer's declaration, not a type
  * error.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctCellKind<V> =
   | 'text'
@@ -57,7 +57,7 @@ export type PctCellKind<V> =
 /**
  * The kind that writes a number with its unit; a kind is one of these, never both.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctNumberKind {
   readonly number: PctQuantityOptions;
@@ -67,7 +67,7 @@ export interface PctNumberKind {
 /**
  * The kind that writes an instant; a kind is one of these, never both.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctInstantKind {
   readonly instant: PctInstantCellOptions;
@@ -78,7 +78,7 @@ export interface PctInstantKind {
  * The ways a column of values of type `V` may be filtered: a range or a range of days only
  * where the value is a number, the same test the kinds take.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctColumnFilterUseOf<V> =
   | false
@@ -91,7 +91,7 @@ export type PctColumnFilterUseOf<V> =
  * Every kind, whatever the value: what a column built from an accessor is checked against
  * before its value's type is known.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctAnyCellKind =
   'text' | 'boolean' | PctNumberKind | PctInstantKind;
@@ -100,7 +100,7 @@ export type PctAnyCellKind =
  * The values a kind can write: a boolean kind booleans, a number or instant kind numbers, the
  * text kind anything.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctValueOfKind<K extends PctAnyCellKind> = K extends 'boolean'
   ? boolean | null | undefined
@@ -117,7 +117,7 @@ export type PctValueOfKind<K extends PctAnyCellKind> = K extends 'boolean'
  * ([0097](../../../../../docs/decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)).
  * Fields join the interface in the phase that gives them a consumer.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctColumn<T, V = unknown, Id extends string = string> {
   readonly id: Id;
@@ -197,7 +197,7 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
  * What a consumer writes beside the key or the accessor when building a column: `V` the
  * value's type, `T` the row's, which a tone and a tooltip read.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctColumnSpec<V, T = unknown> = Omit<
   PctColumn<T, V>,
@@ -211,7 +211,7 @@ export type PctColumnSpec<V, T = unknown> = Omit<
  * `PctColumn<T, number>` is not a `PctColumn<T, unknown>`, and a list of mixed columns has no
  * other common type. This is the one `any` the table's API takes, and it takes it by name.
  *
- * @since next
+ * @since 0.3.0
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type PctAnyColumn<T> = PctColumn<T, any>;
@@ -219,7 +219,7 @@ export type PctAnyColumn<T> = PctColumn<T, any>;
 /**
  * The map from each column's id to its value's type, read off a list of columns.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctColumnMap<C extends readonly PctAnyColumn<never>[]> = {
   readonly [
@@ -234,7 +234,7 @@ export type PctColumnMap<C extends readonly PctAnyColumn<never>[]> = {
  * is. A cell template reads the map, so a misspelt id or a wrong value type is the compiler's
  * error, not the user's.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctColumns<T, M extends Record<string, unknown>> = readonly {
   readonly [K in keyof M & string]: PctColumn<T, M[K], K>;
@@ -256,7 +256,7 @@ export type PctColumns<T, M extends Record<string, unknown>> = readonly {
  *   col.value('next', (rule) => rule.nextAt, { header: 'Next', kind: { instant: { relative: true } } }),
  * ]);
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctColumnsOf<T>(): {
   key<K extends keyof T & string>(
@@ -291,7 +291,7 @@ export function pctColumnsOf<T>(): {
  * Whether a column aligns to the end with tabular digits: as it says, or when its kind writes
  * a number.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctColumnNumeric<T>(column: PctAnyColumn<T>): boolean {
   if (column.numeric !== undefined) return column.numeric;
@@ -305,7 +305,7 @@ export function pctColumnNumeric<T>(column: PctAnyColumn<T>): boolean {
  * first stay longest. A column with no priority, or one that is not a finite number, never
  * hides.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctHideOrder<T>(
   columns: readonly PctAnyColumn<T>[],

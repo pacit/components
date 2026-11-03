@@ -18,7 +18,7 @@ import type { PctIconName } from './icon';
  *   }
  * }
  *
- * @since next
+ * @since 0.3.0
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type -- the shape IS the emptiness: a consumer fills it in
 export interface PctIconIds {}
@@ -26,7 +26,7 @@ export interface PctIconIds {}
 /**
  * What `icon` takes: every key of `PctIconIds`, or any string while that interface is empty.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctIconId = [keyof PctIconIds] extends [never]
   ? string
@@ -35,19 +35,19 @@ export type PctIconId = [keyof PctIconIds] extends [never]
 /**
  * A drawing a set component registered under a role: the template renders in the box.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctIconTemplateRendering {
   /**
    * Which kind of answer this is.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly kind: 'template';
   /**
    * The `<ng-template pctIcon>` of the set.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly template: TemplateRef<void>;
 }
@@ -57,31 +57,31 @@ export interface PctIconTemplateRendering {
  * when the font reads one (Material), with `font-variation-settings` or whatever else the
  * font takes as inline style.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctIconFontRendering {
   /**
    * Which kind of answer this is.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly kind: 'font';
   /**
    * The classes the font keys the glyph on — `fa-solid fa-house`, `pi pi-check`.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly class: string;
   /**
    * The ligature text, for a font that draws its glyph from the word written in the span.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly text?: string;
   /**
    * Inline style the glyph needs — the variation axes of a variable font.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly style?: Readonly<Record<string, string>>;
 }
@@ -94,25 +94,25 @@ export interface PctIconFontRendering {
  * application providing only an icon font never carries the SVG renderer, which lives in
  * `@pacit/components/svg-icon` for that reason ([`lesson-86`](../../../../docs/lessons.md#lesson-86)).
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctIconComponentRendering {
   /**
    * Which kind of answer this is.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly kind: 'component';
   /**
    * The component to create inside the box.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly component: Type<unknown>;
   /**
    * Its inputs, by name.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly inputs?: Readonly<Record<string, unknown>>;
 }
@@ -124,7 +124,7 @@ export interface PctIconComponentRendering {
  * markup a consumer wrote, which is the shape
  * [0028](../../../../docs/decisions/0028-an-icon-set-is-a-component.md) refused.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctIconRendering =
   PctIconTemplateRendering | PctIconFontRendering | PctIconComponentRendering;
@@ -143,13 +143,13 @@ export type PctIconRendering =
  *   roles: { close: 'x', check: 'tick' },
  * };
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctIconSource {
   /**
    * The rendering for an id, or `null` when this source has no such icon.
    *
-   * @since next
+   * @since 0.3.0
    */
   resolve(id: string): PctIconRendering | null;
   /**
@@ -158,7 +158,7 @@ export interface PctIconSource {
    * ships with; a role set to `undefined` does the same, which is how a consumer keeps one
    * library drawing while taking an adapter's map for the rest.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly roles?: Readonly<Partial<Record<PctIconName, string | undefined>>>;
 }
@@ -171,7 +171,7 @@ export interface PctIconSource {
  * attribute outside the list it paints — which is what makes a drawing from data safe to
  * render without trusting anybody.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctSvgNode = readonly [
   tag: string,
@@ -182,13 +182,13 @@ export type PctSvgNode = readonly [
  * An SVG drawing as data: the box it is drawn in, the attributes of the root and the
  * elements inside it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctSvgIconData {
   /**
    * The `viewBox` of the drawing — `0 0 24 24` for a 24-grid icon.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly viewBox: string;
   /**
@@ -196,13 +196,13 @@ export interface PctSvgIconData {
    * paints itself in `currentColor` so that the box's colour is the icon's. An `undefined`
    * value is an attribute left out, which is how the typed packages spell an optional one.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly attributes?: Readonly<Record<string, string | number | undefined>>;
   /**
    * The elements, in drawing order.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly nodes: readonly PctSvgNode[];
 }
@@ -212,13 +212,13 @@ export interface PctSvgIconData {
  * `@fortawesome/free-solid-svg-icons`. Only the `icon` tuple is read — the width, the
  * height and the path data, one path or two.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctSvgIconDefinition {
   /**
    * `[width, height, ligatures, unicode, pathData]`, as the package writes it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly icon: readonly [
     width: number,
@@ -234,7 +234,7 @@ export interface PctSvgIconDefinition {
  * packages built like it — drawn on the 24-grid with their stroke conventions), or a
  * FontAwesome definition.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctSvgIconInput =
   PctSvgIconData | readonly PctSvgNode[] | PctSvgIconDefinition;

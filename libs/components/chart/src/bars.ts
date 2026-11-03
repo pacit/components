@@ -36,7 +36,7 @@ import {
  * What a press on a bar picks: the series, the band's index and the row the bar was drawn
  * from, with the bar's value and the band's start.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctPick<T> {
   readonly series: string;
@@ -92,7 +92,7 @@ const INNER = 0.8;
  *   <pct-bars [data]="days" x="at" y="energy" name="Heat pump" unit="kWh" [compare]="lastMonth" compareName="Last month" />
  * </pct-chart>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-bars',
@@ -104,44 +104,44 @@ export class PctBars<T> extends PctMark {
   /**
    * The rows, each with a position and a value.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly data = input.required<readonly T[]>();
   /**
    * The position of a row: an instant on a time axis, a category's index on a band axis.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly x = input.required<PctAccessor<NoInfer<T>, number>>();
   /**
    * The value of a row; `null` or anything but a finite number is no bar.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly y = input.required<PctAccessor<NoInfer<T>, number | null>>();
   /**
    * The series' name: what the legend, the tooltip and the table call it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly name = input.required<string>();
   /**
    * The series' id, which tells it apart in `hiddenSeries` and the reading; the name when unset.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly id = input('');
   /**
    * The unit the value axis is chosen by: `°C`, `kWh`, `%`, any text.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly unit = input('');
   /**
    * The colour: a palette place from 1 to 8, or any CSS colour; the next free place when
    * unset (0102).
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly color = input<
     number | string | undefined,
@@ -152,45 +152,45 @@ export class PctBars<T> extends PctMark {
    * mark's `stack` is its group, so stacked marks stand on each other, and a mark with
    * neither is a group of its own.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly group = input('');
   /**
    * The stack the bars stand on: marks of one stack, in their order, stand on each other,
    * positives up from zero and negatives down from it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly stack = input<string | undefined>(undefined);
   /**
    * A period compared by position: its i-th row stands beside the i-th band.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly compare = input<readonly T[] | undefined>(undefined);
   /**
    * The compared series' name.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly compareName = input('');
   /**
    * Where the compared bar stands: before the current one (an earlier period, the default)
    * or after it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly compareSide = input<'before' | 'after'>('before');
   /**
    * Writes each bar's value over it, thinned where they would touch.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly labels = input(false, { transform: booleanAttribute });
   /**
    * A press on a bar: the series, the band's index and the row.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly pick = output<PctPick<T>>();
 
@@ -199,14 +199,14 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.template`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly template =
     viewChild.required<TemplateRef<unknown>>('drawing');
   /**
    * See `PctMark.swatch`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly swatch =
     viewChild.required<TemplateRef<PctSwatchContext>>('swatch');
@@ -217,7 +217,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.series`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly series = computed<readonly PctSeriesSpec[]>(() => {
     const own: PctSeriesSpec = {
@@ -244,7 +244,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.band`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly band = computed(() => ({
     group: this.group() || this.stack() || this.key(),
@@ -259,7 +259,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.span`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readonly span = computed<PctDomain | null>(() => {
     const { xs, length } = this.readingsOf();
@@ -453,7 +453,7 @@ export class PctBars<T> extends PctMark {
    * and the compared one, in percent of the compared — none where either is missing or the
    * compared is zero.
    *
-   * @since next
+   * @since 0.3.0
    */
   override notesAt(x: number): readonly PctMarkNote[] {
     const hidden = new Set(this.scene.hiddenSeries());
@@ -490,7 +490,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.extent`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     if (id !== this.key() && id !== this.compareKey()) return null;
@@ -516,7 +516,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.valueAt`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override valueAt(id: string, x: number): number | null {
     if (id !== this.key() && id !== this.compareKey()) return null;
@@ -528,7 +528,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.readings`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override readings(id: string): PctColumns {
     const bands = this.scene.bands();
@@ -543,7 +543,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.valuesIn`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override valuesIn(
     id: string,
@@ -566,7 +566,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.rowsIn`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override rowsIn(id: string, window: PctWindow): readonly number[] | null {
     void id;
@@ -579,7 +579,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.bandAt`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override bandAt(id: string, x: number): PctWindow | null {
     void id;
@@ -589,7 +589,7 @@ export class PctBars<T> extends PctMark {
   /**
    * See `PctMark.pickAt`.
    *
-   * @since next
+   * @since 0.3.0
    */
   override pickAt(id: string, x: number, y: number): boolean {
     if (id !== this.key()) return false;

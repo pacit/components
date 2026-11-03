@@ -35,7 +35,7 @@ const BUTTONS: readonly ((chart: PctChart) => void)[] = [
  * <pct-chart #chart ariaLabel="Supply air" [zoomButtons]="false"> … </pct-chart>
  * <pct-chart-zoom [chart]="chart" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-chart-zoom',
@@ -53,7 +53,7 @@ export class PctChartZoom {
   /**
    * The chart whose window the buttons move.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly chart = input.required<PctChart>();
 

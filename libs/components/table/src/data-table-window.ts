@@ -102,7 +102,7 @@ class LineHeights {
  * @example
  * <pct-data-table pctTableWindow [rows]="history()" [columns]="columns" [rowId]="byId" style="block-size: 30rem" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'pct-data-table[pctTableWindow]',
@@ -176,7 +176,7 @@ export class PctTableWindow {
    * its details always together. Known as soon as the window is, before the browser lays the
    * lines out — what a source that loads the rows a scroll reaches asks for.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly drawn = computed(() => {
     const { start, end } = this.current();
@@ -187,7 +187,7 @@ export class PctTableWindow {
    * The line at the view's top: the first a reader sees, under a sticky header. 0 for a
    * list of no lines.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly first = computed(() => this.heights().indexAt(this.current().top));
 

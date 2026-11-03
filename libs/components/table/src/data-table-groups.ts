@@ -24,7 +24,7 @@ import type { PctColumns } from './model/columns';
  * @example
  * <pct-data-table [pctTableGroups]="columns" [groupBy]="['room']" [(collapsed)]="closed" …>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'pct-data-table[pctTableGroups]',
@@ -36,7 +36,7 @@ export class PctTableGroups<T, M extends Record<string, unknown>> {
   /**
    * The table's list of columns, which carries the ids `groupBy` may name. Never read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({
     alias: 'pctTableGroups',
@@ -45,7 +45,7 @@ export class PctTableGroups<T, M extends Record<string, unknown>> {
   /**
    * The columns the rows are grouped by, outermost first. Empty, the rows stand in no group.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly groupBy = input<readonly (keyof M & string)[]>([]);
 
@@ -53,14 +53,14 @@ export class PctTableGroups<T, M extends Record<string, unknown>> {
    * The keys of the groups whose rows are hidden: a group's key is the path of its values as
    * JSON, `[0,"Hall"]` for the hall of the ground floor, so it stays the same across new rows.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly collapsed = model<readonly string[]>([]);
 
   /**
    * The rows stand in no group, whatever `groupBy` names.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 
@@ -77,7 +77,7 @@ export class PctTableGroups<T, M extends Record<string, unknown>> {
   /**
    * Opens every group.
    *
-   * @since next
+   * @since 0.3.0
    */
   expandAll(): void {
     this.collapsed.set([]);
@@ -86,7 +86,7 @@ export class PctTableGroups<T, M extends Record<string, unknown>> {
   /**
    * Collapses every group, those inside others too.
    *
-   * @since next
+   * @since 0.3.0
    */
   collapseAll(): void {
     this.collapsed.set(this.table.groupKeys());

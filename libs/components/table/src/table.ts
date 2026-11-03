@@ -24,7 +24,7 @@ import { PctIcon } from '@pacit/components/icon';
  * `Id` is `string` here, where the consumer writes the keys; the data table narrows it to the
  * ids of its columns.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableSort<Id extends string = string> {
   readonly key: Id;
@@ -66,7 +66,7 @@ export interface PctTableSort<Id extends string = string> {
  *   </tbody>
  * </table>
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'table[pctTable]',
@@ -81,7 +81,7 @@ export class PctTable {
    * sorted starts ascending, and the sorted one turns the other way. Bind it two-way and order
    * the rows from it.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly sort = model<PctTableSort | null>(null);
 }
@@ -90,7 +90,7 @@ export class PctTable {
  * The table's caption: its name, which a reader announces with the table, and the name of the
  * frame around it when the frame scrolls.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'caption[pctCaption]',
@@ -102,7 +102,7 @@ export class PctTableCaption {
   /**
    * The caption's id. A frame names itself by it, so one is generated when none is written.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly id = input(nextPctId('pct-table-caption'));
 }
@@ -111,7 +111,7 @@ export class PctTableCaption {
  * A header cell. With a `sortKey` its content is a button that proposes sorting the rows by
  * that column, and the header of the sorted column carries `aria-sort`.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'th[pctHeader]',
@@ -133,7 +133,7 @@ export class PctTableHeader {
   /**
    * The key the column is sorted by. Unset or empty, the header is a label and nothing more.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly sortKey = input<string | null, string | null | undefined>(null, {
     transform: (key) => key || null,
@@ -142,7 +142,7 @@ export class PctTableHeader {
   /**
    * The column holds numbers: its header stands at the end edge, over the digits it names.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly numeric = input(false, { transform: booleanAttribute });
 
@@ -151,14 +151,14 @@ export class PctTableHeader {
    * usually stay so: the label is the name, and a name that does not contain the visible text
    * breaks WCAG 2.5.3. It is for a header whose label is an icon or an abbreviation.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabel = input<string>('');
 
   /**
    * As `ariaLabel`, for a name that already stands somewhere on the page.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly ariaLabelledby = input<string>('');
 
@@ -167,7 +167,7 @@ export class PctTableHeader {
    * header says to the eye beside its label and nowhere in the tree. The data table writes the
    * place and the way of a sort key after the first here, which `aria-sort` cannot carry.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly description = input<string>('');
 
@@ -191,7 +191,7 @@ export class PctTableHeader {
 /**
  * A cell.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'td[pctCell]',
@@ -207,7 +207,7 @@ export class PctTableCell {
    * The cell holds a number: it stands at the end edge in digits of one width, so a column of
    * them lines up by place value.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly numeric = input(false, { transform: booleanAttribute });
 }
@@ -218,7 +218,7 @@ export class PctTableCell {
  * reach it and scroll it and a reader can say what it holds. While the table fits, the frame
  * is nothing: a stop with nothing to scroll is a stop for nothing.
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-table-frame',
@@ -253,7 +253,7 @@ export class PctTableFrame {
    * renders the frame and takes the name as an input: the attribute itself is read once, from
    * the element the consumer wrote.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly labelledby = input<string | null>(null);
 
@@ -261,7 +261,7 @@ export class PctTableFrame {
    * The frame's name in words, for a component that renders the frame and names its table
    * with a label rather than an element: the region takes it while the table overflows.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly label = input<string | null>(null);
 
@@ -271,7 +271,7 @@ export class PctTableFrame {
    * meets one stop, not a frame and then the table in it. Off, an overflowing frame is
    * `tabindex="-1"`, since Firefox puts a scrolling element with no tab index in the order.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly focusable = input(true, { transform: booleanAttribute });
 

@@ -7,7 +7,7 @@
  * @example
  * const { left, side } = pctTooltipPlace(cursorX, tooltip.offsetWidth, plotLeft, plotRight);
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctTooltipPlace(
   cursor: number,
@@ -34,7 +34,7 @@ export function pctTooltipPlace(
  * @example
  * pctThinLabels(centres, widths, 4, selected); // [true, false, true, false, …]
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctThinLabels(
   middles: readonly number[],

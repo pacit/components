@@ -1,7 +1,7 @@
 /**
  * What the table reads off itself to fit its columns into its frame.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctFitInput {
   /** The frame's width. */
@@ -21,7 +21,7 @@ export interface PctFitInput {
 /**
  * How many columns the table hides, and the width each needed.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctFit {
   readonly count: number;
@@ -41,7 +41,7 @@ export interface PctFit {
  * pctFit({ width: 250, total: 430, order: ['seen', 'power'], count: 0, widthOf: () => 100, needed: [] }, 8);
  * // { count: 2, needed: [430, 330] }
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctFit(of: PctFitInput, hysteresis: number): PctFit {
   const { width, total, order, widthOf } = of;

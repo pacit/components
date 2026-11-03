@@ -14,7 +14,7 @@ import type { PctWindow } from './window';
  * keeps every column's extremes and one reading beyond each edge (0100). With the readings'
  * `pyramid` the inside is read from its runs, at the cost of a logarithm.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctExtent(
   columns: PctColumns,
@@ -44,7 +44,7 @@ export function pctExtent(
 /**
  * What a value axis is asked to show, beyond its series.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctDomainOptions {
   /** About how many ticks the axis has room for. */
@@ -66,7 +66,7 @@ export interface PctDomainOptions {
  * @example
  * pctDomainOf([[18.2, 22.4], [19, 23.1]], { target: 5 }); // [18, 24]
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctDomainOf(
   extents: readonly (PctDomain | null)[],

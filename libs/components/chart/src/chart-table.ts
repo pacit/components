@@ -37,7 +37,7 @@ interface PctChartRow {
  * <pct-chart #chart ariaLabel="Supply air"> … </pct-chart>
  * <pct-chart-table [chart]="chart" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-chart-table',
@@ -56,27 +56,27 @@ export class PctChartTable {
   /**
    * The chart whose data the table holds.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly chart = input.required<PctChart>();
   /**
    * The table's caption: the chart's `ariaLabel` when unset. A chart named by
    * `ariaLabelledby` and no caption names its table by the same element.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly caption = input('');
   /**
    * The most rows the table holds. The extremes of each series stay among them.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly rows = input(200);
   /**
    * A foot under the rows with the sum or the mean of each series' column, or none: what a
    * table of bars by day says about the month.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly summary = input<'sum' | 'mean' | 'none'>('none');
 
@@ -232,7 +232,7 @@ export class PctChartTable {
    * a column of text as text. A text that a spreadsheet would read as a formula (`=`, `+`, `-`,
    * `@`) is written after a quote mark, as text.
    *
-   * @since next
+   * @since 0.3.0
    */
   csv(): string {
     const locale = this.chart().effectiveLocale();

@@ -183,7 +183,7 @@ export class PctDate
   /**
    * A verdict without a veto (0087): shown after the error and before the hint once the field is touched, in the warning tone, with `aria-invalid` untouched. Left unbound, the control reads what `pctWarn()` wrote for its own `[formField]`; bound — `[]` included — the list given stands.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly warnings = input<
     readonly ValidationError.WithOptionalFieldTree[] | undefined
@@ -192,7 +192,7 @@ export class PctDate
   /**
    * The warnings drawn under the control — the input, or the form's (0087). The chrome reads this one list.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly fieldWarnings = pctFieldWarnings(this.warnings);
 
@@ -655,7 +655,7 @@ export class PctDate
  * the two shapes Angular's own `min()` takes. One that is not a day, `undefined` among them, is
  * no bound, as it is on the field's input.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctDayBound<TValue, TPathKind extends PathKind = PathKind.Root> =
   PctDay | undefined | LogicFn<TValue, PctDay | undefined, TPathKind>;
@@ -664,7 +664,7 @@ export type PctDayBound<TValue, TPathKind extends PathKind = PathKind.Root> =
  * What `pctDayBounds` reports: `minDay` for a day before `min`, `maxDay` for one after `max`.
  * Each carries the bound it broke, as the bound was written.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctDayBoundError =
   | {
@@ -682,7 +682,7 @@ export type PctDayBoundError =
  * The bounds of `pctDayBounds`, and the sentence its errors carry — one for both, or one
  * written from the error, which holds the bound.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctDayBoundsConfig<
   TValue,
@@ -753,7 +753,7 @@ function dayBound<TValue, TPathKind extends PathKind>(
  *   pctDayBounds(p.endsOn, { min: ({ valueOf }) => valueOf(p.startsOn) ?? undefined });
  * });
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctDayBounds<
   TValue extends PctDay | null,

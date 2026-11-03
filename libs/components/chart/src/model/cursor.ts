@@ -69,7 +69,7 @@ function nearest(
  * @example
  * const next = pctCursorStep(series, cursor, 1, window, window span / plot width);
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctCursorStep(
   series: readonly PctColumns[],
@@ -112,7 +112,7 @@ export function pctCursorStep(
  * @example
  * pctCursorJump(series, cursor + span / 10, 1, window); // Page Up
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctCursorJump(
   series: readonly PctColumns[],

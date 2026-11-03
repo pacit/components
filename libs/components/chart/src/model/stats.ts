@@ -5,7 +5,7 @@ import { pctNiceStep } from './ticks';
  * One bin of a histogram: the values from `from` up to `to` — the last bin takes its end too —
  * and how many fell in it.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctBin {
   readonly from: number;
@@ -17,7 +17,7 @@ export interface PctBin {
  * How the bins are chosen: a count, a rule for one — Sturges' from the number of values,
  * Freedman–Diaconis' from their spread — or the edges themselves, in order.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctBinning =
   number | 'sturges' | 'freedman-diaconis' | readonly number[];
@@ -30,7 +30,7 @@ export type PctBinning =
  * @example
  * pctBin([1, 2, 2, 3, 7, 8], 'sturges'); // [{0→2: 1}, {2→4: 3}, {4→6: 0}, {6→8: 2}]
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctBin(
   values: readonly number[],
@@ -96,7 +96,7 @@ function quantile(sorted: readonly number[], p: number): number {
  * whiskers at the farthest values within one and a half interquartile ranges of the box, and
  * the outliers past them.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctQuantiles {
   readonly low: number;
@@ -113,7 +113,7 @@ export interface PctQuantiles {
  * @example
  * pctQuantiles([1, 2, 3, 4, 100]); // { low: 1, q1: 2, median: 3, q3: 4, high: 4, outliers: [100] }
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctQuantiles(values: readonly number[]): PctQuantiles | null {
   const sorted = values.filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
@@ -137,7 +137,7 @@ export function pctQuantiles(values: readonly number[]): PctQuantiles | null {
  * The smallest distance in pixels between two neighbouring positions, which bounds the width
  * a candle or a box may take without touching the next; `Infinity` for fewer than two.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctSpacing(
   positions: ArrayLike<number>,

@@ -27,7 +27,7 @@ const TICK = 1000;
  * <pct-now />
  * <pct-now [at]="reportedAt" label="Report taken" />
  *
- * @since next
+ * @since 0.3.0
  */
 @Component({
   selector: 'pct-now',
@@ -39,7 +39,7 @@ export class PctNow extends PctAnnotation {
   /**
    * The moment the line stands at, instead of the clock's.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly at = input<number | null>(null);
 
@@ -55,7 +55,7 @@ export class PctNow extends PctAnnotation {
   /**
    * The moment drawn: `at`, or the clock's.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly moment = computed(() => this.at() ?? this.clock());
 
@@ -104,7 +104,7 @@ export class PctNow extends PctAnnotation {
   /**
    * The name and the moment, while the moment is in the window.
    *
-   * @since next
+   * @since 0.3.0
    */
   override describe(): string {
     return this.drawn()

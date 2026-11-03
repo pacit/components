@@ -24,7 +24,7 @@ import { pctLineKey, type PctTableLine } from './model/lines';
  * A leading column of the grid, which has no id of its own: the rows' checkboxes, their
  * disclosures, their numbers.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctTableLeadColumn = '#select' | '#details' | '#number';
 
@@ -32,7 +32,7 @@ export type PctTableLeadColumn = '#select' | '#details' | '#number';
  * A cell of the grid: of a row, by its id, or of the header, `null`; in a column, by its id
  * or as a leading one.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableGridCell<Id extends string = string> {
   readonly row: PctRowId | null;
@@ -42,7 +42,7 @@ export interface PctTableGridCell<Id extends string = string> {
 /**
  * A cell of a row's data: of a row by its id, in a column by its id.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableDataCell<Id extends string = string> {
   readonly row: PctRowId;
@@ -53,7 +53,7 @@ export interface PctTableDataCell<Id extends string = string> {
  * A range of cells: the rectangle between two corners, both included — the rows between them
  * in the order the table draws, and the columns between them.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctTableCellRange<Id extends string = string> {
   readonly from: PctTableDataCell<Id>;
@@ -136,7 +136,7 @@ interface Lines {
  * @example
  * <pct-data-table [pctTableGrid]="columns" [(focused)]="cell" …>
  *
- * @since next
+ * @since 0.3.0
  */
 @Directive({
   selector: 'pct-data-table[pctTableGrid]',
@@ -159,7 +159,7 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
   /**
    * The table's list of columns, which carries the ids the cells are typed by. Never read.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly columns = input.required<PctColumns<T, M>>({
     alias: 'pctTableGrid',
@@ -171,7 +171,7 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
    * line of no cell of its own — a group's heading, a row's details, the row of filters, the
    * foot. Set, the stop goes there, and the focus with it while it is in the grid.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly focused = model<PctTableGridCell<keyof M & string> | null>(null);
 
@@ -180,7 +180,7 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
    * reached; `null` when a move without Shift let it go. The table marks them, and a reader
    * hears them selected.
    *
-   * @since next
+   * @since 0.3.0
    */
   readonly range = model<PctTableCellRange<keyof M & string> | null>(null);
 

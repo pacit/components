@@ -4,14 +4,14 @@ import type { PctAnyColumn } from './columns';
  * Which way a column is sorted, in the words `aria-sort` takes, so the value a header holds is
  * the value a reader is told.
  *
- * @since next
+ * @since 0.3.0
  */
 export type PctSortDirection = 'ascending' | 'descending';
 
 /**
  * One key of an order: the column and which way.
  *
- * @since next
+ * @since 0.3.0
  */
 export interface PctOrderKey<T> {
   readonly column: PctAnyColumn<T>;
@@ -22,7 +22,7 @@ export interface PctOrderKey<T> {
  * Whether a value is empty for ordering: `null`, `undefined`, `NaN` or an invalid date. An
  * empty value has nothing to compare, so it stands after every value in either direction.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctIsEmptyValue(value: unknown): boolean {
   if (value === null || value === undefined) return true;
@@ -50,7 +50,7 @@ function hasSize(value: unknown): value is number | bigint | Date {
  * numeric, and `false` before `true`. Sizes first and text after makes the order total, so
  * a column holding both still sorts the same way whatever order its rows came in.
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctCompareValues(
   a: unknown,
@@ -75,7 +75,7 @@ export function pctCompareValues(
  * @example
  * pctOrderRows(rules, [{ column: energy, direction: 'descending' }], new Intl.Collator('pl', { numeric: true }));
  *
- * @since next
+ * @since 0.3.0
  */
 export function pctOrderRows<T>(
   rows: readonly T[],
