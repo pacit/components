@@ -67,14 +67,10 @@ const hourly = (() => {
 const bins = pctBin(hourly.flatMap((h) => h.times).slice(0, 400));
 
 /**
- * A range, candles, boxes and a histogram
+ * Ranges, candles, box plots and a histogram
  *
- * `pct-range` draws a band from a `low` to a `high` at each position and reads both as
- * `low – high`; with an `open` and a `close` too it draws candles, rising in the skin's
- * `rise` colour and falling in its `fall`, the open, high and low on lines of the tooltip
- * and in columns of the table. `pct-box` draws each row's `values` as a box: the quartiles,
- * the median, whiskers within one and a half interquartile ranges, and the outliers as
- * points. A histogram is `pctBin` feeding the categories of a band axis and `pct-bars`.
+ * `pct-range` draws a low–high band, or candles with `open` and `close`; `pct-box` draws box plots;
+ * `pctBin` with `pct-bars` makes a histogram.
  */
 @Component({
   selector: 'demo-chart-ranges',

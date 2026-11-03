@@ -417,6 +417,30 @@ body {
    width is the content's own — the chips: there the centring is the point, and what moves is
    what was removed. A demo that swaps one box for another of a different height — the
    skeleton's — keeps its own height instead, in its own styles (lesson-249). */
+/* A chart takes its width from its container, and the table under it brings a width of its
+   own: shrink-wrapped in the flex stage, the demo grew to the table and ran past the stage's
+   edge. So a demo holding a chart fills the stage and may shrink below its content — the
+   table frame scrolls inside it — and an example holding one stacks its prose above the
+   stage, which then has the card's whole width instead of seven twelfths of it. */
+.stage > :has(pct-chart) {
+  flex: 1 1 100%;
+  min-inline-size: 0;
+}
+
+/* `.example` in front: the page's own `.example__card` carries its emulated attribute,
+   which a lone class and `:has(pct-chart)` do not outweigh. The column is `minmax(0, 1fr)` at
+   every width — the implicit `auto` track of the narrow layout grows to the table too. */
+.example > .example__card:has(pct-chart) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@container content (min-width: 680px) {
+  .example > .example__card:has(pct-chart) > .example__stage {
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--pct-border);
+  }
+}
+
 .stage
   > :has(
     > pct-tabs,

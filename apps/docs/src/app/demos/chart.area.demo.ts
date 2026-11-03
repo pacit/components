@@ -11,11 +11,10 @@ const outdoor = [
 ].map((value, hour) => ({ at: START + hour * HOUR, value }));
 
 /**
- * An area on a fixed axis
+ * Area on a fixed axis
  *
- * One series filled down to zero, on an axis `pct-axis` holds from 0 to 30 °C whatever the
- * day brings, so two days side by side read on one scale. The fill is the series' palette
- * colour mixed into nothing by the skin's `--pct-chart-area-alpha`.
+ * `area` fills a line down to its axis; `pct-axis` with `floor` and `ceiling` holds the scale
+ * steady whatever the data.
  */
 @Component({
   selector: 'demo-chart-area',

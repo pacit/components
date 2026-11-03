@@ -15,12 +15,10 @@ const outdoor = [
 ].map((value, hour) => ({ at: START + hour * HOUR, value }));
 
 /**
- * A cursor to read
+ * Reading the cursor
  *
- * Point at the chart, tap it, or press Tab and the arrow keys: the cursor steps from reading to
- * reading and the tooltip writes each series' value under it. The cursor is a model, so the line
- * below reads `reading()` and writes the same values outside the picture — what a legend of the
- * application's own would do.
+ * Point, tap, or Tab and the arrow keys move the cursor between readings. The cursor is a model and
+ * `reading()` gives its values to the page.
  */
 @Component({
   selector: 'demo-chart-cursor',

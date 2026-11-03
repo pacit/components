@@ -43,14 +43,10 @@ const rooms: Room[] = [
 ];
 
 /**
- * Points, bubbles and a zoom on both axes
+ * Scatter and bubbles
  *
- * `pct-points` draws a mark per row where its `x` and `y` put it, in any order: the cursor
- * stands on the nearest point, a press on one emits `pick` with its row, and `xUnit` writes
- * the unit of the horizontal axis. With `size` read off the rows the marks are bubbles whose
- * area grows with it, and the size is a column of the table and a row of the tooltip.
- * `zoom="xy"` makes Ctrl with the wheel, a pinch or a drag work the first value axis too,
- * through the `yWindow` model; `0` returns both axes.
+ * `pct-points` draws a mark per row; `size` turns them into bubbles. `zoom="xy"` zooms both axes
+ * and `pick` reports the pressed point.
  */
 @Component({
   selector: 'demo-chart-points',
