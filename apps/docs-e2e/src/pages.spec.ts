@@ -1041,7 +1041,7 @@ test.describe('The pages', () => {
     // data table's columns took a separator's line, and a pinned column its surface and shade
     // (0097); 785 since a cell open in an editor took its outline (0108); 805 since the card took its surface, its edges, its type
     // and its states (0109); 834 since the frame's bar, navigation and description list took
-    // theirs (0110); 880 since the heatmap's ramp took its steps and their text colours (0111).
+    // theirs (0110); 880 since the heatmap's ramp took its steps and their text colours (0112).
     await expect(count).toHaveText('880 of 880');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,

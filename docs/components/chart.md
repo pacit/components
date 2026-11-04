@@ -259,7 +259,7 @@ from 2 to 24 pixels wide, a box from 4 to 40 — and the axis holds the outliers
 
 **A heatmap.** `pct-heat` reads a position `x`, a row `y` and a `value` off each row of the
 data and draws a cell per band and row
-([0111](../decisions/0111-a-heatmap-is-rows-the-scene-lays-and-a-colour-the-stylesheet-mixes.md)):
+([0112](../decisions/0112-a-heatmap-is-rows-the-scene-lays-and-a-colour-the-stylesheet-mixes.md)):
 the bands are the chart's — an `interval` of time or the categories of a band axis — and the
 rows are the names `y` gives, in the order of `rowOrder` or of their first appearance, laid
 across the plot by the scene and named at its side (under it, turned). Each cell is painted on
@@ -392,7 +392,7 @@ Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
 (points picked by distance, the Y window of the first axis, a log axis of decades),
 [0106](../decisions/0106-an-area-stands-on-its-stack-and-a-range-is-two-values-at-a-time.md)
 (areas on a stack, ranges and candles, boxes, the monotone curve),
-[0111](../decisions/0111-a-heatmap-is-rows-the-scene-lays-and-a-colour-the-stylesheet-mixes.md)
+[0112](../decisions/0112-a-heatmap-is-rows-the-scene-lays-and-a-colour-the-stylesheet-mixes.md)
 (a heatmap on rows the scene lays, painted by the stylesheet mixing the skin's ramp),
 [0096](../decisions/0096-a-table-is-the-consumers-markup-or-the-librarys-rows.md) (the table
 the data stand in).

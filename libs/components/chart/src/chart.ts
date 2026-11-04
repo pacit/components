@@ -654,7 +654,7 @@ export class PctChart extends PctChartScene {
     return names;
   });
 
-  /** The rows the marks lay across the plot, in the order of the marks, each name once (0111). */
+  /** The rows the marks lay across the plot, in the order of the marks, each name once (0112). */
   private readonly rowNames = computed(() => {
     const names: string[] = [];
     for (const mark of this.marks())
@@ -1335,7 +1335,7 @@ export class PctChart extends PctChartScene {
   }
 
   /**
-   * The strip of a row across the plot (0111): the plot's width and the row's band of its
+   * The strip of a row across the plot (0112): the plot's width and the row's band of its
    * height; turned, the plot's height and a band of its width.
    *
    * @since next
@@ -2543,7 +2543,7 @@ function placesOf(
       places.set(s.id, kept);
   }
   for (const s of series) {
-    // A series in a row is painted by its mark's ramp, and takes no place (0111).
+    // A series in a row is painted by its mark's ramp, and takes no place (0112).
     if (places.has(s.id) || s.row !== undefined) continue;
     const taken = new Set(places.values());
     const free = [1, 2, 3, 4, 5, 6, 7, 8].find((p) => !taken.has(p));
