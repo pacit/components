@@ -12,6 +12,7 @@ import {
 import { PCT_TEXTS, PctAnnouncer } from '@pacit/components/core';
 import { PctDataTable } from './data-table';
 import { PctTableSelection } from './data-table-selection';
+import { PctTableTree } from './data-table-tree';
 import type { PctAnyColumn, PctColumns, PctRowId } from './model/columns';
 import { pctPlainWriter, pctWriteDelimited } from './model/csv';
 import { pctSheetText } from './model/formula';
@@ -21,6 +22,7 @@ import {
   pctGridKey,
   type PctGridMap,
   pctGridMove,
+  type PctGridMove,
   type PctGridPlace,
 } from './model/grid';
 import { pctLineKey, type PctTableLine } from './model/lines';
@@ -165,6 +167,7 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
     optional: true,
     self: true,
   });
+  private readonly tree = inject(PctTableTree, { optional: true, self: true });
 
   /**
    * The table's list of columns, which carries the ids the cells are typed by. Never read.
@@ -623,7 +626,8 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
     // The role comes with the keys, not before them: a server's table, not yet run in the
     // browser, is a table to its reader, since nothing there would move a stop yet. A range
     // holds several cells, so the grid is one of many selected.
-    set(table, 'role', 'grid');
+    // A tree's rows say their level and place, which mean something in a treegrid alone.
+    set(table, 'role', this.treeOn() ? 'treegrid' : 'grid');
     set(table, 'aria-multiselectable', 'true');
     const order = this.table.columnOrder();
     const leads = ids.filter((id) => id.startsWith('#')).length;
@@ -874,9 +878,63 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
     const ids = this.ids(table);
     const from =
       cell === null ? this.resolved(lines) : this.placeOf(cell, lines);
+    if (!step.extend && this.branch(from, step.move, lines, ids)) return;
     const to = pctGridMove(this.map(table, lines), from, step.move);
     this.stretch(from, to, step.extend, lines, ids);
     this.go(to, lines, ids, true);
+  }
+
+  /** The tree directive is on this table and on. */
+  private treeOn(): boolean {
+    return this.tree !== null && !this.tree.disabled();
+  }
+
+  /**
+   * The treegrid's two keys on a row's first cell
+   * (https://www.w3.org/WAI/ARIA/apg/patterns/treegrid/): the arrow into the line opens a
+   * closed branch, the arrow out of it closes an open one, or moves to the parent of a leaf
+   * or a closed branch. True when the key was one of them, and the stop moves no further.
+   */
+  private branch(
+    from: PctGridPlace,
+    move: PctGridMove,
+    lines: Lines,
+    ids: readonly string[],
+  ): boolean {
+    if (!this.treeOn() || (move !== 'next' && move !== 'previous'))
+      return false;
+    const leads = ids.filter((id) => id.startsWith('#')).length;
+    if (from.column !== leads) return false;
+    // The grid's lines count the header's first: the table's line is found by its key.
+    const all = this.table.lines();
+    const at = this.keys?.index.get(lines.key(from.line) as string);
+    const line = at === undefined ? undefined : all[at];
+    if (line?.kind !== 'row') return false;
+    const tree = this.tree as PctTableTree<T, M>;
+    if (move === 'next') {
+      if (line.expanded !== false) return false;
+      tree.toggle(line.key);
+      return true;
+    }
+    if (line.expanded === true) {
+      tree.toggle(line.key);
+      return true;
+    }
+    // The parent is the nearest row above that stands one level up; a root has none, and
+    // the rows of a group, which is no row, stand on their own.
+    for (let up = (at as number) - 1; up >= 0; up--) {
+      const above = all[up];
+      if (above.kind !== 'row' || above.level >= line.level) continue;
+      if (above.level !== line.level - 1) break;
+      this.go(
+        { line: lines.find(pctLineKey(above)), column: leads },
+        lines,
+        ids,
+        true,
+      );
+      return true;
+    }
+    return false;
   }
 
   /** A move with Shift stretches the range over data cells; one without lets it go. */

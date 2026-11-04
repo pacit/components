@@ -891,9 +891,15 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
       else this.redo();
       return;
     }
-    const at = this.cellAt(target);
+    // A tree row's button holds the stop of its first cell: F2 and a letter open the cell from
+    // it, while Enter and Space stay the button's, which opens the branch.
+    const node = target.matches('button[data-pct-part="disclosure"]')
+      ? target.closest('td')
+      : null;
+    const at = this.cellAt(node ?? target);
     if (at === null) return;
     if (event.key === 'Enter' || event.key === 'F2') {
+      if (node !== null && event.key === 'Enter') return;
       if (!event.shiftKey && this.begin(at, null)) event.preventDefault();
       return;
     }

@@ -113,6 +113,8 @@ const ENGLISH: PctTexts = {
   tableDetails: 'Details',
   tableDetailsOpen: 'Show details',
   tableDetailsClose: 'Hide details',
+  tableNodeOpen: 'Expand',
+  tableNodeClose: 'Collapse',
   tableGroupCount: '({count})',
   tableTotal: 'Total',
   tableGroupEmpty: 'No value',
