@@ -659,7 +659,7 @@ test.describe('The pages', () => {
     page,
   }) => {
     await visit(page, '/components/chart');
-    await expectExamplesFit(page, 'pct-chart', 13);
+    await expectExamplesFit(page, 'pct-chart, pct-pie, pct-gauge', 13);
     const titles = await page.locator('.example h3').allTextContents();
     expect(titles.filter((title) => /Midnight|\*\//.test(title))).toEqual([]);
   });
