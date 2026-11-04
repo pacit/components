@@ -797,3 +797,64 @@
   </pct-chart>
   <pct-chart-table [chart]="boxed" data-testid="box-table" />
 </sbx-demo>
+
+<sbx-demo
+  heading="A heatmap"
+  summary="pct-heat draws a value per cell of a grid: the days along the time axis, the hours as rows the chart lays across the plot and names at its side. Each cell is painted on a ramp of the skin's heat tokens, the two steps a value falls between mixed by the stylesheet, so the theme paints it and a server draws it without measuring a colour. Every row is a series: the legend lists it, the tooltip reads it at the cursor and the table carries it as a column. pct-chart-ramp beside the chart shows the ramp with the domain's ends."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-heat"
+>
+  <pct-chart
+    #heated
+    ariaLabel="Power drawn by hour and day, 12 to 25 October 2026"
+    timeZone="UTC"
+    locale="en-GB"
+    interval="day"
+    class="sbx-chart sbx-chart--tall"
+    data-testid="chart-heat"
+  >
+    <pct-heat
+      [data]="power"
+      x="day"
+      y="hour"
+      value="kw"
+      name="Power"
+      unit="kW"
+      (pick)="pickedCell.set($event.row.hour + ' on ' + $event.index)"
+    />
+  </pct-chart>
+  <pct-chart-ramp [chart]="heated" data-testid="heat-ramp" />
+  <p data-testid="heat-picked">{{ pickedCell() }}</p>
+  <pct-chart-table [chart]="heated" [rows]="6" data-testid="heat-table" />
+</sbx-demo>
+
+<sbx-demo
+  heading="A diverging heatmap with labels"
+  summary='scale="diverging" paints from the low through the middle to the high, each side on its own reach and centred on zero unless a domain says otherwise; labels writes each value on its cell, dark on the pale steps and light on the deep. A missing value is a gap, drawn as no cell. On a band axis the categories are the columns.'
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-heat-diverging"
+>
+  <pct-chart
+    #diverging
+    ariaLabel="Rooms against their set points by weekday"
+    x="band"
+    [categories]="weekdays"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-heat-diverging"
+  >
+    <pct-heat
+      [data]="deltas"
+      x="day"
+      y="room"
+      value="delta"
+      name="Against set point"
+      unit="°C"
+      scale="diverging"
+      [domain]="[-2, 0, 2]"
+      labels
+    />
+  </pct-chart>
+  <pct-chart-legend [chart]="diverging" data-testid="heat-legend" />
+  <pct-chart-ramp [chart]="diverging" data-testid="heat-diverging-ramp" />
+</sbx-demo>

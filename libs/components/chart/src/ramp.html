@@ -1,0 +1,16 @@
+@for (ramp of ramps(); track ramp.id) {
+<div class="item" data-pct-part="item">
+  <span class="name" [textContent]="ramp.scale.name"></span>
+  <!-- The bar: the ramp's tokens blended by the stylesheet, as the cells are. -->
+  <span
+    class="ramp"
+    data-pct-part="ramp"
+    [class.diverging]="ramp.scale.kind === 'diverging'"
+  ></span>
+  <span class="labels">
+    @for (label of ramp.labels; track $index) {
+    <span data-pct-part="label" [textContent]="label"></span>
+    }
+  </span>
+</div>
+}

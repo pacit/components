@@ -1,0 +1,44 @@
+<ng-template #drawing>
+  @for (cell of drawn(); track cell.row * 100000 + cell.band) {
+  <!-- The cell mixes its two steps by the classes; the label takes the nearer step's text colour. -->
+  <svg:rect
+    data-pct-part="cell"
+    [class]="'from-' + cell.from + ' to-' + cell.to"
+    [class.deep]="cell.deep"
+    [attr.x]="cell.x"
+    [attr.y]="cell.y"
+    [attr.width]="cell.width"
+    [attr.height]="cell.height"
+    [style.--_pct-heat-mix.%]="cell.mix"
+  />
+  @if (cell.label !== null) {
+  <svg:text
+    data-pct-part="label"
+    [class]="'on-' + cell.step"
+    text-anchor="middle"
+    dominant-baseline="central"
+    [attr.x]="cell.x + cell.width / 2"
+    [attr.y]="cell.y + cell.height / 2"
+    [textContent]="cell.label"
+  ></svg:text>
+  } }
+</ng-template>
+
+<!-- A row drawn small: a block of a deep step of the ramp, the cells' own shape. -->
+<ng-template #swatch let-series let-form="form">
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    [class.marker]="form === 'marker'"
+    [attr.viewBox]="form === 'marker' ? '0 0 12 12' : '0 0 24 12'"
+    [attr.data-pct-series]="series.place"
+    [style.--_pct-chart-color]="series.color"
+  >
+    @if (form === 'swatch') {
+    <svg:rect class="block" x="1" y="2" width="22" height="8" />
+    } @else {
+    <svg:rect class="block" x="2" y="2" width="8" height="8" />
+    }
+  </svg>
+</ng-template>

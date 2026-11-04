@@ -16,13 +16,7 @@
     }
   ],
   "$exceptions": "Files allowed to carry Polish, each with the task that removes it. EMPTY, and that is a measurement rather than a declaration — the gate walks the whole index and finds nothing. The list may never name a file under `libs/`: what stands there travels into `types/*.d.ts` and the bundles, where no register reaches. The one survivor the plan left to rule on — the `pl-PL` default of `libs/components/field/src/number.spec.ts` — is NOT here: a BCP-47 tag is not prose but the name of a formatting convention (that locale groups with U+00A0, which is the whole point of those tests), no limb flags it, and an entry for it would be dead on the day it was written.",
-  "exceptions": [
-    {
-      "file": "docs/acr/at/nvda-firefox-windows.md",
-      "reason": "The NVDA reader log, a verbatim record of what the reader said: on 2026-11-02 it read the scrolling table of `/datatable` whole, and that view formats its relative times with `locale=\"pl\"` on purpose, so the record quotes a relative time in Polish. A record edited to pass a gate would no longer be a record.",
-      "task": "plan 4.84"
-    }
-  ],
+  "exceptions": [],
   "$specimens": "The gate's own calibration samples. An instrument for finding Polish cannot be written without any: a canary has to be a word the dictionary really holds, and a diacritics case has to carry real diacritics. These are not exceptions — an exception owes a task that removes it and these are permanent — so they are a list of their own, and `check-language.mjs` hard-codes the tree they may name (`tools/check-language.*`). The policy chooses which files of that tree are specimens; it cannot widen the tree. Every entry is held to the same aliveness rule as everything else here: a file that stopped carrying Polish is a hole in the shape of a sample, and it fires.",
   "specimens": [
     {
@@ -151,6 +145,7 @@
         "spd",
         "str",
         "tcp",
+        "thu",
         "toc",
         "tok",
         "tr",
