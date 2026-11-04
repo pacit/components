@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import {
   Component,
   computed,
@@ -6,6 +7,7 @@ import {
   linkedSignal,
   resource,
   signal,
+  viewChild,
 } from '@angular/core';
 import { form, FormField, minLength, submit } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
@@ -41,7 +43,9 @@ import {
   type PctTableRequest,
   PctTableSelection,
   type PctTableSort,
+  pctTableCsv,
   PctTableWindow,
+  pctTableXlsx,
 } from '@pacit/components/table';
 import { SbxDemo } from '../../ui/demo';
 
@@ -527,6 +531,29 @@ export class DatatableView {
           : rule,
       ),
     );
+  }
+
+  /** The rules as a file of the page's: the table writes the text, the page downloads it. */
+  private readonly document = inject(DOCUMENT);
+  private readonly editTable =
+    viewChild.required<PctDataTable<Rule>>('editTable');
+  protected downloadCsv(): void {
+    const csv = pctTableCsv(this.editTable());
+    this.download(
+      new Blob([csv], { type: 'text/csv;charset=utf-8' }),
+      'rules.csv',
+    );
+  }
+  protected async downloadXlsx(): Promise<void> {
+    this.download(await pctTableXlsx(this.editTable()), 'rules.xlsx');
+  }
+  private download(file: Blob, name: string): void {
+    const url = URL.createObjectURL(file);
+    const link = this.document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url));
   }
 
   /** The layout as an application keeps it: a string, read back as the model. */

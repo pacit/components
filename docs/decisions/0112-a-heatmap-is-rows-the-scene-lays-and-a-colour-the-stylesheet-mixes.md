@@ -1,4 +1,4 @@
-# 0111 — A heatmap is rows the scene lays, and a colour the stylesheet mixes
+# 0112 — A heatmap is rows the scene lays, and a colour the stylesheet mixes
 
 **Status:** accepted
 **Implements:** [`req-api-templates`](../requirements/api.md#req-api-templates),

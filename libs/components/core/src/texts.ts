@@ -411,6 +411,16 @@ export interface PctTexts {
   readonly tableMoveDown: string;
   /** Data table: the name of a cell's editor. `{column}` stands for the column's header. */
   readonly tableEdit: string;
+  /** Data table: announced when cells are copied from the grid. `{count}` stands for how many. */
+  readonly tableCopied: string;
+  /** Data table: announced when cells are pasted into the grid. `{count}` stands for how many. */
+  readonly tablePasted: string;
+  /**
+   * Data table: announced when a paste left cells out — a cell that may not be edited, or a
+   * text that is no value of its column. `{count}` stands for the cells pasted, `{skipped}`
+   * for those left out.
+   */
+  readonly tablePasteSkipped: string;
 }
 
 /**
@@ -526,6 +536,9 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableMoveUp: 'Move {column} up',
   tableMoveDown: 'Move {column} down',
   tableEdit: 'Edit {column}',
+  tableCopied: 'Cells copied: {count}',
+  tablePasted: 'Cells pasted: {count}',
+  tablePasteSkipped: 'Cells pasted: {count}, left out: {skipped}',
 };
 
 /**

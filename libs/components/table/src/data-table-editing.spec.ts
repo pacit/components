@@ -9,6 +9,7 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { PctAnnouncer } from '@pacit/components/core';
 import { PctDataTable } from './data-table';
 import {
   PctEditorTemplate,
@@ -92,6 +93,7 @@ const DEVICES: Device[] = [
 class Host {
   readonly table = viewChild.required(PctDataTable<Device>);
   readonly editing$ = viewChild.required(PctTableEditing<Device, Map>);
+  readonly grid = viewChild.required(PctTableGrid<Device, Map>);
   readonly columns = columns;
   readonly byId = byId;
   readonly rows = signal(DEVICES);
@@ -1098,5 +1100,206 @@ describe('PctTableEditing — what it needs', () => {
     ).toBeNull();
     await stopOn(fixture, 1, 0);
     expect((await press(fixture, 'Enter')).defaultPrevented).toBe(false);
+  });
+});
+
+describe('PctTableEditing — a paste', () => {
+  /** A paste of `text` on the element with the focus, as the platform sends it. */
+  function paste(
+    text: string | null,
+    init: { prevented?: boolean } = {},
+  ): Event {
+    const event = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'clipboardData', {
+      value:
+        text === null
+          ? null
+          : {
+              getData: (format: string) =>
+                format === 'text/plain' ? text : '',
+            },
+    });
+    if (init.prevented) event.preventDefault();
+    active().dispatchEvent(event);
+    return event;
+  }
+
+  it('writes a block from the stop to the right and down, a row an edit, the paste one step', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    const announcer = TestBed.inject(PctAnnouncer);
+    const announce = vi.spyOn(announcer, 'announce');
+    const retract = vi.spyOn(announcer, 'retract');
+    await stopOn(fixture, 1, 0);
+    const event = paste('Desk\tStudy\r\nHeater\tHall\r\n');
+    await settle(fixture);
+    expect(event.defaultPrevented).toBe(true);
+    // The room is drawn by its own editor, whose rules a paste would pass by: it is left out.
+    expect(host.edits).toEqual([
+      {
+        id: 1,
+        row: DEVICES[0],
+        changes: [{ column: 'name', value: 'Desk', previous: 'Lamp' }],
+        cause: 'edit',
+      },
+      {
+        id: 2,
+        row: DEVICES[1],
+        changes: [{ column: 'name', value: 'Heater', previous: 'Boiler' }],
+        cause: 'edit',
+      },
+    ]);
+    expect(announce).toHaveBeenLastCalledWith('Cells pasted: 2, left out: 2');
+    expect(retract).toHaveBeenLastCalledWith('Cells pasted: 2, left out: 2');
+    expect(cell(2, 0).textContent?.trim()).toBe('Heater');
+    // One step: Ctrl+Z gives both rows back.
+    host.edits.length = 0;
+    await press(fixture, 'z', { ctrlKey: true });
+    expect(host.edits.map((edit) => [edit.id, edit.cause])).toEqual([
+      [2, 'undo'],
+      [1, 'undo'],
+    ]);
+    expect(cell(1, 0).textContent?.trim()).toBe('Lamp');
+    expect(cell(2, 0).textContent?.trim()).toBe('Boiler');
+    expect(host.editing$().canUndo()).toBe(false);
+  });
+
+  it("reads each value as its column's kind, and counts the cells it left out", async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    const announce = vi.spyOn(TestBed.inject(PctAnnouncer), 'announce');
+    await stopOn(fixture, 1, 2);
+    // `on` may not be edited; `12 W` is no number; an empty number is none.
+    paste('1,950.5\ttrue\n12 W\tfalse\n\t');
+    await settle(fixture);
+    expect(host.edits.map((edit) => edit.changes)).toEqual([
+      [{ column: 'power', value: 1950.5, previous: 12 }],
+      [{ column: 'power', value: null, previous: 40 }],
+    ]);
+    expect(announce).toHaveBeenLastCalledWith('Cells pasted: 2, left out: 4');
+  });
+
+  it('writes nothing past the last row or column, nor counts it', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    const announce = vi.spyOn(TestBed.inject(PctAnnouncer), 'announce');
+    await stopOn(fixture, 3, 2);
+    paste('7\ttrue\tmore\nunder\tit');
+    await settle(fixture);
+    expect(host.edits.map((edit) => [edit.id, edit.changes])).toEqual([
+      [3, [{ column: 'power', value: 7, previous: 40 }]],
+    ]);
+    expect(announce).toHaveBeenLastCalledWith('Cells pasted: 1, left out: 1');
+  });
+
+  it('fills a range with one value, from its first cell whichever way it was drawn', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    await stopOn(fixture, 3, 0);
+    host.grid().range.set({
+      from: { row: 3, column: 'room' },
+      to: { row: 2, column: 'name' },
+    });
+    await settle(fixture);
+    paste('Shed\r\n');
+    await settle(fixture);
+    expect(host.edits.map((edit) => [edit.id, edit.changes])).toEqual([
+      [2, [{ column: 'name', value: 'Shed', previous: 'Boiler' }]],
+      [3, [{ column: 'name', value: 'Shed', previous: 'Fan' }]],
+    ]);
+    // A block on a range is written from its top left cell, as from a stop.
+    host.edits.length = 0;
+    paste('A\tB');
+    await settle(fixture);
+    expect(host.edits.map((edit) => [edit.id, edit.changes])).toEqual([
+      [2, [{ column: 'name', value: 'A', previous: 'Shed' }]],
+    ]);
+  });
+
+  it('counts a value already there as pasted, and makes no edit and no step of it', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    const announce = vi.spyOn(TestBed.inject(PctAnnouncer), 'announce');
+    await stopOn(fixture, 1, 0);
+    paste("Lamp\t\t'12");
+    await settle(fixture);
+    expect(host.edits).toEqual([]);
+    expect(host.editing$().canUndo()).toBe(false);
+    // `'12` is no number: the apostrophe a copy writes stands before a formula's sign alone.
+    expect(announce).toHaveBeenLastCalledWith('Cells pasted: 1, left out: 2');
+    // A text the copy wrote after an apostrophe is read without it.
+    paste("'=1+1");
+    await settle(fixture);
+    expect(host.edits.map((edit) => edit.changes)).toEqual([
+      [{ column: 'name', value: '=1+1', previous: 'Lamp' }],
+    ]);
+  });
+
+  it('leaves out a cell the application does not let edit, and a text column whose values are no texts', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    const announce = vi.spyOn(TestBed.inject(PctAnnouncer), 'announce');
+    host.editable.set((row, id) => row.id !== 2 && id !== 'on');
+    host.rows.set([
+      { ...DEVICES[0], name: 5 as unknown as string },
+      DEVICES[1],
+      DEVICES[2],
+    ]);
+    await settle(fixture);
+    await stopOn(fixture, 1, 0);
+    paste('A\tB\nC\tD\nE\tF');
+    await settle(fixture);
+    expect(host.edits.map((edit) => [edit.id, edit.changes])).toEqual([
+      [3, [{ column: 'name', value: 'E', previous: 'Fan' }]],
+    ]);
+    expect(announce).toHaveBeenLastCalledWith('Cells pasted: 1, left out: 5');
+    // A text column whose value is empty takes a text.
+    host.rows.set([{ ...DEVICES[0], name: null as unknown as string }]);
+    await settle(fixture);
+    host.edits.length = 0;
+    await stopOn(fixture, 1, 0);
+    paste('Lamp');
+    await settle(fixture);
+    expect(host.edits.map((edit) => edit.changes)).toEqual([
+      [{ column: 'name', value: 'Lamp', previous: null }],
+    ]);
+  });
+
+  it('leaves a paste to an editor, a field, a control, someone else, and to the page off the grid', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    await stopOn(fixture, 1, 0);
+    await press(fixture, 'Enter');
+    expect(paste('Desk').defaultPrevented).toBe(false);
+    await press(fixture, 'Escape');
+    expect(active()).toBe(cell(1, 0));
+    expect(paste('Desk', { prevented: true }).defaultPrevented).toBe(true);
+    expect(paste(null).defaultPrevented).toBe(false);
+    expect(paste('').defaultPrevented).toBe(false);
+    // A field of the application's in a cell.
+    const inside = document.createElement('input');
+    cell(1, 0).append(inside);
+    inside.focus();
+    expect(paste('Desk').defaultPrevented).toBe(false);
+    inside.remove();
+    const outside = document.createElement('input');
+    document.body.append(outside);
+    outside.focus();
+    expect(paste('Desk').defaultPrevented).toBe(false);
+    outside.remove();
+    await settle(fixture);
+    expect(host.edits).toEqual([]);
+  });
+
+  it('writes nothing without a stop', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    await stopOn(fixture, 1, 0);
+    host.focused.set({ row: 9, column: 'name' });
+    await settle(fixture);
+    cell(1, 0).focus();
+    const event = paste('Desk');
+    expect(host.focused()).toEqual({ row: 9, column: 'name' });
+    expect(event.defaultPrevented).toBe(false);
   });
 });
