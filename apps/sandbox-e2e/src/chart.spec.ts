@@ -1567,4 +1567,191 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(cells).toHaveCount(27);
     });
   });
+
+  test.describe('a pie and a gauge', () => {
+    test('a slice per use on its place, a label on a leader where there is room, the legend and the table at its side, a press picking a slice', async ({
+      page,
+    }) => {
+      const pie = chart(page, 'chart-pie');
+      await pie.scrollIntoViewIfNeeded();
+      const slices = pie.locator('[data-pct-part="slice"]');
+      await expect(slices).toHaveCount(7);
+      // the sixth slice is the rest: the four smallest uses folded, named Others
+      await expect(slices.nth(6)).toHaveAttribute('data-pct-series', '7');
+      const legend = page.getByTestId('pie-legend');
+      const names = legend.locator('[data-pct-part="item"] .name');
+      await expect(names).toHaveCount(7);
+      await expect(names.last()).toHaveText('Others');
+      // every slice is a wedge from the middle to the rim; the selected one stands out from it
+      const paths = await slices.evaluateAll((es) =>
+        es.map((e) => e.getAttribute('d') ?? ''),
+      );
+      for (const d of paths)
+        expect(d).toMatch(/^M [\d.]+ [\d.]+ L [\d.]+ [\d.]+ A /);
+      await expect(slices.first()).toHaveClass(/selected/);
+      // a label per slice, each on a leader, none past the picture's edge
+      const labels = pie.locator('[data-pct-part="label"]');
+      const leaders = pie.locator('[data-pct-part="leader"]');
+      await expect(labels).toHaveCount(7);
+      await expect(leaders).toHaveCount(7);
+      await expect(labels.first()).toContainText('Heat pump');
+      const picture = (await pie
+        .locator('[data-pct-part="plot"]')
+        .boundingBox())!;
+      for (const box of await labels.evaluateAll((es) =>
+        es.map((e) => e.getBoundingClientRect().toJSON()),
+      )) {
+        expect(box.left).toBeGreaterThanOrEqual(picture.x - 1);
+        expect(box.right).toBeLessThanOrEqual(picture.x + picture.width + 1);
+      }
+      // the table: a row per slice with value and share, and the sum at its foot
+      const table = page.getByTestId('pie-table');
+      await expect(table.locator('thead th')).toHaveText([
+        'Series',
+        'Value (kWh)',
+        'Share',
+      ]);
+      await expect(table.locator('tbody tr')).toHaveCount(7);
+      await expect(
+        table.locator('tbody tr').first().locator('th, td'),
+      ).toHaveText(['Heat pump', '412 kWh', '46%']);
+      await expect(table.locator('tfoot td').first()).toHaveText('894 kWh');
+      // a press on the second slice picks it
+      const second = (await slices.nth(1).boundingBox())!;
+      await page.mouse.click(
+        second.x + second.width / 2,
+        second.y + second.height / 2,
+      );
+      await expect(page.getByTestId('pie-picked')).toHaveText(
+        'Hot water: 168 kWh',
+      );
+    });
+
+    test('the range is the one stop: the arrow keys walk the slices and read each, the legend hides one and the turn is shared among the rest', async ({
+      page,
+    }) => {
+      const pie = chart(page, 'chart-pie');
+      await pie.scrollIntoViewIfNeeded();
+      const range = pie.locator('[data-pct-part="range"]');
+      await expect(range).toHaveAttribute(
+        'aria-valuetext',
+        'No reading selected',
+      );
+      await range.focus();
+      await page.keyboard.press('ArrowRight');
+      await expect(range).toHaveAttribute(
+        'aria-valuetext',
+        'Heat pump: 412 kWh, 46%',
+      );
+      await expect(pie.locator('[data-pct-part="tooltip"]')).toBeVisible();
+      await page.keyboard.press('End');
+      await expect(range).toHaveAttribute('aria-valuetext', /^Others: /);
+      await expect(range).toHaveJSProperty('value', '6');
+      await page.keyboard.press('Escape');
+      await expect(range).toHaveAttribute(
+        'aria-valuetext',
+        'No reading selected',
+      );
+      // the legend hides the largest use: six slices, and the shares add up again
+      const legend = page.getByTestId('pie-legend');
+      const toggle = legend.locator('[data-pct-part="toggle"]').first();
+      await toggle.click();
+      await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+      await expect(pie.locator('[data-pct-part="slice"]')).toHaveCount(6);
+      const table = page.getByTestId('pie-table');
+      await expect(
+        table.locator('tbody tr').first().locator('td').nth(1),
+      ).toHaveText('35%');
+      await expect(range).toHaveAttribute('max', '5');
+      await toggle.click();
+      await expect(pie.locator('[data-pct-part="slice"]')).toHaveCount(7);
+    });
+
+    test('a donut leaves a hole and starts where startAngle says, folds past `others`, and writes no labels when told', async ({
+      page,
+    }) => {
+      const donut = chart(page, 'chart-donut');
+      await donut.scrollIntoViewIfNeeded();
+      const slices = donut.locator('[data-pct-part="slice"]');
+      await expect(slices).toHaveCount(5);
+      // two arcs per slice: the outer edge and the hole's
+      const d = (await slices.first().getAttribute('d'))!;
+      expect(d.match(/ A /g)).toHaveLength(2);
+      // the first slice starts at nine o'clock (startAngle -90): its first point is on the
+      // outer rim, level with the middle and left of it
+      const [, x, y] = d.match(/^M ([\d.]+) ([\d.]+)/)!;
+      const box = (await donut
+        .locator('[data-pct-part="data"]')
+        .boundingBox())!;
+      expect(Number(x)).toBeLessThan(box.width / 2);
+      expect(Math.abs(Number(y) - box.height / 2)).toBeLessThan(0.5);
+      await expect(donut.locator('[data-pct-part="label"]')).toHaveCount(0);
+      await expect(donut.locator('[data-pct-part="leader"]')).toHaveCount(0);
+      const names = page
+        .getByTestId('donut-legend')
+        .locator('[data-pct-part="item"] .name');
+      await expect(names).toHaveText([
+        'Heat pump',
+        'Hot water',
+        'Ventilation',
+        'Kitchen',
+        'Others',
+      ]);
+    });
+
+    test("a gauge is a meter: its value, range and band read on the meter, the arc filled to the value in the band's tone, a needle when asked, no reading when the value is missing", async ({
+      page,
+    }) => {
+      const gauge = chart(page, 'chart-gauge');
+      await gauge.scrollIntoViewIfNeeded();
+      const meter = gauge.locator('[data-pct-part="meter"]');
+      await expect(meter).toHaveAttribute('role', 'meter');
+      await expect(meter).toHaveAttribute('aria-valuemin', '10');
+      await expect(meter).toHaveAttribute('aria-valuemax', '30');
+      await expect(meter).toHaveAttribute('aria-valuenow', '21.5');
+      await expect(meter).toHaveAttribute('aria-valuetext', '21.5 °C, Comfort');
+      await expect(gauge).toHaveAttribute('data-pct-tone', 'success');
+      await expect(gauge.locator('[data-pct-part="band"]')).toHaveCount(3);
+      await expect(gauge.locator('[data-pct-part="value"]')).toHaveText(
+        '21.5 °C',
+      );
+      await expect(gauge.locator('[data-pct-part="state"]')).toHaveText(
+        'Comfort',
+      );
+      // the fill is an arc from the start to the value, drawn in the band's tone
+      const fill = gauge.locator('[data-pct-part="fill"]');
+      await expect(fill).toHaveCount(1);
+      await expect(gauge.locator('[data-pct-part="needle"]')).toHaveCount(0);
+      const fillColor = await fill.evaluate((e) => getComputedStyle(e).fill);
+      const bandColor = await gauge
+        .locator('[data-pct-part="band"][data-pct-tone="success"]')
+        .evaluate((e) => getComputedStyle(e).fill);
+      expect(fillColor).toBe(bandColor);
+      // the arc: the track is wider than it is tall, a 240 degree sweep
+      const track = (await gauge
+        .locator('[data-pct-part="track"]')
+        .boundingBox())!;
+      expect(track.width).toBeGreaterThan(track.height);
+      // warmer moves the value into the next band
+      await page.getByTestId('gauge-warmer').click();
+      await expect(meter).toHaveAttribute('aria-valuenow', '24');
+      await expect(meter).toHaveAttribute('aria-valuetext', '24 °C, Hot');
+      await expect(gauge).toHaveAttribute('data-pct-tone', 'danger');
+      // a needle instead of the arc
+      const needle = chart(page, 'chart-gauge-needle');
+      await expect(needle.locator('[data-pct-part="needle"]')).toHaveCount(1);
+      await expect(needle.locator('[data-pct-part="fill"]')).toHaveCount(0);
+      await expect(needle.locator('[data-pct-part="meter"]')).toHaveAttribute(
+        'aria-valuetext',
+        '62 %, Normal',
+      );
+      // no value: the meter sits at its minimum and says so
+      const empty = chart(page, 'chart-gauge-empty');
+      const emptyMeter = empty.locator('[data-pct-part="meter"]');
+      await expect(emptyMeter).toHaveAttribute('aria-valuenow', '0');
+      await expect(emptyMeter).toHaveAttribute('aria-valuetext', 'No reading');
+      await expect(empty.locator('[data-pct-part="fill"]')).toHaveCount(0);
+      await expect(empty.locator('[data-pct-part="band"]')).toHaveCount(0);
+    });
+  });
 });

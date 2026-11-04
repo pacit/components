@@ -1,0 +1,142 @@
+@if (measured() && !loading() && range(); as range) {
+<!--
+  The cursor's range (0103): the picture's one stop, a step per slice, read by the slice's
+  name, value and share. Its value is written after its end, in the render effect.
+-->
+<input
+  #rangeInput
+  class="range"
+  type="range"
+  min="0"
+  step="1"
+  dir="ltr"
+  data-pct-part="range"
+  [attr.max]="range.max"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+  [attr.aria-valuetext]="valueText()"
+  [attr.aria-describedby]="ids.keys"
+  (keydown)="onKey($event)"
+  (input)="onInput($event)"
+/>
+}
+<figure class="figure">
+  <div
+    class="picture"
+    data-pct-part="plot"
+    role="img"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.aria-describedby]="fullDescription() ? ids.description : null"
+  >
+    @if (measured() && !loading()) {
+    <svg class="layer" aria-hidden="true" data-pct-part="data">
+      <defs>
+        <!-- The hatch of each palette place, what tells the slices apart under forced colours. -->
+        @for (hatch of hatches; track $index) {
+        <pattern
+          [id]="ids.hatch + '-' + ($index + 1)"
+          patternUnits="userSpaceOnUse"
+          width="8"
+          height="8"
+        >
+          <path class="hatch" [attr.d]="hatch" />
+        </pattern>
+        }
+      </defs>
+      @for (slice of slices(); track slice.id) {
+      <path
+        data-pct-part="slice"
+        [class.selected]="slice.selected"
+        [attr.d]="slice.path"
+        [attr.data-pct-series]="slice.place"
+        [style.--_pct-chart-color]="slice.color"
+        [style.--_pct-pie-hatch]="hatchOf(slice.place)"
+        (pointerenter)="onEnter(slice)"
+        (pointerleave)="onLeave()"
+        (click)="onPress(slice)"
+      />
+      } @for (label of labelViews(); track label.index) {
+      <polyline data-pct-part="leader" [attr.points]="label.points" />
+      <text
+        data-pct-part="label"
+        dominant-baseline="central"
+        [attr.text-anchor]="label.anchor"
+        [attr.x]="label.x"
+        [attr.y]="label.y"
+        [textContent]="label.text"
+      ></text>
+      }
+    </svg>
+    @if (tooltipView(); as view) {
+    <div class="layer overlay" aria-hidden="true">
+      <div
+        #tooltipBox
+        class="tooltip"
+        data-pct-part="tooltip"
+        [class.unmeasured]="!view.measured"
+        [style.transform]="'translate(' + view.x + 'px, ' + view.y + 'px)'"
+      >
+        @let read = reading()!;
+        <div class="time" [textContent]="read.text"></div>
+        @for (row of read.rows; track row.id) {
+        <div class="row">
+          <ng-container
+            [ngTemplateOutlet]="swatch()"
+            [ngTemplateOutletContext]="{ $implicit: row, form: 'marker' }"
+          />
+          <span class="name" [textContent]="row.name"></span>
+          <span class="value" [textContent]="row.text"></span>
+        </div>
+        } @for (note of read.notes; track note.id) {
+        <div class="row note">
+          <span class="name" [textContent]="note.name"></span>
+          <span class="value" [textContent]="note.text"></span>
+        </div>
+        }
+      </div>
+    </div>
+    } } @else {
+    <pct-skeleton shape="block" class="skeleton" />
+    }
+  </div>
+  @if (measured() && !loading() && nothing(); as nothing) {
+  <p class="empty" data-pct-part="message">
+    @if (nothing === 'hidden') { {{ texts().chartAllHidden }} } @else {
+    <ng-content select="[pctChartEmpty]">{{ texts().chartEmpty }}</ng-content>
+    }
+  </p>
+  } @if (fullDescription()) {
+  <!-- Hidden: the picture reads it as its description, and nothing else reads it twice. -->
+  <p
+    class="description"
+    hidden
+    [id]="ids.description"
+    [textContent]="fullDescription()"
+  ></p>
+  } @if (range()) {
+  <!-- The keys of the cursor, which its range reads as its description. -->
+  <p hidden [id]="ids.keys">{{ texts().chartPieKeys }}</p>
+  }
+  <ng-content select="figcaption" />
+</figure>
+
+<!-- A slice drawn small: a block of its colour, its hatch under forced colours. -->
+<ng-template #swatchTemplate let-series let-form="form">
+  <svg
+    class="swatch"
+    data-pct-part="swatch"
+    aria-hidden="true"
+    [class.marker]="form === 'marker'"
+    [attr.viewBox]="form === 'marker' ? '0 0 12 12' : '0 0 24 12'"
+    [attr.data-pct-series]="series.place"
+    [style.--_pct-chart-color]="series.color"
+    [style.--_pct-pie-hatch]="hatchOf(series.place)"
+  >
+    @if (form === 'swatch') {
+    <svg:rect class="block" x="1" y="2" width="22" height="8" />
+    } @else {
+    <svg:rect class="block" x="2" y="2" width="8" height="8" />
+    }
+  </svg>
+</ng-template>

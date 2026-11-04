@@ -101,6 +101,11 @@ const ENGLISH: PctTexts = {
   chartEarlier: 'Earlier',
   chartLater: 'Later',
   chartZoomReset: 'Back to the default view',
+  chartShare: 'Share',
+  chartValue: 'Value',
+  chartOthers: 'Others',
+  chartPieKeys:
+    'Arrow keys move from slice to slice, Home and End to the first and last; Enter selects the slice under the cursor; Escape clears the cursor.',
   tableEmpty: 'No rows',
   tableNoMatches: 'No matches',
   tableLoading: 'Loading…',

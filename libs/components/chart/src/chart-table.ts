@@ -9,6 +9,15 @@ import {
 } from '@pacit/components/table';
 import type { PctChart } from './chart';
 import { pctDecimate } from './model/decimate';
+import type { PctShareSource } from './pie';
+
+/** One row of a pie's table: a slice, its value and its share. */
+interface PctSliceRow {
+  readonly id: string;
+  readonly name: string;
+  readonly value: string;
+  readonly share: string;
+}
 
 /** One row of the table: a position, and the value of every series there. */
 interface PctChartRow {
@@ -33,6 +42,9 @@ interface PctChartRow {
  *
  * It stands beside the chart, so the application decides where and whether it is open.
  *
+ * **A pie's table** is a row per slice shown — its name, its value in the unit and its share of
+ * the total — and, with `summary="sum"`, a foot with the total (0115).
+ *
  * @example
  * <pct-chart #chart ariaLabel="Supply air"> … </pct-chart>
  * <pct-chart-table [chart]="chart" />
@@ -54,11 +66,65 @@ interface PctChartRow {
 })
 export class PctChartTable {
   /**
-   * The chart whose data the table holds.
+   * The chart whose data the table holds, or the pie whose slices.
    *
    * @since 0.3.0
    */
-  readonly chart = input.required<PctChart>();
+  readonly chart = input.required<PctChart | PctShareSource>();
+
+  /** The pie, when the source is one: it has slices where a chart has marks. */
+  protected readonly pie = computed(() => {
+    const source = this.chart();
+    return 'shareOf' in source ? source : null;
+  });
+  /** The chart, when the source is one; `null` beside a pie, whose rows are its slices. */
+  private readonly scene = computed(() => {
+    const source = this.chart();
+    return 'shareOf' in source ? null : source;
+  });
+
+  /** A pie's rows: a slice shown each, with its value and its share. */
+  protected readonly slices = computed<readonly PctSliceRow[]>(() => {
+    const pie = this.pie();
+    if (!pie) return [];
+    const hidden = new Set(pie.hiddenSeries());
+    return pie
+      .series()
+      .filter((s) => !hidden.has(s.id))
+      .map((s) => {
+        const share = pie.shareOf(s.id);
+        return {
+          id: s.id,
+          name: s.name,
+          value: pie.writeValue(pie.valueAt(s.id)),
+          share:
+            share === null
+              ? this.texts().chartGap
+              : this.shareFormat().format(share),
+        };
+      });
+  });
+
+  /** A pie's foot: the total of the slices shown, with `summary="sum"`. */
+  protected readonly total = computed(() => {
+    const pie = this.pie();
+    if (!pie || this.summary() !== 'sum') return null;
+    const hidden = new Set(pie.hiddenSeries());
+    const values = pie
+      .series()
+      .filter((s) => !hidden.has(s.id))
+      .map((s) => pie.valueAt(s.id))
+      .filter((v): v is number => v !== null && v > 0);
+    return pie.writeValue(values.reduce((a, b) => a + b, 0));
+  });
+
+  private readonly shareFormat = computed(
+    () =>
+      new Intl.NumberFormat(this.chart().effectiveLocale(), {
+        style: 'percent',
+        maximumFractionDigits: 0,
+      }),
+  );
   /**
    * The table's caption: the chart's `ariaLabel` when unset. A chart named by
    * `ariaLabelledby` and no caption names its table by the same element.
@@ -91,21 +157,23 @@ export class PctChartTable {
   );
   /** The header of the first column: the time, or the position along a numeric axis. */
   protected readonly positionHeader = computed(() =>
-    this.chart().x() === 'time'
+    this.scene()?.x() === 'time'
       ? this.texts().chartTime
       : this.texts().chartPosition,
   );
 
   /** The series shown, in the chart's order. */
   protected readonly series = computed(() => {
-    const chart = this.chart();
+    const chart = this.scene();
+    if (!chart) return [];
     const hidden = new Set(chart.hiddenSeries());
     return chart.series().filter((s) => !hidden.has(s.id));
   });
 
   /** The marks' columns of text — a band's states — after the series, with the mark that writes each. */
   protected readonly words = computed(() => {
-    const chart = this.chart();
+    const chart = this.scene();
+    if (!chart) return [];
     const hidden = new Set(chart.hiddenSeries());
     return chart.marks().flatMap((mark) =>
       mark
@@ -120,7 +188,7 @@ export class PctChartTable {
     return new Intl.DateTimeFormat(chart.effectiveLocale(), {
       dateStyle: 'short',
       timeStyle: 'medium',
-      timeZone: chart.timeZone(),
+      timeZone: this.scene()?.timeZone(),
     });
   });
 
@@ -132,9 +200,9 @@ export class PctChartTable {
 
   /** The positions to write: each series decimated to the rows, merged, in order. */
   protected readonly table = computed<readonly PctChartRow[]>(() => {
-    const chart = this.chart();
-    const window = chart.shown();
-    if (!window) return [];
+    const chart = this.scene();
+    const window = chart?.shown();
+    if (!chart || !window) return [];
     const series = this.series();
     // Each series decimated to its share of the rows: four readings a column at most, so the
     // positions of every series together stay within `rows`.
@@ -236,6 +304,7 @@ export class PctChartTable {
    */
   csv(): string {
     const locale = this.chart().effectiveLocale();
+    const pie = this.pie();
     const decimal =
       new Intl.NumberFormat(locale)
         .formatToParts(1.5)
@@ -252,8 +321,28 @@ export class PctChartTable {
       quote(/^[=+\-@\t\r]/.test(value) ? "'" + value : value);
     const number = (v: number | null) =>
       v === null ? '' : String(Number(v.toPrecision(15))).replace('.', decimal);
-    const time = this.chart().x() === 'time';
+    const time = this.scene()?.x() === 'time';
     const gap = this.texts().chartGap;
+    if (pie) {
+      const unit = pie.unit();
+      const head = [
+        this.texts().chartLegend,
+        unit ? `${this.texts().chartValue} (${unit})` : this.texts().chartValue,
+        this.texts().chartShare,
+      ];
+      const lines = [head.map(text).join(separator)];
+      for (const slice of this.slices()) {
+        const share = pie.shareOf(slice.id);
+        lines.push(
+          [
+            text(slice.name),
+            number(pie.valueAt(slice.id)),
+            share === null ? '' : number(Math.round(share * 1000) / 10),
+          ].join(separator),
+        );
+      }
+      return lines.join('\r\n');
+    }
     const head = [
       this.positionHeader(),
       ...this.series().map((s) =>

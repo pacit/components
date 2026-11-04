@@ -139,7 +139,9 @@
       "term",
       "heat",
       "cell",
-      "ramp"
+      "ramp",
+      "pie",
+      "gauge"
     ],
     "properties": [
       "alpha",

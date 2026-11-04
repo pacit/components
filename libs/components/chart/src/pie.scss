@@ -1,0 +1,184 @@
+// A pie's box: its width from the container, a square unless the consumer sets a height. The
+// range is the one stop, beside the picture and unseen; the picture draws after it is measured.
+:host {
+  display: block;
+  position: relative;
+  inline-size: 100%;
+  aspect-ratio: 1;
+  font-size: var(--pct-chart-font-size);
+}
+
+.figure {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+}
+
+.picture {
+  position: absolute;
+  inset: 0;
+}
+
+.layer {
+  /* pct-exception direction: a label's anchor is the side of the circle its slice faces,
+     which the page's direction does not turn. */
+  direction: ltr;
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.skeleton {
+  display: block;
+  block-size: 100%;
+}
+
+.range {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.range:focus-visible + .figure .picture {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+// A slice is painted by its palette place, as a bar is; the gap between the slices is a stroke
+// of the surface's colour, so the theme decides it and no angle is spent on it.
+[data-pct-part='slice'] {
+  stroke: var(--pct-chart-pie-border);
+  stroke-width: var(--pct-chart-pie-gap);
+  stroke-linejoin: round;
+  cursor: pointer;
+}
+
+@for $i from 1 through 8 {
+  [data-pct-part='slice'][data-pct-series='#{$i}'],
+  [data-pct-series='#{$i}'] .block {
+    fill: var(--pct-chart-series-color-#{$i});
+  }
+}
+
+[data-pct-part='slice'][data-pct-series='custom'],
+[data-pct-series='custom'] .block {
+  fill: var(--_pct-chart-color);
+}
+
+[data-pct-part='leader'] {
+  fill: none;
+  stroke: var(--pct-chart-axis-border);
+  stroke-width: 1px;
+}
+
+[data-pct-part='label'] {
+  fill: var(--pct-chart-label-fg);
+  pointer-events: none;
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+[data-pct-part='swatch'].marker {
+  inline-size: var(--pct-chart-marker-size);
+  block-size: var(--pct-chart-marker-size);
+}
+
+.overlay {
+  pointer-events: none;
+}
+
+.overlay > * {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+}
+
+[data-pct-part='tooltip'] {
+  display: grid;
+  gap: var(--pct-space-2);
+  padding: var(--pct-chart-tooltip-padding-y) var(--pct-chart-tooltip-padding-x);
+  border: 1px solid var(--pct-chart-tooltip-border);
+  border-radius: var(--pct-chart-tooltip-radius);
+  background: var(--pct-chart-tooltip-bg);
+  color: var(--pct-chart-tooltip-fg);
+  box-shadow: var(--pct-chart-tooltip-shadow);
+  white-space: nowrap;
+}
+
+// Placed by its size, so it waits a frame unseen until that is measured.
+.unmeasured {
+  visibility: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-2);
+}
+
+.value {
+  margin-inline-start: auto;
+  padding-inline-start: var(--pct-space-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--pct-chart-message-fg);
+  pointer-events: none;
+}
+
+// The hatch tiles are the text's colour; nothing draws them until the colours are gone.
+.hatch {
+  fill: none;
+  stroke: CanvasText;
+  stroke-width: 1px;
+  stroke-linecap: round;
+}
+
+// With the colours gone a slice is a hatch of its place on the page's colour, edged in the
+// text's — eight hatches as the lines have eight dashes (0102) — and the swatch the same hatch.
+@media (forced-colors: active) {
+  [data-pct-part='slice'][data-pct-series],
+  [data-pct-series] .block {
+    fill: var(--_pct-pie-hatch, Canvas);
+    stroke: CanvasText;
+    stroke-width: 1px;
+  }
+
+  [data-pct-part='slice'].selected {
+    stroke: Highlight;
+    stroke-width: 2px;
+  }
+
+  [data-pct-part='leader'] {
+    stroke: CanvasText;
+  }
+
+  [data-pct-part='label'] {
+    fill: CanvasText;
+  }
+
+  .range:focus-visible + .figure .picture {
+    outline-color: Highlight;
+  }
+
+  [data-pct-part='tooltip'] {
+    border-color: CanvasText;
+  }
+}

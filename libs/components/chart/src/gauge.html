@@ -1,0 +1,66 @@
+<!--
+  The meter: the platform's role for a value in a range, on the element around the drawing, with
+  the value, the ends and the words a reader hears — the value with the unit and the band's word.
+  The drawing under it is hidden: it says the same.
+-->
+<div
+  class="meter"
+  data-pct-part="meter"
+  role="meter"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+  [attr.aria-valuemin]="min()"
+  [attr.aria-valuemax]="max()"
+  [attr.aria-valuenow]="reported()"
+  [attr.aria-valuetext]="readingText()"
+>
+  @if (measured()) {
+  <svg class="layer" aria-hidden="true" data-pct-part="data">
+    <path data-pct-part="track" [attr.d]="track()" />
+    @for (band of bandViews(); track band.index) {
+    <path
+      data-pct-part="band"
+      [attr.data-pct-tone]="band.tone"
+      [attr.d]="band.path"
+    />
+    } @if (indicatorView(); as view) { @if (view.kind === 'arc') {
+    <path data-pct-part="fill" [attr.d]="view.path" />
+    } @else {
+    <path data-pct-part="needle" [attr.d]="view.path" />
+    <circle
+      class="hub"
+      [attr.cx]="view.cx"
+      [attr.cy]="view.cy"
+      [attr.r]="view.hub"
+    />
+    } } @let text = words();
+    <text
+      data-pct-part="value"
+      text-anchor="middle"
+      dominant-baseline="central"
+      [attr.x]="text.value.x"
+      [attr.y]="text.value.y"
+      [textContent]="valueText()"
+    ></text>
+    @if (band()?.label; as label) {
+    <text
+      data-pct-part="state"
+      text-anchor="middle"
+      dominant-baseline="central"
+      [attr.x]="text.state.x"
+      [attr.y]="text.state.y"
+      [textContent]="label"
+    ></text>
+    } @for (end of text.ends; track $index) {
+    <text
+      data-pct-part="label"
+      dominant-baseline="central"
+      [attr.text-anchor]="end.anchor"
+      [attr.x]="end.x"
+      [attr.y]="end.y"
+      [textContent]="end.text"
+    ></text>
+    }
+  </svg>
+  }
+</div>
