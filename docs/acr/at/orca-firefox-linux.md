@@ -29,8 +29,8 @@ Escape — the row every card asking "what does a reader announce when this appe
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
 at — 5 of 624 here. 15 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2564
-phrases, and 2561 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2565
+phrases, and 2562 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
@@ -294,7 +294,7 @@ Tab moved nothing — focus had left the page.
 ### `/switch`
 
 ```
-arrive  a "Switch"                                           navigation · Sandbox views · List with 38 items · Switch · visited link. · Browse mode
+arrive  a "Switch"                                           navigation · Sandbox views · List with 38 items · Switch · link. · Browse mode
 enter   input[control]                                       Backups · switch not pressed. · Runs every night at 03:00.
 tab 1   —                                                    Theme · panel · light · selected radio button. · alert. · Backups have to stay on
 ```
@@ -351,7 +351,7 @@ the act: `Enter` on `[data-testid="open-basic"]`, to open a modal dialog (the ge
 ### `/tooltip`
 
 ```
-arrive  a "Tooltip"                                          leaving main content. · navigation · Sandbox views · List with 38 items · Tooltip · link.
+arrive  a "Tooltip"                                          leaving main content. · navigation · Sandbox views · List with 38 items · Tooltip · visited link.
 enter   button "Delete the project"                          Delete the project · button.
 tab 1   button "Publish"                                     Publish · button. · Runs every check before publishing.
 tab 2   button "Approve the release"                         Approve the release · button.
@@ -380,7 +380,7 @@ tab 4   button "end"                                         end · collapsed bu
 tab 5   button "Open the panel"                              Open the panel · collapsed button. · opens dialog
 tab 6   button "Count up"                                    Count up · button. · Browse mode
 tab 7   button "Count up"                                    Popover · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Filters"                                     main content · Filters · collapsed button. · opens dialog · Focus mode
+reach   button "Filters"                                     main content · A panel of content hanging off the control that opened it. It is the   link half of the · Browse mode · Filters · collapsed button. · opens dialog · Focus mode
 open    div[panel] "Filters"                                 Filters  Owner  A name, or part of one · Browse mode
 close   button "Filters"                                     main content · Filters · collapsed button. · opens dialog · Focus mode · collapsed
 ```
@@ -400,7 +400,7 @@ tab 1   button "Count up"                                    Count up · button.
 tab 2   button "File"                                        File · collapsed button. · opens menu · Focus mode
 tab 3   button "Language"                                    Language · collapsed button. · opens menu
 tab 4   button "Language"                                    Menu · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Actions"                                     main content · A list of commands on a panel, walked by the keyboard and chosen from. Focus really moves · Browse mode · Actions · collapsed button. · opens menu · Focus mode
+reach   button "Actions"                                     main content · Actions · collapsed button. · opens menu · Focus mode
 open    button[item] "Rename"                                leaving main content. · Actions · menu · Rename.
 close   button "Actions"                                     main content · Actions · collapsed button. · opens menu · collapsed
 ```
@@ -610,7 +610,7 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  a "Skeleton"                                         navigation · Sandbox views · List with 38 items · Skeleton · visited link. · Browse mode
+arrive  a "Skeleton"                                         navigation · Sandbox views · List with 38 items · Skeleton · link. · Browse mode
 enter   button "The content arrives"                         The content arrives · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -662,7 +662,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/avatar`
 
 ```
-arrive  a "Avatar"                                           leaving list. · leaving main content. · navigation · Sandbox views · List with 38 items · Avatar · visited link.
+arrive  a "Avatar"                                           leaving list. · leaving main content. · navigation · Sandbox views · List with 38 items · Avatar · link.
 enter   button "Swap the source"                             Swap the source · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -712,7 +712,7 @@ Tab moved nothing — focus had left the page.
 ### `/breadcrumb`
 
 ```
-arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 38 items · Breadcrumb · visited link. · Browse mode
+arrive  a "Breadcrumb"                                       navigation · Sandbox views · List with 38 items · Breadcrumb · link. · Browse mode
 enter   a "Home"                                             navigation · Breadcrumb · List with 3 items · Home · link.
 tab 1   a "Library"                                          Library · link.
 tab 2   a "Data"                                             Data · link. · (Current page)
@@ -806,8 +806,8 @@ Tab moved nothing — focus had left the page.
 ### `/table`
 
 ```
-arrive  a "Table"                                            navigation · Sandbox views · List with 38 items · Table · link. · Browse mode
-enter   button[toggle] "Name"                                table with 5 rows 3 columns · column header. · row 1. · column 1 · Name · button.
+arrive  a "Table"                                            navigation · Sandbox views · List with 38 items · Table · visited link. · Browse mode
+enter   button[toggle] "Name"                                Polling rules. · table with 5 rows 3 columns · column header. · row 1. · column 1 · Name · button.
 tab 1   button[toggle] "Address"                             column header. · column 2 · Address · button.
 tab 2   input[control]                                       leaving table. · Theme · panel · light · selected radio button.
 tab 3   input[control]                                       leaving panel. · Size · panel · md · selected radio button.

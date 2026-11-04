@@ -17,7 +17,7 @@ person has made it.
 **Taken with**, because a reading is only ever true of one stack:
 
 - VoiceOver with Safari on macOS
-- 235 steps over 44 views, at most 12 stops of a view's own
+- 258 steps over 44 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -26,11 +26,11 @@ stops from there until focus leaves `main`. A view with something to OPEN ends o
 `reach` puts focus on the control that opens it, `open` presses the key, and `close` presses
 Escape — the row every card asking "what does a reader announce when this appears" was waiting
 for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
-at — 70 of 235 here. 2 view(s) hit the cap, and each says so.
+at — 73 of 258 here. 3 view(s) hit the cap, and each says so.
 
 **Every view spoke.** No view of the 44 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
-2 view(s) have more stops than the 12 taken, and each says so where it bit.
+3 view(s) have more stops than the 12 taken, and each says so where it bit.
 
 ### `/`
 
@@ -56,9 +56,9 @@ tab 8   button "danger"                                      danger button main
 tab 9   button "danger"                                      danger button
 tab 10  button "danger"                                      (silence)
 tab 11  button "danger"                                      danger button
-tab 12  button "warning"                                     warning button
-tab 13  button "warning"                                     (silence)
-tab 14  button "warning"                                     warning button
+tab 12  button "warning"                                     You are currently on a button. To click this button, press Control-Option-Space.
+tab 13  button "warning"                                     warning button
+tab 14  button "warning"                                     (silence)
 ```
 
 The cap bit here: 12 stops of this view's own were read, and it has more.
@@ -80,7 +80,7 @@ tab 9   input                                                1 499,90 Price Th
 tab 10  button[field-suffix-item] "Clear the price"          Clear the price button
 tab 11  input                                                Search the catalogue The icon belongs to the surface of the field; the button is welded into the corner of the border edit text
 tab 12  button[field-suffix-item] "Search"                   Search button
-tab 13  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 13  input[control]                                       You are currently on a selected radio button, 1 of 2.
 tab 14  input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 15  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 16  button[trigger] "Sélectionner…"                      , Sélectionn Country A click in the padding opens the list list box pop up collapsed combo box main
@@ -360,8 +360,8 @@ arrive  —                                                    heading level 1 @
 enter   button[tab] "General"                                (silence)
 tab 1   button[tab] "General"                                General selected tab, 1 of 3 Account settings tab group
 reach   button[tab] "General"                                (silence)
-open    button[tab] "General"                                (silence)
-close   button[tab] "General"                                You are currently on a selected tab, 1 of 3.
+open    button[tab] "General"                                General selected tab, 1 of 3
+close   button[tab] "General"                                (silence)
 ```
 
 Tab moved nothing — focus had left the page.
@@ -410,12 +410,23 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    Skeleton · @pacit/components web content
 enter   button "The content arrives"                         (silence)
-tab 1   button "The content arrives"                         The content arrives button main
+tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       (silence)
+tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 6   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 7   input[control]                                       (silence)
+tab 8   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 9   input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 10  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
+tab 11  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 12  input[control]                                       md selected radio button, 2 of 3 Size radio group
+tab 13  button "Stop the sheen"                              ltr selected radio button, 1 of 2 Direction radio group
+tab 14  —                                                    Stop the sheen button main
 ```
-
-Tab moved nothing — focus had left the page.
 
 ### `/chips`
 
@@ -432,7 +443,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    heading level 1 @pacit/components — sandbox
 enter   button "Swap the source"                             (silence)
-tab 1   button "Swap the source"                             Swap the source button main
+tab 1   button "Swap the source"                             You are currently on a button. To click this button, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -442,7 +453,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    heading level 1 @pacit/components — sandbox
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 1   input[control]                                       You are currently on a selected radio button, 1 of 2.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -505,7 +516,7 @@ Tab moved nothing — focus had left the page.
 arrive  —                                                    heading level 2 Table
 enter   button[toggle] "Name"                                (silence)
 tab 1   button[toggle] "Address"                             Address button
-tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 2   input[control]                                       You are currently on a selected radio button, 1 of 2.
 tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
@@ -518,12 +529,22 @@ tab 9   —                                                    (silence)
 ### `/datatable`
 
 ```
-arrive  —                                                    heading level 2 Data table
+arrive  —                                                    Data table · @pacit/components web content
 enter   input                                                (silence)
-tab 1   input                                                Filter rules search text field
+tab 1   pct-table-frame "Polling rules"                      Filter rules search text field
+tab 2   button[toggle] "Name"                                You are currently on a region.
+tab 3   button[toggle] "Room"                                Name button Polling rules table 6 columns, 21 rows
+tab 4   button[toggle] "Address"                             You are currently on a button, inside of a cell. To click this button, press Control-Option-Space.
+tab 5   button[toggle] "Energy"                              Address button
+tab 6   button[toggle] "Next run"                            You are currently on a button, inside of a cell. To click this button, press Control-Option-Space.
+tab 7   input[control] "Enabled: Supply fan"                 (silence)
+tab 8   input[control] "Enabled: Heater"                     Enabled: Supply fan on switch
+tab 9   input[control] "Enabled: Bypass"                     Enabled: Heater off switch
+tab 10  input[control] "Enabled: Exhaust fan"                You are currently on a switch, inside of a cell. To toggle this switch, press Control-Option-Space.
+tab 11  input[control] "Enabled: Boiler"                     Enabled: Exhaust fan on switch
 ```
 
-Tab moved nothing — focus had left the page.
+The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ### `/hero`
 
@@ -540,7 +561,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    heading level 2 Stepper
 enter   button "Back"                                        (silence)
-tab 1   button "Back"                                        Back button
+tab 1   button "Back"                                        You are currently on a button. To click this button, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.
@@ -608,7 +629,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    Form controls built as a pct-field wrapper with a control inside.
 enter   button "Solid"                                       (silence)
-tab 1   button "Solid"                                       Solid button
+tab 1   button "Solid"                                       You are currently on a button. To click this button, press Control-Option-Space.
 ```
 
 Tab moved nothing — focus had left the page.

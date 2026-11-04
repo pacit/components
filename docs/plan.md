@@ -415,11 +415,11 @@ and every one is held by a **binds at** rather than by anybody's mood.
 
 - [ ] **4.84 — the readers' log quotes the data table's Polish**
   - `/datatable` formats its relative times with `locale="pl"` on purpose, and on 2026-11-02
-    NVDA read the frame of the scrolling table whole for the first time, a Polish relative time included,
-    so `docs/acr/at/nvda-firefox-windows.md` carries Polish the language gate counts. The log is
-    a verbatim record and is not edited; `tools/language.policy.json` excuses it under this task
+    NVDA read the frame of the scrolling table whole for the first time, a Polish relative time
+    included; `tools/language.policy.json` excused the verbatim log until the walk of 2026-11-04
+    read the frame as a region and nothing behind it, and the dead entry left
   - the fix is the view's: a locale that writes no Polish word — `de` or `fr`, whose relative
-    times are the third language a record may quote — and the entry leaves the register with it
+    times are the third language a record may quote — before a walk reads the frame whole
   - binds at: **the next readers' walk**, whose log is written by the view as it then stands
 
 - [ ] **4.81 — the warning line is not heard on the stop it appears**
