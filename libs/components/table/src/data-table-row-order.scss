@@ -1,0 +1,26 @@
+/* A row's handle: a target of the toggles' size, held by the pointer, whose moves are the
+   handle's alone (no scroll of the page under a drag, no selection of text). */
+.pct-data-table__handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--pct-table-toggle-target-min);
+  block-size: var(--pct-table-toggle-target-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--pct-table-icon-fg-muted);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.pct-data-table__handle:disabled {
+  cursor: default;
+  color: var(--pct-text-disabled);
+}
+
+.pct-data-table__grip {
+  inline-size: 1rem;
+  block-size: 1rem;
+}

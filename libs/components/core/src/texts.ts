@@ -415,6 +415,18 @@ export interface PctTexts {
   readonly tableMoveDown: string;
   /** Data table: the name of a cell's editor. `{column}` stands for the column's header. */
   readonly tableEdit: string;
+  /** Data table: the word a row's handle is named by, before the row's first text. */
+  readonly tableMoveRow: string;
+  /**
+   * Data table: the keys a row's handle answers to, as `aria-keyshortcuts` spells them — a
+   * reader tells them; the handle answers to `Alt` with the arrows whatever is said here.
+   */
+  readonly tableMoveRowKeys: string;
+  /**
+   * Data table: announced when a row moved to a new place. `{place}` stands for the row's
+   * number among the rows, `{count}` for how many there are.
+   */
+  readonly tableMovedTo: string;
   /** Data table: announced when cells are copied from the grid. `{count}` stands for how many. */
   readonly tableCopied: string;
   /** Data table: announced when cells are pasted into the grid. `{count}` stands for how many. */
@@ -542,6 +554,9 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableMoveUp: 'Move {column} up',
   tableMoveDown: 'Move {column} down',
   tableEdit: 'Edit {column}',
+  tableMoveRow: 'Move',
+  tableMoveRowKeys: 'Alt+ArrowUp Alt+ArrowDown',
+  tableMovedTo: 'Moved to row {place} of {count}',
   tableCopied: 'Cells copied: {count}',
   tablePasted: 'Cells pasted: {count}',
   tablePasteSkipped: 'Cells pasted: {count}, left out: {skipped}',

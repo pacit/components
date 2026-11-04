@@ -18,6 +18,9 @@
 } @if (editing(); as editing) {
 <!-- The editing's parts, made in this view: a cell open draws their editor below. -->
 <ng-container [ngComponentOutlet]="editing.parts" />
+} @if (order(); as order) {
+<!-- The order's parts, made in this view: a row's handle is drawn below. -->
+<ng-container [ngComponentOutlet]="order.parts" />
 } @let lead = leadSticks(); @let sticks = lead.cells;
 <pct-table-frame
   [focusable]="!grid()"
@@ -48,7 +51,9 @@
     <!-- The columns' widths, which a fixed layout reads before any row: the leading ones the
          sheet's, the rest the layout's, or a share of what is left. -->
     <colgroup>
-      @if (selection()) {
+      @if (order()) {
+      <col class="pct-data-table__toggle-col" />
+      } @if (selection()) {
       <col class="pct-data-table__toggle-col" />
       } @if (disclosure()) {
       <col class="pct-data-table__toggle-col" />
@@ -66,7 +71,13 @@
         class="pct-data-table__heads"
         [attr.aria-rowindex]="rowCount() === null ? null : $index + 1"
       >
-        @if (selection()) {
+        @if (order()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.order?.pinned"
+          [style.--_at.px]="lead.order?.at"
+        ></td>
+        } @if (selection()) {
         <td
           pctCell
           [attr.data-pct-pinned]="lead.pick?.pinned"
@@ -108,7 +119,18 @@
       <tr
         [attr.aria-rowindex]="rowCount() === null ? null : headGroups().length + 1"
       >
-        @if (selection(); as selection) {
+        @if (order(); as order) {
+        <!-- The column of handles: its header is the order's to draw. -->
+        <th
+          pctHeader
+          scope="col"
+          class="pct-data-table__order"
+          [attr.data-pct-pinned]="lead.order?.pinned"
+          [style.--_at.px]="lead.order?.at"
+        >
+          <ng-container [ngTemplateOutlet]="order.head()" />
+        </th>
+        } @if (selection(); as selection) {
         <!-- The column of picks: what is in it is the selection's to draw. -->
         <th
           pctHeader
@@ -195,7 +217,13 @@
         class="pct-data-table__filters"
         [attr.aria-rowindex]="rowCount() === null ? null : headGroups().length + 2"
       >
-        @if (selection()) {
+        @if (order()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.order?.pinned"
+          [style.--_at.px]="lead.order?.at"
+        ></td>
+        } @if (selection()) {
         <td
           pctCell
           [attr.data-pct-pinned]="lead.pick?.pinned"
@@ -234,7 +262,13 @@
     <tbody [attr.aria-busy]="busy() ? 'true' : null">
       @for (index of placeholders(); track index) {
       <tr data-pct-part="placeholder" aria-hidden="true">
-        @if (selection()) {
+        @if (order()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.order?.pinned"
+          [style.--_at.px]="lead.order?.at"
+        ></td>
+        } @if (selection()) {
         <td
           pctCell
           [attr.data-pct-pinned]="lead.pick?.pinned"
@@ -266,8 +300,11 @@
     </tbody>
     }
     <!-- A tbody per group, because a rowgroup header names the rest of its tbody (0097, D8). -->
-    @for (section of sections(); track section.key) {
-    <tbody [attr.aria-busy]="busy() ? 'true' : null">
+    @for (section of bodies(); track section.key) {
+    <tbody
+      [attr.aria-busy]="busy() ? 'true' : null"
+      [attr.data-pct-pinned]="section.pinned"
+    >
       @if (section.group; as group) {
       <tr
         data-pct-part="group"
@@ -320,7 +357,13 @@
         [attr.aria-busy]="row.failed === null ? 'true' : null"
         [class.pct-data-table__even]="row.index % 2 === 1"
       >
-        @if (row.failed === null) { @if (selection()) {
+        @if (row.failed === null) { @if (order()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.order?.pinned"
+          [style.--_at.px]="lead.order?.at"
+        ></td>
+        } @if (selection()) {
         <td
           pctCell
           [attr.data-pct-pinned]="lead.pick?.pinned"
@@ -363,8 +406,8 @@
       </tr>
       } @else {
       <tr
-        [attr.data-pct-index]="row.line"
-        [attr.aria-rowindex]="rowIndex()(row.line)"
+        [attr.data-pct-index]="row.pinned === null ? row.line : null"
+        [attr.aria-rowindex]="row.at"
         [attr.data-pct-tone]="row.tone"
         [class.pct-data-table__even]="row.index % 2 === 1"
         [style.--_level]="row.level || null"
@@ -375,7 +418,21 @@
         [attr.aria-posinset]="treegrid() ? row.place?.position : null"
         [attr.aria-setsize]="treegrid() ? row.place?.siblings : null"
       >
-        @if (selection(); as selection) {
+        @if (order(); as order) {
+        <!-- The column of handles: a row's handle is the order's to draw; a pinned row has
+             no place in the list to move from. -->
+        <td
+          pctCell
+          class="pct-data-table__order"
+          [attr.data-pct-pinned]="lead.order?.pinned"
+          [style.--_at.px]="lead.order?.at"
+        >
+          <ng-container
+            [ngTemplateOutlet]="order.cell()"
+            [ngTemplateOutletContext]="{ $implicit: row, enabled: reorderable() && row.pinned === null }"
+          />
+        </td>
+        } @if (selection(); as selection) {
         <td
           pctCell
           class="pct-data-table__pick"
@@ -394,6 +451,7 @@
           [attr.data-pct-pinned]="lead.disclosure?.pinned"
           [style.--_at.px]="lead.disclosure?.at"
         >
+          @if (row.pinned === null) {
           <button
             type="button"
             class="pct-data-table__toggle"
@@ -419,6 +477,7 @@
               </svg>
             </pct-icon>
           </button>
+          }
         </td>
         } @if (rowNumbers()) {
         <td
@@ -428,13 +487,13 @@
           [attr.data-pct-pinned]="lead.number?.pinned"
           [style.--_at.px]="lead.number?.at"
         >
-          {{ row.index + 1 }}
+          @if (row.pinned === null) { {{ row.index + 1 }} }
         </td>
         } @for (cell of row.cells; track cell.column.id) {
         <td
           pctCell
           [class.pct-data-table__first]="$first"
-          [attr.id]="selection() && $index === row.nameAt ? row.nameId : null"
+          [attr.id]="(selection() || order()) && $index === row.nameAt ? row.nameId : null"
           [numeric]="cell.numeric"
           [attr.data-pct-tone]="cell.tone"
           [attr.title]="cell.title"

@@ -2168,3 +2168,145 @@ test.describe('Header groups — the rules under grouped headers', () => {
     expect(headerBox.y - frameBox.y).toBeLessThan(groupBox.height * 2.5);
   });
 });
+
+test.describe('Pinned rows and the order of the rows — a sum above, handles that move', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+  const table = (page: Page) => page.getByTestId('table-ordered');
+  const ordered = (page: Page) =>
+    table(page)
+      .locator('tbody:not([data-pct-pinned]) tr td.pct-data-table__first')
+      .allTextContents();
+  const state = (page: Page, json: string) =>
+    expect(page.getByTestId('order-state')).toHaveText(json);
+  const handle = (page: Page, name: string) =>
+    table(page).getByRole('button', { name: `Move ${name}` });
+
+  test('a row pinned above sticks under the header while the rows scroll, and the sort leaves it where it is', async ({
+    page,
+  }) => {
+    const pinned = table(page).locator('tbody[data-pct-pinned="top"] tr');
+    await expect(pinned).toHaveCount(1);
+    await expect(pinned.locator('td').nth(2)).toHaveText('All rules');
+    await expect(pinned).not.toHaveAttribute('data-pct-index', /.*/);
+    const before = (await ordered(page)).slice(0, 2);
+    await page.getByTestId('order-sort').click();
+    await expect.poll(() => ordered(page)).not.toEqual(before);
+    await expect(table(page).locator('tbody').first()).toHaveAttribute(
+      'data-pct-pinned',
+      'top',
+    );
+    // Under a sort the handles are disabled.
+    await expect(handle(page, before[0])).toBeDisabled();
+    await page.getByTestId('order-sort').click();
+    await expect(handle(page, before[0])).toBeEnabled();
+    const frame = table(page).locator('pct-table-frame');
+    // Eight rows in a frame of 20rem scroll by less than a row's height; a row unstuck would
+    // be that much above the header's edge.
+    await frame.evaluate((element) => element.scrollTo({ top: 150 }));
+    await expect
+      .poll(() => frame.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(30);
+    const frameBox = (await frame.boundingBox()) as { y: number };
+    // The cells stick, not the rows: a row's box stays where the row was laid.
+    const headBox = (await table(page)
+      .locator('thead th')
+      .first()
+      .boundingBox()) as { y: number; height: number };
+    const pinnedBox = (await pinned.locator('td').first().boundingBox()) as {
+      y: number;
+    };
+    expect(Math.abs(headBox.y - frameBox.y)).toBeLessThan(2);
+    expect(Math.abs(pinnedBox.y - (headBox.y + headBox.height))).toBeLessThan(
+      2,
+    );
+  });
+
+  test('Alt with an arrow moves the row, the focus stays on its handle, a reader hears its number, and the rows slide', async ({
+    page,
+  }) => {
+    const [first, second, third] = await ordered(page);
+    const ids = await page.getByTestId('order-state').textContent();
+    const moved = await handle(page, first).evaluate(async (button) => {
+      button.focus();
+      button.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          altKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      // The rows are drawn again on the next frame, and slide from then on.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      const row = button.closest('tr') as HTMLElement;
+      return {
+        animations: row.getAnimations().length,
+        transform: getComputedStyle(row).transform,
+        focused: document.activeElement === button,
+      };
+    });
+    expect(moved.animations).toBeGreaterThan(0);
+    expect(moved.transform).not.toBe('none');
+    expect(moved.focused).toBe(true);
+    await expect
+      .poll(() => ordered(page).then((all) => all.slice(0, 3)))
+      .toEqual([second, first, third]);
+    const list = JSON.parse(ids as string) as number[];
+    await state(page, JSON.stringify([list[1], list[0], ...list.slice(2)]));
+    await expect(page.locator('[data-pct-live="polite"]')).toContainText(
+      'Moved to row 2 of 8',
+    );
+    await expect(handle(page, first)).toBeFocused();
+    await page.keyboard.press('Alt+ArrowUp');
+    await state(page, ids as string);
+  });
+
+  test('a drag of the handle moves the row where the pointer let go', async ({
+    page,
+  }) => {
+    const [first, second, third] = await ordered(page);
+    const ids = JSON.parse(
+      (await page.getByTestId('order-state').textContent()) as string,
+    ) as number[];
+    // The pointer moves in the viewport: the table stands far down the page.
+    await handle(page, first).scrollIntoViewIfNeeded();
+    const grip = (await handle(page, first).boundingBox()) as {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    const target = (await table(page)
+      .locator('tbody:not([data-pct-pinned]) tr')
+      .nth(2)
+      .boundingBox()) as { y: number; height: number };
+    await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(
+      grip.x + grip.width / 2,
+      target.y + target.height * 0.8,
+      {
+        steps: 8,
+      },
+    );
+    await expect(
+      table(page).locator('tbody:not([data-pct-pinned]) tr').nth(2),
+    ).toHaveAttribute('data-pct-drop', 'after');
+    await expect(
+      table(page).locator('tbody:not([data-pct-pinned]) tr').first(),
+    ).toHaveAttribute('data-pct-dragging', '');
+    await page.mouse.up();
+    await expect
+      .poll(() => ordered(page).then((all) => all.slice(0, 3)))
+      .toEqual([second, third, first]);
+    await state(
+      page,
+      JSON.stringify([ids[1], ids[2], ids[0], ...ids.slice(3)]),
+    );
+    await expect(
+      table(page).locator('[data-pct-drop], [data-pct-dragging]'),
+    ).toHaveCount(0);
+  });
+});

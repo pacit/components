@@ -447,15 +447,22 @@ export class PctTableSelectionParts {
       return;
     const control = label.querySelector('input') as HTMLInputElement;
     if (event.target === control) return;
+    const index = (label.closest('tr') as HTMLTableRowElement).dataset[
+      'pctIndex'
+    ];
+    // A pinned row is no line: its label hands the press on to its control, which picks the
+    // row by its id, as a press on the control does.
+    if (index === undefined) return;
     event.preventDefault();
     if (control.disabled || this.selection.readonly()) return;
     // A radio checked stays checked; any other press turns the control.
     if (control.type === 'radio' && control.checked) return;
-    const line = Number(
-      (label.closest('tr') as HTMLTableRowElement).dataset['pctIndex'],
-    );
     control.checked = !control.checked;
-    this.pickRow(this.table.lines()[line].key, control.checked, event.shiftKey);
+    this.pickRow(
+      this.table.lines()[Number(index)].key,
+      control.checked,
+      event.shiftKey,
+    );
   }
 
   /** Picks the row, or drops it, and with `shift` every row drawn between it and the anchor. */
