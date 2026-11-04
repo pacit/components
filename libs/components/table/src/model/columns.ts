@@ -191,6 +191,14 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * with none, which leaves the header's buttons room beside a short word.
    */
   readonly minWidth?: number;
+  /**
+   * The group the column's header stands under: a header spanning the adjacent columns with
+   * the same group, in a row above the headers. `'Power/Peak'` is two levels, a row each.
+   * `pctTableColumns` moves and pins the columns of a group together.
+   *
+   * @since next
+   */
+  readonly group?: string;
 }
 
 /**

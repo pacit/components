@@ -137,7 +137,7 @@ export class PctTableColumnChooser<T, M extends Record<string, unknown>> {
     pin: PctColumnPin | null,
   ): void {
     const id = placed.column.id;
-    this.write(pctPinColumn(this.layout(), id, pin));
+    this.write(pctPinColumn(this.layout(), id, pin, this.given()));
     afterNextRender(
       () =>
         this.rowOf(id)

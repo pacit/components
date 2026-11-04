@@ -10,7 +10,7 @@ import {
   model,
 } from '@angular/core';
 import { PCT_TEXTS, PctAnnouncer } from '@pacit/components/core';
-import { PctDataTable } from './data-table';
+import { PctDataTable, pctHeadersRow } from './data-table';
 import { PctTableSelection } from './data-table-selection';
 import { PctTableTree } from './data-table-tree';
 import type { PctAnyColumn, PctColumns, PctRowId } from './model/columns';
@@ -113,6 +113,8 @@ const WROTE = /* @__PURE__ */ new WeakMap<Element, string | null>();
  */
 interface Lines {
   readonly length: number;
+  /** The line of the header's row of column headers: the rows of header groups stand above. */
+  readonly columns: number;
   /** The key a line is held by. */
   key(line: number): string | undefined;
   /** The row a line is drawn in, or `null` while it is not. */
@@ -400,6 +402,10 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
     const end = body + list.length;
     return {
       length: end + foot.length,
+      columns: Math.max(
+        0,
+        head.findIndex((row) => row === pctHeadersRow(table)),
+      ),
       key: (line) =>
         line < 0
           ? undefined
@@ -449,7 +455,7 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
 
   /** Each column of the grid by its id, a leading one by its name: read off the header. */
   private ids(table: HTMLTableElement): readonly string[] {
-    const head = table.tHead?.rows[0];
+    const head = pctHeadersRow(table);
     return Array.from(
       head?.cells ?? [],
       (cell) =>
@@ -567,7 +573,7 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
   ): PctGridPlace | null {
     const key =
       cell.row === null
-        ? 'head:0'
+        ? `head:${lines.columns}`
         : pctLineKey({ kind: 'row', key: cell.row } as PctTableLine<T>);
     const line = lines.find(key);
     const column = ids.indexOf(cell.column);
@@ -582,7 +588,7 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
   ): PctTableGridCell | null {
     const key = lines.key(place.line);
     const column = ids[Math.min(place.column, ids.length - 1)];
-    if (key === 'head:0') return { row: null, column };
+    if (key === `head:${lines.columns}`) return { row: null, column };
     const line = this.table.lines()[place.line - this.headCount()];
     return line?.kind === 'row' ? { row: line.key, column } : null;
   }
