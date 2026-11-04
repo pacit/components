@@ -282,7 +282,7 @@ levels, a row each. The header stands over the columns shown — a hidden column
 group, a group with no column shown leaves no header — and the groups' rows stick with the
 header. The menu and the chooser move and pin a column's group whole, and a stored order that
 split a group is read with the group gathered at its first column
-([0113](../decisions/0113-a-header-group-is-a-block-of-adjacent-columns-moved-and-pinned-whole.md)).
+([0114](../decisions/0114-a-header-group-is-a-block-of-adjacent-columns-moved-and-pinned-whole.md)).
 
 **A hidden column is out of the table**: no header, no cell, no value in the details, and the
 quick filter does not read it. Its column filter, set before it was hidden, still filters, and
@@ -532,7 +532,7 @@ application calls, a workbook with no library),
 [0112](../decisions/0112-a-tree-is-pruned-to-the-matches-and-their-ancestors-and-its-semantics-come-with-the-grid.md)
 (the tree: pruned to the matches and their ancestors, counted open or not, a treegrid with the
 grid alone),
-[0113](../decisions/0113-a-header-group-is-a-block-of-adjacent-columns-moved-and-pinned-whole.md)
+[0114](../decisions/0114-a-header-group-is-a-block-of-adjacent-columns-moved-and-pinned-whole.md)
 (a header group: a block of adjacent columns, moved and pinned whole, HTML's semantics),
 [0096](../decisions/0096-a-table-is-the-consumers-markup-or-the-librarys-rows.md) (the first
 layer it renders), [0037](../decisions/0037-loading-is-a-fact-about-the-list.md) (loading is a

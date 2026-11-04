@@ -12,7 +12,9 @@ import {
   PctChartLegend,
   PctChartSync,
   PctChartTable,
+  PctChartRamp,
   PctChartTooltip,
+  PctHeat,
   pctIntervalStart,
   PctLine,
   PctNote,
@@ -333,6 +335,54 @@ function hourlyLatencies(): HourBatch[] {
   });
 }
 
+/** A cell of a heatmap: the day it stands in, the hour's row and the kilowatts drawn then. */
+interface HourCell {
+  readonly day: number;
+  readonly hour: string;
+  readonly kw: number;
+}
+
+/** Fourteen days by twenty-four hours of a building's power: a working day's shape, weekends low. */
+function powerByHour(): HourCell[] {
+  const random = seeded(41);
+  const cells: HourCell[] = [];
+  for (let d = 0; d < 14; d++) {
+    const weekend = d % 7 >= 5;
+    for (let h = 0; h < 24; h++) {
+      const office = h >= 8 && h <= 18 ? 1 : 0;
+      const base = weekend ? 1.2 : 1.5 + office * 3.5;
+      cells.push({
+        day: Date.UTC(2026, 9, 12 + d, 12),
+        hour: `${String(h).padStart(2, '0')}:00`,
+        kw: Math.round((base + random() * 0.8) * 10) / 10,
+      });
+    }
+  }
+  return cells;
+}
+
+/** The change of each room's temperature against its set point, by day of the week. */
+interface RoomDelta {
+  readonly day: number;
+  readonly room: string;
+  readonly delta: number | null;
+}
+
+function roomDeltas(): RoomDelta[] {
+  const random = seeded(43);
+  const names = ['Lobby', 'Office', 'Lab', 'Server room'];
+  return names.flatMap((room, r) =>
+    Array.from({ length: 7 }, (_, day) => ({
+      day,
+      room,
+      delta:
+        room === 'Lab' && day === 3
+          ? null
+          : Math.round((random() - 0.5 + (r - 1.5) * 0.3) * 20) / 10,
+    })),
+  );
+}
+
 const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
   at: i * 2.5,
   value: Math.round(100 * (1 - Math.exp(-i / 9)) * 10) / 10,
@@ -365,6 +415,8 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctArea,
     PctRange,
     PctBox,
+    PctHeat,
+    PctChartRamp,
     PctButton,
   ],
   templateUrl: './chart-view.html',
@@ -445,6 +497,18 @@ export class ChartView {
   protected readonly march = marchRanges();
   protected readonly sessions = sessions();
   protected readonly hourly = hourlyLatencies();
+  protected readonly power = powerByHour();
+  protected readonly deltas = roomDeltas();
+  protected readonly weekdays = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
+  protected readonly pickedCell = signal('Nothing picked');
   protected readonly yWindow = signal<{ from: number; to: number } | null>(
     null,
   );

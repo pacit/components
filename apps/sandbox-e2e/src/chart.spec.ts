@@ -1470,4 +1470,101 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(table.locator('tbody tr')).toHaveCount(24);
     });
   });
+  test.describe('a heatmap', () => {
+    const hoverMiddle = async (c: Locator) => {
+      await c.scrollIntoViewIfNeeded();
+      const box = (await c.boundingBox())!;
+      await c.page().mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      const tooltip = c.locator('[data-pct-part="tooltip"]');
+      await expect(tooltip).toBeVisible();
+      return tooltip;
+    };
+
+    test("a cell per hour and day on the skin's ramp, the rows named at the side, the ramp's ends under its bar, a row a column of the table", async ({
+      page,
+    }) => {
+      const heated = chart(page, 'chart-heat');
+      await heated.scrollIntoViewIfNeeded();
+      const cells = heated.locator('[data-pct-part="cell"]');
+      await expect(cells).toHaveCount(24 * 14);
+      // the first cell is painted by the stylesheet's mix of two steps, not a colour in the markup
+      const first = cells.first();
+      await expect(first).toHaveAttribute('class', /^from-\d to-\d( deep)?$/);
+      expect(await first.getAttribute('fill')).toBeNull();
+      const fill = await first.evaluate((e) => getComputedStyle(e).fill);
+      expect(fill).toMatch(/^(color\(|rgb|oklab|lab)/);
+      // twenty-four rows named at the left of the plot, the first the first hour
+      const rows = heated.locator('[data-pct-rows] text');
+      await expect(rows).toHaveCount(24);
+      await expect(rows.first()).toHaveText('00:00');
+      const cellX = await first.evaluate((e) => e.getBoundingClientRect().left);
+      const labelRight = await rows
+        .first()
+        .evaluate((e) => e.getBoundingClientRect().right);
+      expect(labelRight).toBeLessThanOrEqual(cellX);
+      // no value axis: the plot has no axis of units
+      await expect(heated.locator('[data-pct-part="axis"]')).toHaveCount(1);
+      // the ramp: a bar and the domain's two ends in the chart's unit
+      const ramp = page.getByTestId('heat-ramp');
+      await expect(ramp).toHaveAttribute('aria-hidden', 'true');
+      await expect(ramp.locator('[data-pct-part="ramp"]')).toHaveCount(1);
+      const ends = ramp.locator('[data-pct-part="label"]');
+      await expect(ends).toHaveCount(2);
+      await expect(ends.first()).toHaveText(/^\d+(\.\d+)? kW$/);
+      // the tooltip reads every row at the cursor's day; the table has a column per row
+      const tooltip = await hoverMiddle(heated);
+      await expect(tooltip.locator('.row:not(.note)')).toHaveCount(24);
+      const table = page.getByTestId('heat-table');
+      await expect(table.locator('thead th')).toHaveCount(25);
+      await expect(table.locator('thead th').nth(1)).toHaveText('00:00 (kW)');
+      await expect(table.locator('tbody tr')).toHaveCount(6);
+      // a press on a cell picks its row
+      const box = (await first.boundingBox())!;
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      await expect(page.getByTestId('heat-picked')).toHaveText('00:00 on 0');
+    });
+
+    test('a diverging ramp centres on its middle, writes a label on each cell, and leaves a gap for no value', async ({
+      page,
+    }) => {
+      const diverging = chart(page, 'chart-heat-diverging');
+      await diverging.scrollIntoViewIfNeeded();
+      const cells = diverging.locator('[data-pct-part="cell"]');
+      // four rooms by seven days, one value missing
+      await expect(cells).toHaveCount(27);
+      await expect(cells.first()).toHaveAttribute(
+        'class',
+        /^from-(low|mid|high) to-(low|mid|high)( deep)?$/,
+      );
+      const labels = diverging.locator('text[data-pct-part="label"]');
+      await expect(labels).toHaveCount(27);
+      await expect(labels.first()).toHaveText(/^-?\d+(\.\d+)?$/);
+      await expect(labels.first()).toHaveAttribute(
+        'class',
+        /^on-(low|mid|high)$/,
+      );
+      const ramp = page.getByTestId('heat-diverging-ramp');
+      await expect(ramp.locator('[data-pct-part="ramp"]')).toHaveClass(
+        /diverging/,
+      );
+      await expect(ramp.locator('[data-pct-part="label"]')).toHaveText([
+        '-2 °C',
+        '0 °C',
+        '2 °C',
+      ]);
+      // the legend lists the rooms, each a toggle; the hidden room's cells leave the plot
+      const legend = page.getByTestId('heat-legend');
+      const toggles = legend.locator('[data-pct-part="toggle"]');
+      await expect(toggles).toHaveText([
+        /Lobby/,
+        /Office/,
+        /Lab/,
+        /Server room/,
+      ]);
+      await toggles.nth(2).click();
+      await expect(cells).toHaveCount(21);
+      await toggles.nth(2).click();
+      await expect(cells).toHaveCount(27);
+    });
+  });
 });

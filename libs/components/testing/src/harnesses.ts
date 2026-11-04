@@ -460,6 +460,26 @@ export class PctBoxHarness extends PctHarness<
   ] as const;
 }
 
+/**
+ * `pct-heat` — `PctHeat`.
+ *
+ * @since next
+ */
+export class PctHeatHarness extends PctHarness<'cell' | 'label' | 'swatch'> {
+  static override hostSelector = 'pct-heat';
+  static override readonly parts = ['cell', 'label', 'swatch'] as const;
+}
+
+/**
+ * `pct-chart-ramp` — `PctChartRamp`.
+ *
+ * @since next
+ */
+export class PctChartRampHarness extends PctHarness<'item' | 'ramp' | 'label'> {
+  static override hostSelector = 'pct-chart-ramp';
+  static override readonly parts = ['item', 'ramp', 'label'] as const;
+}
+
 // ── @pacit/components/checkbox ──────────────────────────────────────────────────
 
 /**

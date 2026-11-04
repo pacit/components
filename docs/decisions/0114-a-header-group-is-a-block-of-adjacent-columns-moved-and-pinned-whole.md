@@ -1,4 +1,4 @@
-# 0113 — A header group is a block of adjacent columns, moved and pinned whole
+# 0114 — A header group is a block of adjacent columns, moved and pinned whole
 
 **Status:** accepted
 **Implements:** [`req-api-platform`](../requirements/api.md#req-api-platform),

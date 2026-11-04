@@ -45,6 +45,7 @@ import {
 import { pctThinLabels, pctTooltipPlace } from './model/layout';
 import { pctDomainOf } from './model/extent';
 import {
+  pctBand,
   pctLinear,
   pctLog,
   type PctDomain,
@@ -217,6 +218,13 @@ export interface PctChartReadingRow {
    * text where a number does not say it (a range's `3 °C – 11 °C`).
    */
   readonly text: string;
+  /**
+   * The row the series is drawn in, for a series of a mark that lays rows (`PctSeriesSpec.row`):
+   * the marker stands at its middle, not on a value axis.
+   *
+   * @since next
+   */
+  readonly row?: string;
 }
 
 /**
@@ -598,6 +606,13 @@ export class PctChart extends PctChartScene {
   private readonly gap = signal(6);
   /** The height of a lane beside the plot: the `band-height` token, read with the font. */
   private readonly laneHeight = signal(16);
+  private readonly cellGapState = signal(1);
+  /**
+   * See `PctChartScene.cellGap`.
+   *
+   * @since next
+   */
+  override readonly cellGap = this.cellGapState.asReadonly();
   private readonly pixelState = signal(1);
   override readonly pixel = this.pixelState.asReadonly();
   /** The scene knows its size: before that, on the server and in the first frame, a skeleton. */
@@ -639,6 +654,32 @@ export class PctChart extends PctChartScene {
     return names;
   });
 
+  /** The rows the marks lay across the plot, in the order of the marks, each name once (0113). */
+  private readonly rowNames = computed(() => {
+    const names: string[] = [];
+    for (const mark of this.marks())
+      for (const row of mark.rows()) if (!names.includes(row)) names.push(row);
+    return names;
+  });
+
+  /** The strips of the rows across the plot: a band each of the plot's height (its width, turned). */
+  private readonly rowScale = computed(() => {
+    const names = this.rowNames();
+    if (names.length === 0) return null;
+    const { top, bottom } = this.rows();
+    const { left, right } = this.columns();
+    return pctBand(
+      names.length,
+      this.horizontal() ? [left, right] : [top, bottom],
+      0,
+    );
+  });
+
+  /** The widest row label, for the room the rows take at the side. */
+  private readonly rowLabelWidth = computed(() =>
+    Math.max(0, ...this.rowNames().map((row) => this.measure(row))),
+  );
+
   /**
    * The room the lanes take beside the plot — under it, right of it when turned — a lane's
    * height and a gap each; nothing while no series has an axis, when the lanes have the plot
@@ -678,7 +719,12 @@ export class PctChart extends PctChartScene {
   });
   override readonly places = this.placesState.asReadonly();
 
-  private readonly units = computed(() => this.series().map((s) => s.unit));
+  /** The units that take a value axis: a series in a row (`PctSeriesSpec.row`) takes none. */
+  private readonly units = computed(() =>
+    this.series()
+      .filter((s) => s.row === undefined)
+      .map((s) => s.unit),
+  );
 
   private readonly slotsState = linkedSignal<
     readonly string[],
@@ -922,7 +968,9 @@ export class PctChart extends PctChartScene {
         room('right'),
         this.xUnitShown() ? line + this.gap() : 0,
       );
-      const bottom = height - Math.max(EDGE, room('left'));
+      // Turned, the rows' labels stand under the plot, where the value axes' would.
+      const rowsRoom = this.rowNames().length > 0 ? line + this.gap() : 0;
+      const bottom = height - Math.max(EDGE, room('left'), rowsRoom);
       return { top, bottom: Math.max(top + 1, bottom) };
     }
     const top = this.slots().size > 0 ? line + this.gap() : EDGE;
@@ -956,7 +1004,9 @@ export class PctChart extends PctChartScene {
     const configs = new Map(this.axisConfigs().map((c) => [c.unit(), c]));
     const places = this.places();
     const whole = [...this.slots()].map(([unit, slot]) => {
-      const series = this.series().filter((s) => s.unit === unit);
+      const series = this.series().filter(
+        (s) => s.unit === unit && s.row === undefined,
+      );
       const config = configs.get(unit);
       const log = unit !== BOOLEAN && config?.scale() === 'log';
       const own = series.map((s) => extents.get(s.id) ?? null);
@@ -1055,8 +1105,11 @@ export class PctChart extends PctChartScene {
       const axis = this.valueAxes().find((a) => a.slot === slot);
       return axis ? axis.width + this.gap() * 2 : 0;
     };
+    // The rows' labels stand at the left, inside the value axes there.
+    const rows =
+      this.rowNames().length > 0 ? this.rowLabelWidth() + this.gap() * 2 : 0;
     return {
-      left: Math.max(EDGE, room('left') + room('left-outer')),
+      left: Math.max(EDGE, room('left') + room('left-outer') + rows),
       right: Math.max(EDGE, room('right') + room('right-outer')),
     };
   });
@@ -1281,6 +1334,48 @@ export class PctChart extends PctChartScene {
       : { left, right, top: start, bottom: start + height };
   }
 
+  /**
+   * The strip of a row across the plot (0113): the plot's width and the row's band of its
+   * height; turned, the plot's height and a band of its width.
+   *
+   * @since next
+   */
+  override rowFrame(row: string): PctNoteFrame | null {
+    const index = this.rowNames().indexOf(row);
+    const scale = this.rowScale();
+    if (index < 0 || !scale) return null;
+    const [start, end] = scale.band(index);
+    const { top, bottom, left, right } = this.plot();
+    return this.horizontal()
+      ? { top, bottom, left: start, right: end }
+      : { left, right, top: start, bottom: end };
+  }
+
+  /** The rows' labels: at the left of the plot, each at its row's middle; turned, under it. */
+  protected readonly rowLabels = computed(() => {
+    const scale = this.rowScale();
+    if (!scale) return [];
+    const { left, bottom } = this.plot();
+    const horizontal = this.horizontal();
+    return this.rowNames().map((text, i) =>
+      horizontal
+        ? {
+            text,
+            x: scale.middle(i),
+            y: bottom + TICK + 2,
+            anchor: 'middle' as const,
+            baseline: 'hanging' as const,
+          }
+        : {
+            text,
+            x: left - 6,
+            y: scale.middle(i),
+            anchor: 'end' as const,
+            baseline: 'middle' as const,
+          },
+    );
+  });
+
   /** The lines of the grid: along the first axis's ticks (or every axis's), and the time's. */
   protected readonly gridLines = computed(() => {
     const grid = this.grid();
@@ -1496,6 +1591,7 @@ export class PctChart extends PctChartScene {
           value,
           at: value === null ? null : (mark?.drawnAt(s.id, x) ?? value),
           text: mark?.readAt(s.id, x) ?? this.writeValue(value, s.unit),
+          row: s.row,
         };
       });
     const notes = this.marks().flatMap((m) => m.notesAt(x));
@@ -1545,8 +1641,16 @@ export class PctChart extends PctChartScene {
     const horizontal = this.horizontal();
     const along = scale.map(reading.x);
     const markers = reading.rows.flatMap((row) => {
+      // A series in a row stands at the row's middle; the others on their axis.
+      const frame = row.row === undefined ? null : this.rowFrame(row.row);
       const across =
-        row.at === null ? undefined : scales.get(row.unit)?.map(row.at);
+        row.at === null
+          ? undefined
+          : frame
+            ? horizontal
+              ? (frame.left + frame.right) / 2
+              : (frame.top + frame.bottom) / 2
+            : scales.get(row.unit)?.map(row.at);
       return across === undefined
         ? []
         : [
@@ -2318,6 +2422,10 @@ export class PctChart extends PctChartScene {
       style?.getPropertyValue('--pct-chart-band-height') ?? '',
     );
     if (lane > 0) this.laneHeight.set(lane);
+    const cell = parseFloat(
+      style?.getPropertyValue('--pct-chart-cell-gap') ?? '',
+    );
+    if (cell >= 0) this.cellGapState.set(cell);
     this.pixelState.set(1 / (view?.devicePixelRatio || 1));
   }
 
@@ -2383,7 +2491,9 @@ export class PctChart extends PctChartScene {
 
   private warnOnUnplaced(): void {
     const slots = this.slots();
-    const lost = this.series().filter((s) => !slots.has(s.unit));
+    const lost = this.series().filter(
+      (s) => s.row === undefined && !slots.has(s.unit),
+    );
     if (lost.length === 0) return;
     console.warn(
       `[pct-chart] ${lost.map((s) => `"${s.name}" (${s.unit || 'no unit'})`).join(', ')} ` +
@@ -2433,7 +2543,8 @@ function placesOf(
       places.set(s.id, kept);
   }
   for (const s of series) {
-    if (places.has(s.id)) continue;
+    // A series in a row is painted by its mark's ramp, and takes no place (0113).
+    if (places.has(s.id) || s.row !== undefined) continue;
     const taken = new Set(places.values());
     const free = [1, 2, 3, 4, 5, 6, 7, 8].find((p) => !taken.has(p));
     places.set(s.id, free ?? (places.size % 8) + 1);

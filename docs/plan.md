@@ -273,10 +273,10 @@ form exists and is a condition of entering a release. Forty-two cards are filled
     line cut by its thresholds — read in the description; a band of states in a lane (0104);
     points and bubbles picked by distance, a zoom on both axes, a log axis of decades (0105);
     areas on a stack or as shares, a monotone curve the tooltip reads too, a histogram recipe,
-    a range band and candles, boxes with whiskers and outliers (0106)
-  - then a heatmap, pie and gauge, a sparkline, a brush, export and a generated description; a
-    canvas layer only behind a measurement; three promoted layers per scene: the data, the
-    axes and annotations, the cursor moved by a transform (0100)
+    a range band and candles, boxes with whiskers and outliers (0106); a heatmap on rows the
+    scene lays, each cell a mix of the skin's ramp by the stylesheet, with its ramp legend (0113)
+  - then pie and gauge, a sparkline, a brush, export and a generated description; a canvas
+    layer only behind a measurement; three promoted layers per scene (0100)
   - ends with: every mark's card, the sandbox in three engines, the readers' walk of the cursor
 
 ## 3. Publication
@@ -415,11 +415,11 @@ and every one is held by a **binds at** rather than by anybody's mood.
 
 - [ ] **4.84 — the readers' log quotes the data table's Polish**
   - `/datatable` formats its relative times with `locale="pl"` on purpose, and on 2026-11-02
-    NVDA read the frame of the scrolling table whole for the first time, a Polish relative time included,
-    so `docs/acr/at/nvda-firefox-windows.md` carries Polish the language gate counts. The log is
-    a verbatim record and is not edited; `tools/language.policy.json` excuses it under this task
+    NVDA read the frame of the scrolling table whole for the first time, a Polish relative time
+    included; `tools/language.policy.json` excused the verbatim log until the walk of 2026-11-04
+    read the frame as a region and nothing behind it, and the dead entry left
   - the fix is the view's: a locale that writes no Polish word — `de` or `fr`, whose relative
-    times are the third language a record may quote — and the entry leaves the register with it
+    times are the third language a record may quote — before a walk reads the frame whole
   - binds at: **the next readers' walk**, whose log is written by the view as it then stands
 
 - [ ] **4.81 — the warning line is not heard on the stop it appears**

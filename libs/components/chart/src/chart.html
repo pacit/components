@@ -150,6 +150,20 @@
         />
         }
       </g>
+      } @if (rowLabels().length > 0) {
+      <!-- The rows a mark lays across the plot, named at the side (0113). -->
+      <g data-pct-rows>
+        @for (label of rowLabels(); track label.text) {
+        <text
+          class="value"
+          [attr.dominant-baseline]="label.baseline"
+          [attr.text-anchor]="label.anchor"
+          [attr.x]="label.x"
+          [attr.y]="label.y"
+          [textContent]="label.text"
+        ></text>
+        }
+      </g>
       }
     </svg>
     <!-- The cursor's layer: HTML, so the tooltip wraps and writes with the page's type. -->

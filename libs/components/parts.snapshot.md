@@ -65,7 +65,13 @@ from what the browser really gets.
 ./chart PctChartLegend item
 ./chart PctChartLegend remove
 ./chart PctChartLegend toggle
+./chart PctChartRamp item
+./chart PctChartRamp label
+./chart PctChartRamp ramp
 ./chart PctChartZoom zoom
+./chart PctHeat cell
+./chart PctHeat label
+./chart PctHeat swatch
 ./chart PctLine area
 ./chart PctLine series
 ./chart PctLine swatch

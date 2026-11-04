@@ -2891,6 +2891,237 @@
       "severity": "error"
     },
     {
+      "name": "AA: chart — the value written on a heatmap cell of step 1",
+      "fg": "pct.chart.heat-fg-1",
+      "bg": "pct.chart.heat-bg-1",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of step 2",
+      "fg": "pct.chart.heat-fg-2",
+      "bg": "pct.chart.heat-bg-2",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of step 3",
+      "fg": "pct.chart.heat-fg-3",
+      "bg": "pct.chart.heat-bg-3",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of step 4",
+      "fg": "pct.chart.heat-fg-4",
+      "bg": "pct.chart.heat-bg-4",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of step 5",
+      "fg": "pct.chart.heat-fg-5",
+      "bg": "pct.chart.heat-bg-5",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of step 6",
+      "fg": "pct.chart.heat-fg-6",
+      "bg": "pct.chart.heat-bg-6",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of step 7",
+      "fg": "pct.chart.heat-fg-7",
+      "bg": "pct.chart.heat-bg-7",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of step 8",
+      "fg": "pct.chart.heat-fg-8",
+      "bg": "pct.chart.heat-bg-8",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of the low of a diverging ramp",
+      "fg": "pct.chart.heat-fg-low",
+      "bg": "pct.chart.heat-bg-low",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of the mid of a diverging ramp",
+      "fg": "pct.chart.heat-fg-mid",
+      "bg": "pct.chart.heat-bg-mid",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "AA: chart — the value written on a heatmap cell of the high of a diverging ramp",
+      "fg": "pct.chart.heat-fg-high",
+      "bg": "pct.chart.heat-bg-high",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 1 on surface",
+      "fg": "pct.chart.heat-bg-1",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 1 on surface-100",
+      "fg": "pct.chart.heat-bg-1",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 2 on surface",
+      "fg": "pct.chart.heat-bg-2",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 2 on surface-100",
+      "fg": "pct.chart.heat-bg-2",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 3 on surface",
+      "fg": "pct.chart.heat-bg-3",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 3 on surface-100",
+      "fg": "pct.chart.heat-bg-3",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 4 on surface",
+      "fg": "pct.chart.heat-bg-4",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 4 on surface-100",
+      "fg": "pct.chart.heat-bg-4",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 5 on surface",
+      "fg": "pct.chart.heat-bg-5",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 5 on surface-100",
+      "fg": "pct.chart.heat-bg-5",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 6 on surface",
+      "fg": "pct.chart.heat-bg-6",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 6 on surface-100",
+      "fg": "pct.chart.heat-bg-6",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 7 on surface",
+      "fg": "pct.chart.heat-bg-7",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 7 on surface-100",
+      "fg": "pct.chart.heat-bg-7",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 8 on surface",
+      "fg": "pct.chart.heat-bg-8",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of step 8 on surface-100",
+      "fg": "pct.chart.heat-bg-8",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of the low of a diverging ramp on surface",
+      "fg": "pct.chart.heat-bg-low",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of the low of a diverging ramp on surface-100",
+      "fg": "pct.chart.heat-bg-low",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of the mid of a diverging ramp on surface",
+      "fg": "pct.chart.heat-bg-mid",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of the mid of a diverging ramp on surface-100",
+      "fg": "pct.chart.heat-bg-mid",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of the high of a diverging ramp on surface",
+      "fg": "pct.chart.heat-bg-high",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI (continuous): chart — a heatmap cell of the high of a diverging ramp on surface-100",
+      "fg": "pct.chart.heat-bg-high",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "name": "UI: chart — the edge of the tooltip",
       "fg": "pct.chart.tooltip-border",
       "bg": "pct.surface",

@@ -11,6 +11,7 @@ import type { PctInterval } from './model/intervals';
 import type { PctNoteBox, PctNoteFrame, PctPlacedNote } from './model/notes';
 import type { PctDomain, PctScale } from './model/scale';
 import type { PctStacked } from './model/stack';
+import type { PctColorScale } from './model/color';
 import type { PctCurve } from './model/value-at';
 import type { PctWindow } from './model/window';
 
@@ -86,6 +87,14 @@ export interface PctSeriesSpec {
   readonly color: number | string | undefined;
   /** The value axis keeps zero in its domain: an area or a bar grows from it. */
   readonly fromZero: boolean;
+  /**
+   * The row the series is drawn in, for a mark that lays rows across the plot (`PctMark.rows`):
+   * a heatmap's row. A series in a row has no value axis and takes no place in the palette; the
+   * cursor's marker stands at the row's middle.
+   *
+   * @since next
+   */
+  readonly row?: string;
 }
 
 /**
@@ -301,6 +310,20 @@ export abstract class PctChartScene {
    * @since 0.3.0
    */
   abstract laneFrame(name: string): PctNoteFrame | null;
+  /**
+   * The strip of a row across the plot — the plot's width and a share of its height, turned a
+   * share of its width — for a mark that lays rows (`PctMark.rows`); `null` for a row no mark
+   * asked for.
+   *
+   * @since next
+   */
+  abstract rowFrame(row: string): PctNoteFrame | null;
+  /**
+   * The gap between the cells of a heatmap, in pixels: the `cell-gap` token, read with the font.
+   *
+   * @since next
+   */
+  abstract readonly cellGap: Signal<number>;
 }
 
 /**
@@ -607,6 +630,26 @@ export abstract class PctMark {
   readonly legendEntries: Signal<readonly PctLegendExtra[]> = signal<
     readonly PctLegendExtra[]
   >([]).asReadonly();
+
+  /**
+   * The rows the mark lays across the plot, in order — a heatmap's categories — each a strip
+   * the scene lends (`PctChartScene.rowFrame`) and labels at the side. Marks that name the same
+   * row share it. The default lays none.
+   *
+   * @since next
+   */
+  readonly rows: Signal<readonly string[]> = signal<readonly string[]>(
+    [],
+  ).asReadonly();
+
+  /**
+   * The colour scale the mark paints its values with, for a legend of its ramp
+   * (`pct-chart-ramp`); `null` for a mark that paints by series.
+   *
+   * @since next
+   */
+  readonly colorScale: Signal<PctColorScale | null> =
+    signal<PctColorScale | null>(null).asReadonly();
 }
 
 /**
