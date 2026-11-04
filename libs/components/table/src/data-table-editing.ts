@@ -1,6 +1,7 @@
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterEveryRender,
+  afterNextRender,
   booleanAttribute,
   Component,
   computed,
@@ -21,7 +22,11 @@ import {
   viewChild,
   type WritableSignal,
 } from '@angular/core';
-import { PCT_TEXTS, pctReportOrphanSlot } from '@pacit/components/core';
+import {
+  PCT_TEXTS,
+  PctAnnouncer,
+  pctReportOrphanSlot,
+} from '@pacit/components/core';
 import { PctNumber, PctText } from '@pacit/components/field';
 import { PctDataTable } from './data-table';
 import { PctTableGrid, type PctTableDataCell } from './data-table-grid';
@@ -31,6 +36,8 @@ import type {
   PctColumns,
   PctRowId,
 } from './model/columns';
+import { pctParseDelimited, pctPlainReader, pctPlainWriter } from './model/csv';
+import { pctTextOfSheet } from './model/formula';
 
 /**
  * What an editor template is handed: the row, the draft its control edits, and the two ends
@@ -188,6 +195,9 @@ interface Session {
   readonly cells: ReadonlyMap<string, Open>;
 }
 
+/** The edits of one step of the history: one row's, or every row a paste changed. */
+type Step = readonly Entry[];
+
 /** An edit as the history holds it, to be asked back. */
 interface Entry {
   readonly id: PctRowId;
@@ -263,6 +273,8 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
   private readonly table = inject<PctDataTable<T>>(PctDataTable);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly document = inject(DOCUMENT);
+  private readonly texts = inject(PCT_TEXTS);
+  private readonly announcer = inject(PctAnnouncer);
   private readonly grid = inject<PctTableGrid<T, M> | null>(PctTableGrid, {
     optional: true,
     self: true,
@@ -318,8 +330,9 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
    */
   readonly edit = output<PctTableEdit<T, M>>();
 
-  private readonly past = signal<readonly Entry[]>([]);
-  private readonly future = signal<readonly Entry[]>([]);
+  /** The edits committed, a step each: a paste of several rows is one step, undone at once. */
+  private readonly past = signal<readonly Step[]>([]);
+  private readonly future = signal<readonly Step[]>([]);
 
   /**
    * Whether `undo()` has an edit to ask back.
@@ -406,8 +419,11 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
     const host = this.host.nativeElement;
     const onKey = (event: KeyboardEvent) => this.onCell(event);
     host.addEventListener('keydown', onKey, true);
+    // In the browser only, and on the document: Firefox sends a paste to the body.
+    afterNextRender(() => this.document.addEventListener('paste', this.pasted));
     inject(DestroyRef).onDestroy(() => {
       host.removeEventListener('keydown', onKey, true);
+      this.document.removeEventListener('paste', this.pasted);
       this.listen(null);
     });
     effect(() => {
@@ -432,20 +448,22 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
    * @since 0.3.0
    */
   undo(): void {
-    const entry = this.past().at(-1);
-    if (entry === undefined) return;
+    const step = this.past().at(-1);
+    if (step === undefined) return;
     this.drop();
     this.past.update((past) => past.slice(0, -1));
-    this.future.update((future) => [...future, entry]);
-    this.ask(
-      entry,
-      entry.changes.map(({ column, value, previous }) => ({
-        column,
-        value: previous,
-        previous: value,
-      })),
-      'undo',
-    );
+    this.future.update((future) => [...future, step]);
+    for (const entry of [...step].reverse())
+      this.ask(
+        entry,
+        entry.changes.map(({ column, value, previous }) => ({
+          column,
+          value: previous,
+          previous: value,
+        })),
+        'undo',
+      );
+    this.go({ row: step[0].id, column: step[0].changes[0].column });
   }
 
   /**
@@ -454,12 +472,13 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
    * @since 0.3.0
    */
   redo(): void {
-    const entry = this.future().at(-1);
-    if (entry === undefined) return;
+    const step = this.future().at(-1);
+    if (step === undefined) return;
     this.drop();
     this.future.update((future) => future.slice(0, -1));
-    this.past.update((past) => [...past, entry]);
-    this.ask(entry, entry.changes, 'redo');
+    this.past.update((past) => [...past, step]);
+    for (const entry of step) this.ask(entry, entry.changes, 'redo');
+    this.go({ row: step[0].id, column: step[0].changes[0].column });
   }
 
   /** An edit from the history, emitted with the row as the table holds it now. */
@@ -471,7 +490,15 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
       changes: changes as readonly PctTableChange<M>[],
       cause,
     });
-    this.go({ row: entry.id, column: entry.changes[0].column });
+  }
+
+  /** A step of edits kept to be asked back, as many as `history` keeps; a new one forgets the undone. */
+  private record(step: Step): void {
+    const limit = Math.max(0, Math.floor(this.history()) || 0);
+    this.past.update((past) =>
+      limit === 0 ? [] : [...past, step].slice(-limit),
+    );
+    this.future.set([]);
   }
 
   /**
@@ -493,6 +520,9 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
       if (editorOf(event.target) !== null) this.left(event as FocusEvent);
     },
   };
+
+  private readonly pasted = (event: Event) =>
+    this.paste(event as ClipboardEvent);
 
   /** The focus leaving a popup of an editor's control, heard on the popup. */
   private readonly leftPopup = (event: Event) => this.left(event as FocusEvent);
@@ -727,12 +757,7 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
       popup.removeEventListener('focusout', this.leftPopup);
     this.popups.clear();
     if (changes.length > 0) {
-      const entry = { id: session.id, row: session.row, changes };
-      const limit = Math.max(0, Math.floor(this.history()) || 0);
-      this.past.update((past) =>
-        limit === 0 ? [] : [...past, entry].slice(-limit),
-      );
-      this.future.set([]);
+      this.record([{ id: session.id, row: session.row, changes }]);
       this.edit.emit({
         id: session.id,
         row: session.row as T,
@@ -1001,6 +1026,156 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
     for (const cell of session.cells.values())
       if (cell.context.invalid()) return;
     this.finish(true, null);
+  }
+
+  /**
+   * Ctrl+V or ⌘+V on the grid, or a menu's Paste: tab-separated values — what a sheet and the
+   * grid's copy put on the clipboard — written from the stop's cell, or the range's first, to
+   * the right and down, a value into each cell that may be edited, read as its column's kind
+   * reads it (`pctPlainReader`), and a text the copy wrote as its value is that value, so a cell
+   * pasted back onto itself is unchanged. One value pasted on a range fills the range. Each row changed
+   * is an `(edit)` of its own, and the paste is one step of the history, undone at once. A cell
+   * that may not be edited, a column drawn by its own editor — its rules are the template's —
+   * and a text that is no value of its column, are left out, and the
+   * announcement counts them; past the table's last row or column nothing is written. In an
+   * editor, in a field of the application's and in a cell stepped into, the paste is theirs.
+   */
+  private paste(event: ClipboardEvent): void {
+    const table = this.own();
+    const active = this.document.activeElement;
+    const grid = this.grid as PctTableGrid<T, M>;
+    if (
+      event.defaultPrevented ||
+      event.clipboardData === null ||
+      this.session() !== null ||
+      table === null ||
+      active === null ||
+      active.closest('table') !== table ||
+      active.closest('td, th') !== active
+    )
+      return;
+    const block = pctParseDelimited(
+      event.clipboardData.getData('text/plain'),
+      '\t',
+    );
+    if (block.length === 0) return;
+    const lines = this.table.lines().filter((line) => line.kind === 'row');
+    const keys = lines.map((line) => line.key);
+    const ids: readonly string[] = this.table.shownColumns();
+    const range = grid.range();
+    const focused = grid.focused();
+    const corner =
+      range ?? (focused === null ? null : { from: focused, to: focused });
+    // The range's first cell is its top left, whichever way it was drawn.
+    const rows =
+      corner === null
+        ? []
+        : [corner.from, corner.to].map((one) =>
+            keys.indexOf(one.row as PctRowId),
+          );
+    const places =
+      corner === null
+        ? []
+        : [corner.from, corner.to].map((one) => ids.indexOf(one.column));
+    if (rows.length === 0 || [...rows, ...places].some((at) => at < 0)) return;
+    const top = Math.min(...rows);
+    const left = Math.min(...places);
+    event.preventDefault();
+    const targets: [number, number, string][] = [];
+    if (range !== null && block.length === 1 && block[0].length === 1) {
+      for (let r = top; r <= Math.max(...rows); r++)
+        for (let c = left; c <= Math.max(...places); c++)
+          targets.push([r, c, block[0][0]]);
+    } else
+      block.forEach((line, r) =>
+        line.forEach((text, c) => {
+          if (top + r < lines.length && left + c < ids.length)
+            targets.push([top + r, left + c, text]);
+        }),
+      );
+    const columns = new Map(
+      (this.table.columns() as readonly PctAnyColumn<T>[]).map((column) => [
+        column.id,
+        column,
+      ]),
+    );
+    const locale = this.table.resolvedLocale();
+    const words = { yes: this.texts().tableYes, no: this.texts().tableNo };
+    const templates = this.templates();
+    // One reader and one writer a column, made once for the whole paste.
+    const kinds = new Map<
+      string,
+      {
+        readonly read: (text: string) => unknown;
+        readonly write: (value: unknown) => string;
+      }
+    >();
+    const kindOf = (column: PctAnyColumn<T>) => {
+      let known = kinds.get(column.id);
+      if (known === undefined) {
+        const text = column.kind === undefined || column.kind === 'text';
+        const read = pctPlainReader(column.kind, locale, words);
+        known = {
+          read: text ? (one) => read(pctTextOfSheet(one)) : read,
+          write: pctPlainWriter(column.kind, locale),
+        };
+        kinds.set(column.id, known);
+      }
+      return known;
+    };
+    const changed = new Map<PctRowId, Entry>();
+    let pasted = 0;
+    for (const [r, c, text] of targets) {
+      const line = lines[r];
+      const column = columns.get(ids[c]) as PctAnyColumn<T>;
+      const before = column.value(line.row);
+      const kind = column.kind;
+      // A text column whose values are not texts takes no text, and a column drawn by its own
+      // editor none either: what a text means there is the editor's to say.
+      const opaque =
+        templates.has(column.id) ||
+        ((kind === undefined || kind === 'text') &&
+          before !== null &&
+          before !== undefined &&
+          typeof before !== 'string');
+      if (opaque || !this.editableAt(line.row, column.id)) continue;
+      const { read, write } = kindOf(column);
+      // A value written as the copy writes it is that value: a day, a moment to the second.
+      const value = write(before) === text ? before : read(text);
+      if (value === undefined) continue;
+      pasted++;
+      if (Object.is(value, before)) continue;
+      const entry = changed.get(line.key) ?? {
+        id: line.key,
+        row: line.row,
+        changes: [],
+      };
+      changed.set(line.key, {
+        ...entry,
+        changes: [
+          ...entry.changes,
+          { column: column.id, value, previous: before },
+        ],
+      });
+    }
+    const step = [...changed.values()];
+    if (step.length > 0) this.record(step);
+    for (const entry of step)
+      this.edit.emit({
+        id: entry.id,
+        row: entry.row as T,
+        changes: entry.changes as readonly PctTableChange<M>[],
+        cause: 'edit',
+      });
+    const skipped = targets.length - pasted;
+    const say =
+      skipped === 0 ? this.texts().tablePasted : this.texts().tablePasteSkipped;
+    const message = say
+      .replace('{count}', String(pasted))
+      .replace('{skipped}', String(skipped));
+    // Each paste is said, the same count again too.
+    this.announcer.retract(message);
+    this.announcer.announce(message);
   }
 
   private warnNone(column: string): void {

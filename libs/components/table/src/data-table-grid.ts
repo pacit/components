@@ -1,5 +1,7 @@
+import { DOCUMENT } from '@angular/common';
 import {
   afterEveryRender,
+  afterNextRender,
   DestroyRef,
   Directive,
   ElementRef,
@@ -7,9 +9,12 @@ import {
   input,
   model,
 } from '@angular/core';
+import { PCT_TEXTS, PctAnnouncer } from '@pacit/components/core';
 import { PctDataTable } from './data-table';
 import { PctTableSelection } from './data-table-selection';
-import type { PctColumns, PctRowId } from './model/columns';
+import type { PctAnyColumn, PctColumns, PctRowId } from './model/columns';
+import { pctPlainWriter, pctWriteDelimited } from './model/csv';
+import { pctSheetText } from './model/formula';
 import {
   type PctGridCellSpan,
   pctGridCellAt,
@@ -59,6 +64,11 @@ export interface PctTableCellRange<Id extends string = string> {
   readonly from: PctTableDataCell<Id>;
   readonly to: PctTableDataCell<Id>;
 }
+
+/** A field whose text is its own to copy and to paste. */
+const FIELD =
+  'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]), textarea, ' +
+  'select, [contenteditable]:not([contenteditable="false"])';
 
 /** What a reader and a key can reach in a cell: a control, with Tab or with a click. */
 const FOCUSABLE =
@@ -227,10 +237,133 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
   private observed: HTMLTableElement | null = null;
   private seen: readonly unknown[] = [];
 
+  private readonly document = inject(DOCUMENT);
+  private readonly announcer = inject(PctAnnouncer);
+  private readonly texts = inject(PCT_TEXTS);
+
+  /** A copy heard on the document: Firefox sends it to the body, not to the cell focused. */
+  private readonly copied = (event: Event) =>
+    this.copy(event as ClipboardEvent);
+
   constructor() {
     this.table.contribute({ grid: {} });
     afterEveryRender({ write: () => this.paint() });
-    inject(DestroyRef).onDestroy(() => this.observer?.disconnect());
+    // In the browser only: a server has no clipboard.
+    afterNextRender(() => this.document.addEventListener('copy', this.copied));
+    inject(DestroyRef).onDestroy(() => {
+      this.observer?.disconnect();
+      this.document.removeEventListener('copy', this.copied);
+    });
+  }
+
+  /**
+   * Ctrl+C or ⌘+C on the grid, or a menu's Copy: the range, else the rows picked, else the
+   * cell of the stop, as tab-separated values a sheet pastes into its cells — each value
+   * written as another program reads it (`pctPlainWriter`), so a number is a number there,
+   * and a text as the cell shows it, after an apostrophe where a sheet would run it as a
+   * formula. Text the user selected in the table, a field's own text, an editor and a cell
+   * stepped into copy as the platform copies them; so does a table nested in a cell's details.
+   */
+  private copy(event: ClipboardEvent): void {
+    const table = this.own();
+    const active = this.document.activeElement;
+    if (
+      event.defaultPrevented ||
+      event.clipboardData === null ||
+      table === null ||
+      active === null ||
+      active.closest('table') !== table ||
+      (this.editing !== null && this.editing.contains(active)) ||
+      active.matches(FIELD) ||
+      active.closest('[data-pct-part="editor"]') !== null ||
+      this.selected(table)
+    )
+      return;
+    const cells = this.copiedCells();
+    if (cells.length === 0) return;
+    // The last line has no break after it, so a copy of one cell pastes into a field as its text.
+    const text = pctWriteDelimited(cells, '\t').replace(/\r\n$/, '');
+    event.clipboardData.setData('text/plain', text);
+    event.preventDefault();
+    const count = cells.reduce((sum, line) => sum + line.length, 0);
+    // Each copy is said, the same count again too: the region is cleared before it is filled.
+    const message = this.texts().tableCopied.replace('{count}', String(count));
+    this.announcer.retract(message);
+    this.announcer.announce(message);
+  }
+
+  /** Whether the user selected text in the table, which is theirs to copy. */
+  private selected(table: HTMLTableElement): boolean {
+    const selection = this.document.getSelection();
+    if (selection === null || selection.isCollapsed) return false;
+    for (let i = 0; i < selection.rangeCount; i++)
+      if (selection.getRangeAt(i).intersectsNode(table)) return true;
+    return false;
+  }
+
+  /** The cells a copy takes: of the range, of the rows picked, or of the stop; none else. */
+  private copiedCells(): string[][] {
+    const columns = new Map(
+      (this.table.columns() as readonly PctAnyColumn<T>[]).map((column) => [
+        column.id,
+        column,
+      ]),
+    );
+    const drawn = (this.table.shownColumns() as readonly string[]).map(
+      (id) => columns.get(id) as PctAnyColumn<T>,
+    );
+    const locale = this.table.resolvedLocale();
+    const writers = new Map(
+      drawn.map((column) => {
+        const kind = column.kind;
+        const plain =
+          kind === undefined || kind === 'text'
+            ? null
+            : pctPlainWriter(kind, locale);
+        return [
+          column.id,
+          (row: T) =>
+            plain === null
+              ? pctSheetText(this.table.textOf(row, column.id))
+              : plain(column.value(row)),
+        ] as const;
+      }),
+    );
+    const write = (rows: readonly T[], of: readonly PctAnyColumn<T>[]) =>
+      rows.map((row) =>
+        of.map((column) => (writers.get(column.id) as (row: T) => string)(row)),
+      );
+    const lines = this.table.lines().filter((line) => line.kind === 'row');
+    const range = this.range();
+    if (range !== null) {
+      const ids = drawn.map((column) => column.id);
+      const keys = lines.map((line) => line.key);
+      const a = keys.indexOf(range.from.row);
+      const b = keys.indexOf(range.to.row);
+      const c = ids.indexOf(range.from.column);
+      const d = ids.indexOf(range.to.column);
+      if (a >= 0 && b >= 0 && c >= 0 && d >= 0)
+        return write(
+          lines
+            .slice(Math.min(a, b), Math.max(a, b) + 1)
+            .map((line) => line.row),
+          drawn.slice(Math.min(c, d), Math.max(c, d) + 1),
+        );
+    }
+    const picked = new Set(this.selection?.value() ?? []);
+    if (picked.size > 0) {
+      const id = this.table.rowId();
+      return write(
+        this.table.matchedRows().filter((row) => picked.has(id(row))),
+        drawn,
+      );
+    }
+    const focused = this.focused();
+    const line = lines.find((one) => one.key === focused?.row);
+    const column = columns.get(focused?.column as string);
+    return line === undefined || column === undefined
+      ? []
+      : write([line.row], [column]);
   }
 
   /** The table the data table drew. */
