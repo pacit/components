@@ -53,6 +53,12 @@ import {
 import { pctAggregate } from './model/aggregate';
 import type { PctAnyColumnFilter } from './model/filters';
 import { pctFit } from './model/fit';
+import type {
+  pctTree,
+  pctTreeAbove,
+  PctTree,
+  PctTreePlace,
+} from './model/tree';
 import {
   type PctColumnPin,
   pctColumnWidthBounds,
@@ -128,6 +134,17 @@ export interface PctTableFeature {
     readonly by: Signal<readonly string[]>;
     readonly collapsed: WritableSignal<readonly string[]>;
     readonly disabled: Signal<boolean>;
+  };
+  /**
+   * The tree: each row's children, the rows whose children are shown, whether on, and the
+   * functions that read a tree — the directive's, so a table without one carries no tree.
+   */
+  readonly tree?: {
+    readonly children: Signal<(row: never) => readonly unknown[] | undefined>;
+    readonly expanded: WritableSignal<readonly PctRowId[]>;
+    readonly disabled: Signal<boolean>;
+    readonly read: typeof pctTree;
+    readonly above: typeof pctTreeAbove;
   };
   /**
    * The rows picked: the component the table makes for them, out of the paint, and what it
@@ -326,6 +343,14 @@ interface Row<T> {
   readonly line: number;
   /** How deep the row stands: in its groups, and in a tree. */
   readonly level: number;
+  /** How deep the row stands in the tree alone, from 1: what a treegrid's row says. */
+  readonly depth: number;
+  /** The row's children are shown; `null` for a leaf, and without a tree. */
+  readonly expanded: boolean | null;
+  /** The row matched nothing itself: it stands for the matches below it. */
+  readonly muted: boolean;
+  /** The row's place among its siblings in the tree; `null` without one. */
+  readonly place: PctTreePlace | null;
   readonly tone: PctTone | null;
   /** The row's values, one per column: the array the cache holds, kept while the row is. */
   readonly values: readonly unknown[];
@@ -915,15 +940,19 @@ export class PctDataTable<
       ((this.remote()?.loading() ?? false) && this.given().length === 0),
   );
 
-  private readonly filtered = computed(() => {
-    const remote = this.remote();
-    // A remote source filtered its rows itself: those it delivered are what matched.
-    if (remote)
-      return (remote.rows() as readonly (T | undefined)[]).filter(
-        (row): row is T => row !== undefined,
-      );
-    const rows = this.rows();
-    if (!this.clientFilter()) return rows;
+  /** The rows a remote source has delivered, its holes left out. */
+  private readonly present = computed(() =>
+    (this.given() as readonly (T | undefined)[]).filter(
+      (row): row is T => row !== undefined,
+    ),
+  );
+
+  /**
+   * The filter's verdict on one row, or `null` while this side filters nothing: a remote
+   * source filtered its rows itself.
+   */
+  private readonly passes = computed<((row: T) => boolean) | null>(() => {
+    if (this.remote() || !this.clientFilter()) return null;
     const question = this.filter();
     const own = this.filterWith();
     const columns = this.columns();
@@ -948,8 +977,73 @@ export class PctDataTable<
           text as (column: PctAnyColumn<unknown>, row: unknown) => string,
         ) as (row: T) => boolean)
       : null;
-    return rows.filter((row) => quick(row) && (byColumns?.(row) ?? true));
+    return (row) => quick(row) && (byColumns?.(row) ?? true);
   });
+
+  private readonly filtered = computed(() => {
+    // A tree keeps a match with the rows above it, and ordered its roots already.
+    const tree = this.tree();
+    if (tree) return tree.roots;
+    if (this.remote()) return this.present();
+    const rows = this.rows();
+    const passes = this.passes();
+    return passes ? rows.filter(passes) : rows;
+  });
+
+  /** Orders a list of rows by `sort`, or `null` while this side sorts nothing. */
+  private readonly sorter = computed<
+    ((rows: readonly T[]) => readonly T[]) | null
+  >(() => {
+    if (!this.clientSort() || this.remote()) return null;
+    const columns = new Map<string, PctAnyColumn<T>>(
+      this.columns().map((column) => [column.id, column]),
+    );
+    const keys = this.sort().flatMap(({ key, direction }) => {
+      const column = columns.get(key);
+      return column ? [{ column, direction }] : [];
+    });
+    const collator = this.collator();
+    return (rows) => pctOrderRows(rows, keys, collator);
+  });
+
+  /** The tree directive's feature, while it is on. */
+  private readonly treeFeature = computed(() => {
+    const tree = this.contributed().tree;
+    return tree && !tree.disabled() ? tree : null;
+  });
+
+  /**
+   * The rows as a tree, while the tree directive is on: pruned to the filter's matches and
+   * their ancestors, each list of siblings ordered by `sort`. From a remote source, the tree
+   * inside the rows it delivered, as they came.
+   */
+  protected readonly tree = computed<PctTree<T> | null>(() => {
+    const feature = this.treeFeature();
+    if (!feature) return null;
+    return feature.read(
+      this.remote() ? this.present() : this.rows(),
+      this.rowId(),
+      {
+        children: feature.children() as (row: T) => readonly T[] | undefined,
+        matches: this.passes() ?? undefined,
+        order: this.sorter() ?? undefined,
+      },
+    );
+  });
+
+  /** The tree with the grid: the table is a treegrid, and each row says its level and place. */
+  protected readonly treegrid = computed(
+    () =>
+      this.tree() !== null &&
+      this.contributed().grid !== undefined &&
+      this.inBrowser(),
+  );
+
+  /**
+   * The table has rendered in a browser: what the grid writes with its role — a server's
+   * table is a table to its reader, and a row's level and place mean nothing on one.
+   */
+  private readonly inBrowser = signal(false);
 
   /**
    * The words to mark: the quick filter's, where the table's own filter decided, and each
@@ -971,9 +1065,11 @@ export class PctDataTable<
    *
    * @since 0.3.0
    */
-  readonly matched = computed(() =>
-    this.remote() ? this.given().length : this.filtered().length,
-  );
+  readonly matched = computed(() => {
+    // A remote source's count is the source's: its roots, the holes among them too.
+    if (this.remote()) return this.given().length;
+    return this.tree()?.rows.length ?? this.filtered().length;
+  });
 
   /**
    * The ids of the rows the filter let through, in the rows' order: what a selection's
@@ -983,7 +1079,7 @@ export class PctDataTable<
    */
   readonly matchedIds = computed(() => {
     const id = this.rowId();
-    return this.filtered().map((row) => id(row));
+    return (this.tree()?.rows ?? this.filtered()).map((row) => id(row));
   });
 
   /**
@@ -992,19 +1088,15 @@ export class PctDataTable<
    *
    * @since next
    */
-  readonly matchedRows = computed<readonly T[]>(() => this.ordered());
+  readonly matchedRows = computed<readonly T[]>(
+    () => this.tree()?.rows ?? this.ordered(),
+  );
 
   private readonly ordered = computed(() => {
     const rows = this.filtered();
-    if (!this.clientSort() || this.remote()) return rows;
-    const columns = new Map<string, PctAnyColumn<T>>(
-      this.columns().map((column) => [column.id, column]),
-    );
-    const keys = this.sort().flatMap(({ key, direction }) => {
-      const column = columns.get(key);
-      return column ? [{ column, direction }] : [];
-    });
-    return pctOrderRows(rows, keys, this.collator());
+    // A tree's roots came ordered, each list of its siblings too.
+    if (this.tree()) return rows;
+    return this.sorter()?.(rows) ?? rows;
   });
 
   /**
@@ -1017,12 +1109,19 @@ export class PctDataTable<
     const id = this.rowId();
     const remote = this.remote();
     const rows = remote ? this.given() : this.ordered();
+    const tree = this.tree();
     const lines = pctLines(rows, id, {
       details: this.disclosure() ? new Set(this.openDetails()()) : undefined,
+      children: tree?.children,
+      expanded: tree ? new Set(this.treeFeature()?.expanded()) : undefined,
       groups: this.grouping(),
       collapsed: new Set(this.contributed().groups?.collapsed()),
     });
-    if (isDevMode()) this.warnOnTwins(lines);
+    this.warnOnTwins(
+      tree
+        ? tree.rows.map((row) => id(row))
+        : lines.flatMap((line) => (line.kind === 'row' ? [line.key] : [])),
+    );
     return lines;
   });
 
@@ -1236,6 +1335,21 @@ export class PctDataTable<
   }
 
   /**
+   * The ids of every row of the tree with children the filter kept, in the tree's order: what
+   * the tree directive's `expandAll` opens. Empty without a tree.
+   *
+   * @since next
+   */
+  branchIds(): readonly PctRowId[] {
+    const tree = this.tree();
+    if (!tree) return [];
+    const rowId = this.rowId();
+    return tree.rows
+      .filter((row) => (tree.children(row)?.length ?? 0) > 0)
+      .map((row) => rowId(row));
+  }
+
+  /**
    * Every group's key, those inside a collapsed group too: what the groups directive's
    * `collapseAll` collapses.
    *
@@ -1249,20 +1363,21 @@ export class PctDataTable<
 
   private warnedTwins = false;
 
-  /** Two rows with one id are one row to `@for`, and that is a bug in the rows, said once. */
-  private warnOnTwins(lines: readonly PctTableLine<T>[]): void {
-    if (this.warnedTwins) return;
+  /**
+   * Two rows with one id are one row to `@for`, and that is a bug in the rows, said once: over
+   * the rows drawn, or every row of a tree, whose closed branches hold rows too.
+   */
+  private warnOnTwins(keys: readonly PctRowId[]): void {
+    if (!isDevMode() || this.warnedTwins) return;
     const seen = new Set<unknown>();
-    for (const line of lines) {
-      // A row's details carry the row's key; only rows can be twins.
-      if (line.kind !== 'row') continue;
-      if (!seen.has(line.key)) {
-        seen.add(line.key);
+    for (const key of keys) {
+      if (!seen.has(key)) {
+        seen.add(key);
         continue;
       }
       this.warnedTwins = true;
       console.warn(
-        `[pct-data-table] Two rows share the id ${JSON.stringify(line.key)}: rowId must name ` +
+        `[pct-data-table] Two rows share the id ${JSON.stringify(key)}: rowId must name ` +
           `each row once, or the table cannot tell them apart.`,
       );
       return;
@@ -1424,6 +1539,8 @@ export class PctDataTable<
     const templates = this.cellTemplates();
     const marked = this.marked();
     const rowTone = this.rowTone();
+    const tree = this.tree();
+    const grouped = this.grouping().length;
     // The engine's view of the columns: a tone takes the value it is handed, of any type.
     const columns: readonly PctAnyColumn<T>[] = this.columns();
     const marksOf = (id: string, quick: boolean): readonly string[] | null => {
@@ -1509,6 +1626,10 @@ export class PctDataTable<
         id: line.key,
         line: at,
         level: line.level,
+        depth: line.level - grouped + 1,
+        expanded: line.expanded,
+        muted: tree?.muted.has(line.key) ?? false,
+        place: tree?.places.get(line.key) ?? null,
         tone: rowTone?.(line.row) ?? null,
         values,
         cells: shown,
@@ -1550,6 +1671,15 @@ export class PctDataTable<
       `[pct-data-table] pctTableGroups does not group the rows of pctTableRemote: a group ` +
         `of rows the source has not sent cannot be counted or summed here, so the rows stay ` +
         `in the order the source gave them.`,
+    );
+  }
+
+  /** Opens or closes a row's children: the tree directive's model, written by the row's button. */
+  protected toggleNode(id: PctRowId): void {
+    const tree = this.treeFeature();
+    if (!tree) return;
+    tree.expanded.update((open) =>
+      open.includes(id) ? open.filter((other) => other !== id) : [...open, id],
     );
   }
 
@@ -1617,6 +1747,7 @@ export class PctDataTable<
   } | null>(null);
 
   constructor() {
+    afterNextRender(() => this.inBrowser.set(true));
     // A filter that emptied the table is answered aloud, as the select answers it; a table
     // with no rows, or rows still coming, is the page's to describe, not a change to announce.
     let announced = '';
@@ -2202,10 +2333,24 @@ export class PctDataTable<
     const groups = this.contributed().groups;
     const grouping = this.grouping();
     const rowId = this.rowId();
-    const row = (this.ordered() as readonly T[]).find(
-      (other) => rowId(other) === id,
+    const tree = this.tree();
+    // Every branch above the row opens, its parent first; what is open already stays as it is.
+    let top = id;
+    if (tree) {
+      const feature = this.treeFeature() as NonNullable<
+        PctTableFeature['tree']
+      >;
+      const above = feature.above(tree.parents, id);
+      top = above[above.length - 1] ?? id;
+      const open = feature.expanded();
+      const closed = above.filter((other) => !open.includes(other));
+      if (closed.length > 0) feature.expanded.set([...open, ...closed]);
+    }
+    // Every group above the row opens: the path of its values, one level at a time. A tree's
+    // rows stand in their root's group, so the path is the root's.
+    const row = (tree?.rows ?? (this.ordered() as readonly T[])).find(
+      (other) => rowId(other) === top,
     );
-    // Every group above the row opens: the path of its values, one level at a time.
     if (groups && row !== undefined) {
       const path: unknown[] = [];
       const above = new Set(

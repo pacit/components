@@ -1928,3 +1928,139 @@ function partOf(zip: Buffer, name: string): string {
   }
   throw new Error(`No ${name} in the zip.`);
 }
+
+test.describe('PctTableTree — the home as a tree', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const tree = (page: Page) => page.getByTestId('table-tree');
+  const rows = (page: Page) => tree(page).locator('tbody tr');
+  const names = (page: Page) => rows(page).locator('td:nth-child(1)');
+  /** A row's disclosure, by the name its first cell shows. */
+  const button = (page: Page, name: string) =>
+    rows(page)
+      .filter({ hasText: name })
+      .first()
+      .locator('button[data-pct-part="disclosure"]');
+  const focusedText = (page: Page) =>
+    page.evaluate(
+      () =>
+        document.activeElement
+          ?.closest('tr')
+          ?.querySelector('td')
+          ?.textContent?.trim() ?? null,
+    );
+
+  test('three levels open from their buttons, and the treegrid says each row’s level and place', async ({
+    page,
+  }) => {
+    await expect(
+      tree(page).getByRole('treegrid', { name: 'Home' }),
+    ).toHaveCount(1);
+    // The ground floor stands open from the start, its rooms under it; upstairs is closed.
+    await expect(names(page)).toHaveText([
+      /Ground floor/,
+      /Kitchen/,
+      /Hall/,
+      /Garage/,
+      /Upstairs/,
+    ]);
+    const ground = rows(page).first();
+    await expect(ground).toHaveAttribute('aria-level', '1');
+    await expect(ground).toHaveAttribute('aria-expanded', 'true');
+    await expect(ground).toHaveAttribute('aria-setsize', '2');
+    await expect(rows(page).nth(1)).toHaveAttribute('aria-level', '2');
+    await expect(rows(page).nth(1)).toHaveAttribute('aria-posinset', '1');
+    await expect(rows(page).nth(1)).toHaveAttribute('aria-expanded', 'false');
+    // A room with no device is a leaf: no button, no state.
+    await expect(button(page, 'Garage')).toHaveCount(0);
+    await expect(rows(page).nth(3)).not.toHaveAttribute('aria-expanded');
+    await expect(button(page, 'Kitchen')).toHaveAttribute(
+      'aria-label',
+      'Expand',
+    );
+    await button(page, 'Kitchen').click();
+    await expect(names(page).nth(2)).toHaveText(/Kettle/);
+    await expect(rows(page).nth(2)).toHaveAttribute('aria-level', '3');
+    await expect(rows(page).nth(2)).toHaveAttribute('aria-setsize', '3');
+    await expect(button(page, 'Kitchen')).toHaveAttribute(
+      'aria-label',
+      'Collapse',
+    );
+    await expect(page.getByTestId('tree-state')).toContainText(
+      'Open: ground kitchen.',
+    );
+    await page.getByTestId('tree-collapse').click();
+    await expect(names(page)).toHaveCount(2);
+    await page.getByTestId('tree-expand').click();
+    await expect(names(page)).toHaveCount(14);
+  });
+
+  test('the filter keeps the way to a match, the rows above it muted, and counts what it kept', async ({
+    page,
+  }) => {
+    // The filter opens nothing: a closed branch stays closed, and is counted all the same.
+    await page.getByTestId('tree-filter').click();
+    await expect(names(page)).toHaveText([
+      /Ground floor/,
+      /Kitchen/,
+      /Upstairs/,
+    ]);
+    await expect(page.getByTestId('tree-state')).toContainText('Rows: 6.');
+    await page.getByTestId('tree-expand').click();
+    await expect(names(page)).toHaveText([
+      /Ground floor/,
+      /Kitchen/,
+      /Lamp/,
+      /Upstairs/,
+      /Bedroom/,
+      /Lamp/,
+    ]);
+    await expect(rows(page).first()).toHaveAttribute('data-pct-muted', '');
+    await expect(rows(page).nth(1)).toHaveAttribute('data-pct-muted', '');
+    await expect(rows(page).nth(2)).not.toHaveAttribute('data-pct-muted');
+    await expect(rows(page).nth(4)).toHaveAttribute('data-pct-muted', '');
+    await page.getByTestId('tree-filter').click();
+    await expect(page.getByTestId('tree-state')).toContainText('Rows: 14.');
+  });
+
+  test('reveal opens the branches above a device in a closed floor, and new rows keep the branches open', async ({
+    page,
+  }) => {
+    await page.getByTestId('tree-collapse').click();
+    await expect(names(page)).toHaveCount(2);
+    await page.getByTestId('tree-reveal').click();
+    await expect(names(page).filter({ hasText: 'Heater' })).toHaveCount(1);
+    await expect(page.getByTestId('tree-state')).toContainText(
+      'Open: bedroom upstairs.',
+    );
+    await page.getByTestId('tree-replace').click();
+    await expect(names(page).filter({ hasText: 'Office' })).toHaveCount(0);
+    await button(page, 'Ground floor').click();
+    await expect(names(page).filter({ hasText: 'Office' })).toHaveCount(1);
+    await expect(names(page).filter({ hasText: 'Heater' })).toHaveCount(1);
+  });
+
+  test('on a first cell the arrow out of the line closes a branch or goes to the parent, the arrow into it opens one', async ({
+    page,
+  }) => {
+    await button(page, 'Kitchen').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(names(page).nth(2)).toHaveText(/Kettle/);
+    expect(await focusedText(page)).toMatch(/Kitchen/);
+    await page.keyboard.press('ArrowLeft');
+    await expect(names(page).nth(2)).toHaveText(/Hall/);
+    expect(await focusedText(page)).toMatch(/Kitchen/);
+    await page.keyboard.press('ArrowLeft');
+    expect(await focusedText(page)).toMatch(/Ground floor/);
+    // On an open branch the arrow into the line is the grid's move: to the next cell.
+    await page.keyboard.press('ArrowRight');
+    expect(await focusedText(page)).toMatch(/Ground floor/);
+    expect(
+      await page.evaluate(
+        () => document.activeElement?.closest('td')?.cellIndex,
+      ),
+    ).toBe(1);
+  });
+});
