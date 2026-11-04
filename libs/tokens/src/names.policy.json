@@ -48,7 +48,8 @@
       "focus-ring",
       "scrim",
       "shadow-panel",
-      "series"
+      "series",
+      "heat"
     ],
     "variants": [
       "hover",
@@ -60,11 +61,14 @@
       "100",
       "200",
       "via",
-      "to"
+      "to",
+      "low",
+      "mid",
+      "high"
     ],
     "ordinals": {
       "$comment": "A variant that is a place in a sequence and nothing more, of the roles named here alone: the palette of a chart's series, 1 to 8 (0102). `series-3` is a name; `danger-3` is not.",
-      "roles": ["series"],
+      "roles": ["series", "heat"],
       "list": ["1", "2", "3", "4", "5", "6", "7", "8"]
     }
   },
@@ -132,7 +136,10 @@
       "footer",
       "title",
       "subtitle",
-      "term"
+      "term",
+      "heat",
+      "cell",
+      "ramp"
     ],
     "properties": [
       "alpha",
@@ -179,7 +186,10 @@
       "today",
       "warning",
       "rise",
-      "fall"
+      "fall",
+      "low",
+      "mid",
+      "high"
     ],
     "sizes": {
       "$comment": "Size is a variant like a state and stands in the same place — at the end. `md` does not appear in a name, because it is the base value: `--pct-button-height` IS the `md` height (req-api-size).",
@@ -187,7 +197,7 @@
     },
     "ordinals": {
       "$comment": "A variant that is a place in a sequence and nothing more, of the parts named here alone: a chart's series 1 to 8 (0102). It stands at the end like a state — `--pct-chart-series-color-3` — and `--pct-button-bg-3` is no name.",
-      "parts": ["series"],
+      "parts": ["series", "heat"],
       "list": ["1", "2", "3", "4", "5", "6", "7", "8"]
     }
   }

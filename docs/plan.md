@@ -273,10 +273,10 @@ form exists and is a condition of entering a release. Forty-two cards are filled
     line cut by its thresholds — read in the description; a band of states in a lane (0104);
     points and bubbles picked by distance, a zoom on both axes, a log axis of decades (0105);
     areas on a stack or as shares, a monotone curve the tooltip reads too, a histogram recipe,
-    a range band and candles, boxes with whiskers and outliers (0106)
-  - then a heatmap, pie and gauge, a sparkline, a brush, export and a generated description; a
-    canvas layer only behind a measurement; three promoted layers per scene: the data, the
-    axes and annotations, the cursor moved by a transform (0100)
+    a range band and candles, boxes with whiskers and outliers (0106); a heatmap on rows the
+    scene lays, each cell a mix of the skin's ramp by the stylesheet, with its ramp legend (0111)
+  - then pie and gauge, a sparkline, a brush, export and a generated description; a canvas
+    layer only behind a measurement; three promoted layers per scene (0100)
   - ends with: every mark's card, the sandbox in three engines, the readers' walk of the cursor
 
 ## 3. Publication

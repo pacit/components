@@ -1,0 +1,60 @@
+// The legend of a heatmap's colours: a name, the bar of the ramp and the values of its ends.
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pct-chart-legend-gap);
+  font-size: var(--pct-chart-font-size);
+}
+
+.item {
+  display: grid;
+  gap: var(--pct-space-2);
+  min-inline-size: 160px;
+}
+
+.name {
+  color: var(--pct-chart-legend-fg-muted);
+}
+
+// The sequential ramp: its eight steps, blended in the perceptual space as the cells are.
+.ramp {
+  display: block;
+  block-size: var(--pct-chart-ramp-height);
+  border-radius: var(--pct-radius-md);
+  background: linear-gradient(
+    in oklab to right,
+    var(--pct-chart-heat-bg-1),
+    var(--pct-chart-heat-bg-2),
+    var(--pct-chart-heat-bg-3),
+    var(--pct-chart-heat-bg-4),
+    var(--pct-chart-heat-bg-5),
+    var(--pct-chart-heat-bg-6),
+    var(--pct-chart-heat-bg-7),
+    var(--pct-chart-heat-bg-8)
+  );
+}
+
+.ramp.diverging {
+  background: linear-gradient(
+    in oklab to right,
+    var(--pct-chart-heat-bg-low),
+    var(--pct-chart-heat-bg-mid),
+    var(--pct-chart-heat-bg-high)
+  );
+}
+
+// The ends under the bar's ends, the middle under its middle.
+.labels {
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+
+// With the colours gone the bar is an edge, and reads left to right as low to high.
+@media (forced-colors: active) {
+  .ramp,
+  .ramp.diverging {
+    border: 1px solid CanvasText;
+    background: linear-gradient(to right, Canvas, CanvasText);
+  }
+}

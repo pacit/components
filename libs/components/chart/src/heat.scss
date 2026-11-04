@@ -1,0 +1,95 @@
+// The element itself draws nothing: its cells are stamped into the scene's data layer.
+:host {
+  display: none;
+}
+
+// A cell mixes the two steps its value falls between, in the perceptual space, by the share
+// the mark wrote on it: the theme paints it and the server needs no colour measured (0111).
+[data-pct-part='cell'] {
+  fill: color-mix(
+    in oklab,
+    var(--_pct-heat-from) calc(100% - var(--_pct-heat-mix)),
+    var(--_pct-heat-to)
+  );
+}
+
+[data-pct-part='label'] {
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+// The sequential ramp, eight steps; the label's colour is the step's pair, dark on the pale
+// steps and light on the deep ones (measured in `contrast.policy.json`).
+@for $i from 1 through 8 {
+  [data-pct-part='cell'].from-#{$i} {
+    --_pct-heat-from: var(--pct-chart-heat-bg-#{$i});
+  }
+
+  [data-pct-part='cell'].to-#{$i} {
+    --_pct-heat-to: var(--pct-chart-heat-bg-#{$i});
+  }
+
+  [data-pct-part='label'].on-#{$i} {
+    fill: var(--pct-chart-heat-fg-#{$i});
+  }
+}
+
+// The diverging ramp: a low, a middle and a high.
+@each $end in low, mid, high {
+  [data-pct-part='cell'].from-#{$end} {
+    --_pct-heat-from: var(--pct-chart-heat-bg-#{$end});
+  }
+
+  [data-pct-part='cell'].to-#{$end} {
+    --_pct-heat-to: var(--pct-chart-heat-bg-#{$end});
+  }
+
+  [data-pct-part='label'].on-#{$end} {
+    fill: var(--pct-chart-heat-fg-#{$end});
+  }
+}
+
+[data-pct-part='swatch'] {
+  display: block;
+  inline-size: var(--pct-chart-swatch-width);
+  block-size: var(--pct-chart-swatch-height);
+  overflow: visible;
+}
+
+[data-pct-part='swatch'].marker {
+  inline-size: var(--pct-chart-marker-size);
+  block-size: var(--pct-chart-marker-size);
+}
+
+[data-pct-series='custom'] .block {
+  fill: var(--_pct-chart-color);
+}
+
+// With the colours gone the ramp is two levels: a cell past the middle a filled box in the
+// text's colour, one under it an empty box with an edge — and the label in the colour that
+// stands on each.
+@media (forced-colors: active) {
+  [data-pct-part='cell'] {
+    fill: Canvas;
+    stroke: CanvasText;
+    stroke-width: 1px;
+  }
+
+  [data-pct-part='cell'].deep {
+    fill: CanvasText;
+  }
+
+  // Over the ramp's `on-*` classes: the label is the text colour, and the text colour's
+  // inverse on a filled cell.
+  [data-pct-part='label'][class] {
+    fill: CanvasText;
+  }
+
+  [data-pct-part='cell'].deep + [data-pct-part='label'][class] {
+    fill: Canvas;
+  }
+
+  [data-pct-series] .block {
+    fill: CanvasText;
+  }
+}

@@ -271,6 +271,126 @@
         "$type": "dimension",
         "$value": "70%",
         "$description": "How much of the series colour fills a bubble, so the ones under it show through."
+      },
+      "heat-bg-1": {
+        "$type": "color",
+        "$value": "{pct.heat-1}",
+        "$description": "Step 1 of the sequential ramp of a heatmap, from the palest first to the deepest eighth; a cell mixes the two steps its value falls between."
+      },
+      "heat-bg-2": {
+        "$type": "color",
+        "$value": "{pct.heat-2}",
+        "$description": "Step 2 of the sequential ramp of a heatmap, from the palest first to the deepest eighth; a cell mixes the two steps its value falls between."
+      },
+      "heat-bg-3": {
+        "$type": "color",
+        "$value": "{pct.heat-3}",
+        "$description": "Step 3 of the sequential ramp of a heatmap, from the palest first to the deepest eighth; a cell mixes the two steps its value falls between."
+      },
+      "heat-bg-4": {
+        "$type": "color",
+        "$value": "{pct.heat-4}",
+        "$description": "Step 4 of the sequential ramp of a heatmap, from the palest first to the deepest eighth; a cell mixes the two steps its value falls between."
+      },
+      "heat-bg-5": {
+        "$type": "color",
+        "$value": "{pct.heat-5}",
+        "$description": "Step 5 of the sequential ramp of a heatmap, from the palest first to the deepest eighth; a cell mixes the two steps its value falls between."
+      },
+      "heat-bg-6": {
+        "$type": "color",
+        "$value": "{pct.heat-6}",
+        "$description": "Step 6 of the sequential ramp of a heatmap, from the palest first to the deepest eighth; a cell mixes the two steps its value falls between."
+      },
+      "heat-bg-7": {
+        "$type": "color",
+        "$value": "{pct.heat-7}",
+        "$description": "Step 7 of the sequential ramp of a heatmap, from the palest first to the deepest eighth; a cell mixes the two steps its value falls between."
+      },
+      "heat-bg-8": {
+        "$type": "color",
+        "$value": "{pct.heat-8}",
+        "$description": "Step 8 of the sequential ramp of a heatmap, from the palest first to the deepest eighth; a cell mixes the two steps its value falls between."
+      },
+      "heat-bg-low": {
+        "$type": "color",
+        "$value": "{pct.heat-low}",
+        "$description": "A heatmap cell at the low end of a diverging ramp."
+      },
+      "heat-bg-mid": {
+        "$type": "color",
+        "$value": "{pct.heat-mid}",
+        "$description": "A heatmap cell at the middle of a diverging ramp, where a value is neither."
+      },
+      "heat-bg-high": {
+        "$type": "color",
+        "$value": "{pct.heat-high}",
+        "$description": "A heatmap cell at the high end of a diverging ramp."
+      },
+      "heat-fg-1": {
+        "$type": "color",
+        "$value": "{pct.on-heat-1}",
+        "$description": "The value written on a cell of step 1: dark text on the pale steps, light on the deep ones."
+      },
+      "heat-fg-2": {
+        "$type": "color",
+        "$value": "{pct.on-heat-2}",
+        "$description": "The value written on a cell of step 2: dark text on the pale steps, light on the deep ones."
+      },
+      "heat-fg-3": {
+        "$type": "color",
+        "$value": "{pct.on-heat-3}",
+        "$description": "The value written on a cell of step 3: dark text on the pale steps, light on the deep ones."
+      },
+      "heat-fg-4": {
+        "$type": "color",
+        "$value": "{pct.on-heat-4}",
+        "$description": "The value written on a cell of step 4: dark text on the pale steps, light on the deep ones."
+      },
+      "heat-fg-5": {
+        "$type": "color",
+        "$value": "{pct.on-heat-5}",
+        "$description": "The value written on a cell of step 5: dark text on the pale steps, light on the deep ones."
+      },
+      "heat-fg-6": {
+        "$type": "color",
+        "$value": "{pct.on-heat-6}",
+        "$description": "The value written on a cell of step 6: dark text on the pale steps, light on the deep ones."
+      },
+      "heat-fg-7": {
+        "$type": "color",
+        "$value": "{pct.on-heat-7}",
+        "$description": "The value written on a cell of step 7: dark text on the pale steps, light on the deep ones."
+      },
+      "heat-fg-8": {
+        "$type": "color",
+        "$value": "{pct.on-heat-8}",
+        "$description": "The value written on a cell of step 8: dark text on the pale steps, light on the deep ones."
+      },
+      "heat-fg-low": {
+        "$type": "color",
+        "$value": "{pct.on-heat-low}",
+        "$description": "The value written on a cell at the low of a diverging ramp."
+      },
+      "heat-fg-mid": {
+        "$type": "color",
+        "$value": "{pct.on-heat-mid}",
+        "$description": "The value written on a cell at the mid of a diverging ramp."
+      },
+      "heat-fg-high": {
+        "$type": "color",
+        "$value": "{pct.on-heat-high}",
+        "$description": "The value written on a cell at the high of a diverging ramp."
+      },
+      "cell-gap": {
+        "$type": "dimension",
+        "$value": "1px",
+        "$description": "The gap between the cells of a heatmap, so each reads as one."
+      },
+      "ramp-height": {
+        "$type": "dimension",
+        "$value": "12px",
+        "$description": "The bar of a colour ramp in the legend of a heatmap."
       }
     }
   }
