@@ -78,6 +78,55 @@ function fieldOf(value: unknown, key: string): unknown {
 }
 
 /**
+ * The levels of a column's `group`, the outermost first: `'Power/Peak'` is `['Power',
+ * 'Peak']`, a blank level is passed over, and a column with no group has none.
+ *
+ * @since next
+ */
+export function pctGroupPath<T>(column: PctAnyColumn<T>): readonly string[] {
+  return (column.group ?? '')
+    .split('/')
+    .map((level) => level.trim())
+    .filter((level) => level !== '');
+}
+
+/**
+ * The block a column moves and is pinned in: its outermost group, or the column alone,
+ * keyed apart from any group's name.
+ */
+function blockOf<T>(column: PctAnyColumn<T>): string {
+  const [top] = pctGroupPath(column);
+  return top === undefined ? `:${column.id}` : `/${top}`;
+}
+
+/**
+ * The order with the ids of one key standing together, at the first of them: what a stored
+ * order that split a group is read as.
+ */
+function gathered(
+  order: readonly string[],
+  keyOf: (id: string) => string | null,
+): string[] {
+  const out: string[] = [];
+  // Where the last id of each key stands in `out`.
+  const last = new Map<string, number>();
+  for (const id of order) {
+    const key = keyOf(id);
+    const after = key === null ? undefined : last.get(key);
+    if (after === undefined) {
+      out.push(id);
+      if (key !== null) last.set(key, out.length - 1);
+      continue;
+    }
+    const place = after + 1;
+    out.splice(place, 0, id);
+    for (const [other, at] of last) if (at >= place) last.set(other, at + 1);
+    last.set(key as string, place);
+  }
+  return out;
+}
+
+/**
  * The narrowest and the widest a column may be made: its `minWidth`, or 120 px with none, and
  * 2000 px.
  *
@@ -131,15 +180,38 @@ export function pctPlaceColumns<T>(
     if (!listed.has(column.id))
       order.splice(Math.min(c, order.length), 0, column.id);
   });
+  // The columns of a group stand together, at the first of them, each level inside the one
+  // above it: a stored order that split a group is read as one that did not.
+  const paths = new Map(
+    columns.map((column) => [column.id, pctGroupPath(column)]),
+  );
+  const depth = Math.max(
+    0,
+    ...Array.from(paths.values(), (path) => path.length),
+  );
+  let together: readonly string[] = order;
+  for (let level = 1; level <= depth; level++)
+    together = gathered(together, (id) => {
+      const path = paths.get(id) as readonly string[];
+      return path.length < level ? null : path.slice(0, level).join('/');
+    });
   const pinned = fieldOf(layout, 'pinned');
   const start = idsOf(fieldOf(pinned, 'start'));
   const end = idsOf(fieldOf(pinned, 'end'));
+  // A group's edge is its first column's: the rest follow it.
+  const edgeOf = new Map<string, PctColumnPin | null>();
+  const pinOf = (id: string): PctColumnPin | null => {
+    const block = blockOf(columns[index.get(id) as number]);
+    const own = start.has(id) ? 'start' : end.has(id) ? 'end' : null;
+    if (!edgeOf.has(block)) edgeOf.set(block, own);
+    return edgeOf.get(block) as PctColumnPin | null;
+  };
   const named = idsOf(fieldOf(layout, 'hidden'));
   // A layout that would hide every column hides none: a table with no column has no header,
   // and so no menu to show one back.
   const hidden = order.every((id) => named.has(id)) ? new Set<string>() : named;
   const widths = fieldOf(layout, 'widths');
-  const placed = order.map((id): PctPlacedColumn<T> => {
+  const placed = together.map((id): PctPlacedColumn<T> => {
     const c = index.get(id) as number;
     const column = columns[c];
     const own = fieldOf(widths, id);
@@ -152,7 +224,7 @@ export function pctPlaceColumns<T>(
     return {
       column,
       index: c,
-      pin: start.has(id) ? 'start' : end.has(id) ? 'end' : null,
+      pin: pinOf(id),
       width,
       hidden: hidden.has(id),
     };
@@ -176,8 +248,9 @@ function withOrder<Id extends string>(
  * The layout with the column moved one place along its edge's columns — those pinned to the
  * same edge, or the unpinned — towards the start for `-1`, towards the end for `1`. The
  * hidden columns are stepped over unless `among` is `'all'`, as a list of every column moves
- * them; a hidden column itself moves past the next one shown. At the end of its edge, the
- * layout as it was.
+ * them; a hidden column itself moves past the next one shown. A column of a group moves with
+ * its group, past the next column or group whole. At the end of its edge, the layout as it
+ * was.
  *
  * @since 0.3.0
  */
@@ -196,12 +269,23 @@ export function pctMoveColumn<T, Id extends string>(
     (one) =>
       one.pin === self.pin && (among === 'all' || !one.hidden || one === self),
   );
-  const target = along[along.indexOf(self) + step];
-  if (!target) return layout;
-  const order = placed
-    .map((one) => one.column.id)
-    .filter((other) => other !== id);
-  order.splice(order.indexOf(target.column.id) + (step > 0 ? 1 : 0), 0, id);
+  const block = blockOf(self.column);
+  // The blocks along the edge, each a group or a column alone, in their order.
+  const blocks: string[] = [];
+  for (const one of along) {
+    const key = blockOf(one.column);
+    if (blocks[blocks.length - 1] !== key) blocks.push(key);
+  }
+  const target = blocks[blocks.indexOf(block) + step];
+  if (target === undefined) return layout;
+  // The whole block moves, its hidden columns too, past the whole of the target.
+  const moving = placed.filter((one) => blockOf(one.column) === block);
+  const rest = placed.filter((one) => blockOf(one.column) !== block);
+  const ends = rest.filter((one) => blockOf(one.column) === target);
+  const at =
+    step > 0 ? rest.indexOf(ends[ends.length - 1]) + 1 : rest.indexOf(ends[0]);
+  const order = rest.map((one) => one.column.id);
+  order.splice(at, 0, ...moving.map((one) => one.column.id));
   return withOrder(layout, order);
 }
 
@@ -238,22 +322,35 @@ export function pctHideColumn<Id extends string>(
 }
 
 /**
- * The layout with the column pinned to an edge, or to none for `null`.
+ * The layout with the column pinned to an edge, or to none for `null`. Given the columns — an
+ * argument that came with the header groups, after 0.3.0 — a column of a group is pinned with
+ * its group, since a group's edge is its first column's.
  *
  * @since 0.3.0
  */
-export function pctPinColumn<Id extends string>(
+export function pctPinColumn<Id extends string, T = unknown>(
   layout: PctTableLayout<Id>,
   id: Id,
   pin: PctColumnPin | null,
+  columns: readonly PctAnyColumn<T>[] = [],
 ): PctTableLayout<Id> {
+  const self = columns.find((column) => column.id === id);
+  const ids = new Set<string>(
+    self === undefined
+      ? [id]
+      : columns
+          .filter((column) => blockOf(column) === blockOf(self))
+          .map((column) => column.id),
+  );
   const pinned = fieldOf(layout, 'pinned');
   const without = (edge: PctColumnPin) =>
-    [...idsOf(fieldOf(pinned, edge))].filter((other) => other !== id) as Id[];
+    [...idsOf(fieldOf(pinned, edge))].filter(
+      (other) => !ids.has(other),
+    ) as Id[];
   const start = without('start');
   const end = without('end');
-  if (pin === 'start') start.push(id);
-  if (pin === 'end') end.push(id);
+  if (pin === 'start') start.push(...(ids as Set<Id>));
+  if (pin === 'end') end.push(...(ids as Set<Id>));
   return { ...layout, pinned: { start, end } };
 }
 

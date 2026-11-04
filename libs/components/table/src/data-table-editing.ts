@@ -28,7 +28,7 @@ import {
   pctReportOrphanSlot,
 } from '@pacit/components/core';
 import { PctNumber, PctText } from '@pacit/components/field';
-import { PctDataTable } from './data-table';
+import { PctDataTable, pctHeadersRow } from './data-table';
 import { PctTableGrid, type PctTableDataCell } from './data-table-grid';
 import type {
   PctAnyColumn,
@@ -568,7 +568,7 @@ export class PctTableEditing<T, M extends Record<string, unknown>> {
     if (element.closest('table') !== table) return null;
     const line = this.table.lines()[Number(tr.dataset['pctIndex'])];
     const column =
-      table.tHead?.rows[0]?.cells[(element as HTMLTableCellElement).cellIndex]
+      pctHeadersRow(table)?.cells[(element as HTMLTableCellElement).cellIndex]
         ?.dataset['pctColumn'];
     if (line?.kind !== 'row' || column === undefined) return null;
     return { id: line.key, row: line.row, column };

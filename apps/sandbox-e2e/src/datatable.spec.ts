@@ -2064,3 +2064,107 @@ test.describe('PctTableTree — the home as a tree', () => {
     ).toBe(1);
   });
 });
+
+test.describe('Header groups — the rules under grouped headers', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const table = (page: Page) => page.getByTestId('table-grouped');
+  /**
+   * Each row of the header as its cells read: a group's header starred, a column's by its
+   * id, an empty cell as nothing, each with the columns it spans past one.
+   */
+  const head = (page: Page) =>
+    table(page)
+      .locator('thead tr')
+      .evaluateAll((rows) =>
+        rows.map((row) =>
+          Array.from((row as HTMLTableRowElement).cells, (cell) => {
+            const text =
+              cell.getAttribute('data-pct-column') ??
+              `${cell.getAttribute('scope') === 'colgroup' ? '*' : ''}${(
+                cell.textContent ?? ''
+              )
+                .replace(/\s+/g, ' ')
+                .trim()}`;
+            return `${text}${cell.colSpan > 1 ? ` x${cell.colSpan}` : ''}`;
+          }),
+        ),
+      );
+  const item = (page: Page, column: string, name: string) =>
+    page
+      .getByRole('menu', { name: `Options for ${column}` })
+      .getByRole('menuitem', { name });
+  const state = (page: Page, json: string) =>
+    expect(page.getByTestId('heads-state')).toContainText(json);
+
+  test('a row per level of groups stands over the headers, a group over its columns', async ({
+    page,
+  }) => {
+    await expect
+      .poll(() => head(page))
+      .toEqual([
+        ['', '*Where x2', '*Energy x2', ''],
+        ['', ' x2', '*This month', '*Next run', ''],
+        ['name', 'room', 'address', 'energy', 'nextAt', 'enabled'],
+      ]);
+    await expect(table(page).locator('thead th[scope="colgroup"]')).toHaveCount(
+      4,
+    );
+  });
+
+  test('a column’s menu moves its group whole, and pins it whole', async ({
+    page,
+  }) => {
+    await table(page).getByRole('button', { name: 'Options for Room' }).click();
+    await item(page, 'Room', 'Move left').click();
+    await expect
+      .poll(() => head(page))
+      .toEqual([
+        ['*Where x2', '', '*Energy x2', ''],
+        [' x2', '', '*This month', '*Next run', ''],
+        ['room', 'address', 'name', 'energy', 'nextAt', 'enabled'],
+      ]);
+    await state(
+      page,
+      '"order":["room","address","name","energy","nextAt","enabled"]',
+    );
+    await table(page).getByRole('button', { name: 'Options for Used' }).click();
+    await item(page, 'Used', 'Pin to the start').click();
+    await expect
+      .poll(() => head(page))
+      .toEqual([
+        // `name` and `enabled`, adjacent now and of no group, stand under one cell.
+        ['*Energy x2', '*Where x2', ' x2'],
+        ['*This month', '*Next run', ' x2', ' x2'],
+        ['energy', 'nextAt', 'room', 'address', 'name', 'enabled'],
+      ]);
+    await state(page, '"pinned":{"start":["energy","nextAt"],"end":[]}');
+    await expect(
+      table(page).locator('thead tr').first().locator('th').first(),
+    ).toHaveAttribute('data-pct-pinned', 'start edge');
+  });
+
+  test('the groups’ rows stick with the header while the rules scroll', async ({
+    page,
+  }) => {
+    const frame = table(page).locator('pct-table-frame');
+    await frame.evaluate((element) => element.scrollTo({ top: 300 }));
+    await expect
+      .poll(() => frame.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(250);
+    const frameBox = (await frame.boundingBox()) as { y: number };
+    const group = table(page).locator('thead th[scope="colgroup"]').first();
+    const groupBox = (await group.boundingBox()) as {
+      y: number;
+      height: number;
+    };
+    const header = table(page).locator('thead th[data-pct-column="name"]');
+    const headerBox = (await header.boundingBox()) as { y: number };
+    // The outermost group's row at the frame's top; the headers' row below both rows of groups.
+    expect(Math.abs(groupBox.y - frameBox.y)).toBeLessThan(2);
+    expect(headerBox.y - frameBox.y).toBeGreaterThan(groupBox.height * 1.9);
+    expect(headerBox.y - frameBox.y).toBeLessThan(groupBox.height * 2.5);
+  });
+});

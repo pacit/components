@@ -3,6 +3,7 @@ import {
   pctCanMoveColumn,
   pctClampWidth,
   pctColumnWidthBounds,
+  pctGroupPath,
   pctHideColumn,
   pctMoveColumn,
   pctPinColumn,
@@ -383,5 +384,242 @@ describe('pctResizeColumn', () => {
         pctResizeColumn({ widths } as unknown as PctTableLayout, 'on', 100)
           .widths,
       ).toEqual({ on: 100 });
+  });
+});
+
+describe('header groups', () => {
+  interface Reading {
+    readonly name: string;
+    readonly now: number;
+    readonly peak: number;
+    readonly today: number;
+    readonly month: number;
+    readonly fee: number;
+    readonly room: string;
+  }
+  const reading = pctColumnsOf<Reading>();
+  // Two groups, one of two levels, between two columns of none.
+  const grouped = reading.of([
+    reading.key('name', { header: 'Name' }),
+    reading.key('now', { header: 'Now', group: 'Power' }),
+    reading.key('peak', { header: 'Peak', group: 'Power' }),
+    reading.key('today', { header: 'Today', group: 'Cost/Spent' }),
+    reading.key('month', { header: 'Month', group: 'Cost/Spent' }),
+    reading.key('fee', { header: 'Fee', group: 'Cost/Fixed' }),
+    reading.key('room', { header: 'Room' }),
+  ]);
+  const laid = (layout: unknown) =>
+    pctPlaceColumns(grouped, layout as PctTableLayout).map(
+      (one) =>
+        `${one.hidden ? '-' : ''}${one.column.id}${one.pin ? `@${one.pin}` : ''}`,
+    );
+  const moved = (
+    layout: PctTableLayout<keyof Reading>,
+    id: keyof Reading,
+    step: -1 | 1,
+    among: 'shown' | 'all' = 'shown',
+  ) => pctMoveColumn(grouped, layout, id, step, among).order;
+
+  it('reads the levels of a group, the outermost first, passing a blank one over', () => {
+    expect(pctGroupPath(grouped[0])).toEqual([]);
+    expect(pctGroupPath(grouped[1])).toEqual(['Power']);
+    expect(pctGroupPath(grouped[3])).toEqual(['Cost', 'Spent']);
+    expect(
+      pctGroupPath(reading.key('now', { header: 'Now', group: ' A / /B ' })),
+    ).toEqual(['A', 'B']);
+    expect(
+      pctGroupPath(reading.key('now', { header: 'Now', group: '/' })),
+    ).toEqual([]);
+  });
+
+  it('gathers a group a stored order split, at its first column, a level inside its level', () => {
+    expect(laid({})).toEqual([
+      'name',
+      'now',
+      'peak',
+      'today',
+      'month',
+      'fee',
+      'room',
+    ]);
+    expect(laid({ order: ['now', 'name', 'peak', 'room'] })).toEqual([
+      'now',
+      'peak',
+      'name',
+      'today',
+      'month',
+      'fee',
+      'room',
+    ]);
+    // `Cost` gathers at `fee`, and `Spent` inside it at `today`; the columns not named
+    // stand at their own places first.
+    expect(laid({ order: ['fee', 'room', 'today', 'name', 'month'] })).toEqual([
+      'fee',
+      'today',
+      'month',
+      'now',
+      'peak',
+      'room',
+      'name',
+    ]);
+    expect(laid({ order: ['month', 'fee', 'today'] })).toEqual([
+      'name',
+      'now',
+      'peak',
+      'month',
+      'today',
+      'fee',
+      'room',
+    ]);
+    // Two groups interleaved: each gathers at its first column, the second's place moving
+    // along as the first grows.
+    expect(
+      laid({
+        order: ['now', 'today', 'peak', 'month', 'name', 'fee', 'room'],
+      }),
+    ).toEqual(['now', 'peak', 'today', 'month', 'fee', 'name', 'room']);
+  });
+
+  it('tells the levels apart by the slash: `a/bc` is no group of `ab/c`', () => {
+    const grouped = reading.of([
+      reading.key('name', { header: 'Name', group: 'a/bc' }),
+      reading.key('now', { header: 'Now', group: 'ab/d' }),
+      reading.key('peak', { header: 'Peak', group: 'ab/c' }),
+      reading.key('today', { header: 'Today', group: 'a/bc' }),
+    ]);
+    expect(
+      pctPlaceColumns(grouped, {
+        order: ['name', 'now', 'peak', 'today'],
+      } as PctTableLayout).map((one) => one.column.id),
+    ).toEqual(['name', 'today', 'now', 'peak']);
+  });
+
+  it("pins a group to its first column's edge, whatever the rest say", () => {
+    expect(laid({ pinned: { end: ['month', 'fee'] } })).toEqual([
+      'name',
+      'now',
+      'peak',
+      'today',
+      'month',
+      'fee',
+      'room',
+    ]);
+    expect(laid({ pinned: { start: ['now'], end: ['peak'] } })).toEqual([
+      'now@start',
+      'peak@start',
+      'name',
+      'today',
+      'month',
+      'fee',
+      'room',
+    ]);
+    expect(laid({ pinned: { end: ['today'] } })).toEqual([
+      'name',
+      'now',
+      'peak',
+      'room',
+      'today@end',
+      'month@end',
+      'fee@end',
+    ]);
+  });
+
+  it('moves a group whole past the next column or group, and a column past a group', () => {
+    expect(moved({}, 'peak', 1)).toEqual([
+      'name',
+      'today',
+      'month',
+      'fee',
+      'now',
+      'peak',
+      'room',
+    ]);
+    expect(moved({}, 'name', 1)).toEqual([
+      'now',
+      'peak',
+      'name',
+      'today',
+      'month',
+      'fee',
+      'room',
+    ]);
+    expect(moved({}, 'room', -1)).toEqual([
+      'name',
+      'now',
+      'peak',
+      'room',
+      'today',
+      'month',
+      'fee',
+    ]);
+    expect(moved({}, 'fee', -1)).toEqual([
+      'name',
+      'today',
+      'month',
+      'fee',
+      'now',
+      'peak',
+      'room',
+    ]);
+    expect(pctMoveColumn(grouped, {}, 'name', -1)).toEqual({});
+    expect(pctCanMoveColumn(grouped, {}, 'month', 1)).toBe(true);
+    expect(pctCanMoveColumn(grouped, {}, 'room', 1)).toBe(false);
+  });
+
+  it('carries a hidden column of the group along, and stops where nothing shown stands', () => {
+    expect(moved({ hidden: ['peak'] }, 'name', 1)).toEqual([
+      'now',
+      'peak',
+      'name',
+      'today',
+      'month',
+      'fee',
+      'room',
+    ]);
+    expect(moved({ hidden: ['now'] }, 'name', 1)).toEqual([
+      'now',
+      'peak',
+      'name',
+      'today',
+      'month',
+      'fee',
+      'room',
+    ]);
+    // Nothing shown stands before the group: the layout as it was, until all are listed.
+    expect(pctMoveColumn(grouped, { hidden: ['name'] }, 'now', -1)).toEqual({
+      hidden: ['name'],
+    });
+    expect(moved({ hidden: ['name'] }, 'now', -1, 'all')).toEqual([
+      'now',
+      'peak',
+      'name',
+      'today',
+      'month',
+      'fee',
+      'room',
+    ]);
+  });
+
+  it('pins and unpins a group with any of its columns, given the columns, and the column alone without', () => {
+    expect(pctPinColumn({}, 'peak', 'start', grouped)).toEqual({
+      pinned: { start: ['now', 'peak'], end: [] },
+    });
+    expect(
+      pctPinColumn(
+        { pinned: { start: ['today', 'name'], end: ['month'] } },
+        'fee',
+        null,
+        grouped,
+      ),
+    ).toEqual({ pinned: { start: ['name'], end: [] } });
+    expect(pctPinColumn({}, 'peak', 'end', grouped)).toEqual({
+      pinned: { start: [], end: ['now', 'peak'] },
+    });
+    expect(pctPinColumn({}, 'peak', 'start')).toEqual({
+      pinned: { start: ['peak'], end: [] },
+    });
+    expect(pctPinColumn({}, 'name', 'start', grouped)).toEqual({
+      pinned: { start: ['name'], end: [] },
+    });
   });
 });

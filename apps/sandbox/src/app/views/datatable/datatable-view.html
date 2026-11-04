@@ -827,3 +827,24 @@
     }}.
   </p>
 </sbx-demo>
+
+<sbx-demo
+  heading="Groups of headers"
+  summary="A column's group puts a header over the adjacent columns that share it, a row per level. The groups' rows stick with the header, and a column's menu moves and pins its group whole."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-header-groups"
+>
+  <pct-data-table
+    data-testid="table-grouped"
+    class="datatable__laid"
+    caption="Rules by place and energy"
+    locale="en"
+    [now]="now"
+    [pctTableColumns]="headColumns"
+    [(layout)]="headLayout"
+    [rows]="rules()"
+    [columns]="headColumns"
+    [rowId]="byId"
+  />
+  <p data-testid="heads-state"><code>{{ headLayoutText() }}</code></p>
+</sbx-demo>

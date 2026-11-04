@@ -62,6 +62,7 @@ import type {
 import {
   type PctColumnPin,
   pctColumnWidthBounds,
+  pctGroupPath,
   type PctPlacedColumn,
 } from './model/layout';
 import {
@@ -251,6 +252,34 @@ interface Shown<T> {
   readonly c: number;
   readonly pin: PctColumnPin | null;
   readonly width: number | null;
+}
+
+/**
+ * The header's row of column headers: below the rows of header groups, above the row of
+ * filters. `undefined` for a table with no header.
+ *
+ * @since next
+ */
+export function pctHeadersRow(
+  table: HTMLTableElement,
+): HTMLTableRowElement | undefined {
+  return Array.from(table.tHead?.rows ?? []).find(
+    (row) => !row.classList.contains('pct-data-table__heads'),
+  );
+}
+
+/**
+ * A cell of a row of header groups: a group's header over the columns it spans, or the empty
+ * cell over columns with no group at that level, with where it sticks.
+ */
+interface HeadGroup {
+  /** The group's name at this level, or `null` for the empty cell. */
+  readonly label: string | null;
+  /** The columns spanned, and the first of them among the columns shown. */
+  readonly span: number;
+  readonly from: number;
+  readonly pinned: string | null;
+  readonly at: number | null;
 }
 
 /** Where a pinned cell sticks: `start` or `end`, with `edge` on the last before the rest. */
@@ -1452,8 +1481,84 @@ export class PctDataTable<
     () => this.contributed().filters ?? null,
   );
 
-  /** The rows of the header: the headers', and the filters' under them when there is one. */
-  private readonly headRows = computed(() => (this.filters()?.row() ? 2 : 1));
+  /**
+   * The rows of header groups over the headers' row, the outermost first: a row per level of
+   * the deepest `group` among the columns shown, each a run of cells — a group's header over
+   * the adjacent columns of that group, the empty cell over the columns with none there.
+   * Empty when no column shown has a group.
+   */
+  protected readonly headGroups = computed<readonly (readonly HeadGroup[])[]>(
+    () => {
+      const shown = this.shown();
+      const paths = shown.map(({ column }) => pctGroupPath(column));
+      const depth = Math.max(0, ...paths.map((path) => path.length));
+      const sticks = this.leadSticks().cells;
+      const rows: HeadGroup[][] = [];
+      for (let level = 0; level < depth; level++) {
+        const cells: {
+          parent: string;
+          name: string | null;
+          pin: PctColumnPin | null;
+          label: string | null;
+          from: number;
+          span: number;
+        }[] = [];
+        shown.forEach(({ pin }, s) => {
+          const path = paths[s];
+          // The group above, so an empty cell stays inside the group it stands under.
+          const parent = path.slice(0, level).join('/');
+          const name =
+            path.length > level ? path.slice(0, level + 1).join('/') : null;
+          // A run breaks where the group, the one above or the edge changes: a cell sticks
+          // as one.
+          const last = cells[cells.length - 1];
+          if (
+            last !== undefined &&
+            last.parent === parent &&
+            last.name === name &&
+            last.pin === pin
+          )
+            last.span++;
+          else
+            cells.push({
+              parent,
+              name,
+              pin,
+              label: name === null ? null : path[level],
+              from: s,
+              span: 1,
+            });
+        });
+        rows.push(
+          cells.map(({ label, from, span, pin }) => {
+            const own = sticks.slice(from, from + span);
+            return {
+              label,
+              from,
+              span,
+              // The edge's shadow on the cell that holds the edge's column.
+              pinned:
+                own.find((stick) => stick?.pinned.endsWith('edge'))?.pinned ??
+                own[0]?.pinned ??
+                null,
+              // An offset is measured from its edge: from the start for the first column of
+              // the run, from the end for the last.
+              at: (pin === 'end' ? own[own.length - 1] : own[0])?.at ?? null,
+            };
+          }),
+        );
+      }
+      return rows;
+    },
+  );
+
+  /**
+   * The rows of the header: the groups' over the headers', and the filters' under them when
+   * there is one.
+   */
+  private readonly headRows = computed(
+    () => this.headGroups().length + (this.filters()?.row() ? 2 : 1),
+  );
 
   /**
    * The columns' filters in force, by column id: of the state `pctTableColumnFilters` holds,
@@ -1796,13 +1901,15 @@ export class PctDataTable<
       // A group's heading sticks below the header and below the headings of the groups it
       // stands in, a heading's height for each level above it.
       frame.style.setProperty('--_head', height);
-      // The headers' row alone: the row of filters sticks below it.
-      frame.style.setProperty(
-        '--_first',
-        sticky
-          ? `${(table.tHead as HTMLTableSectionElement).rows[0].getBoundingClientRect().height}px`
-          : '',
-      );
+      // Each row of the header sticks below the rows above it: the groups', the headers', the
+      // filters', each at its own height.
+      const rows = Array.from((table.tHead as HTMLTableSectionElement).rows);
+      const top = rows[0]?.getBoundingClientRect().top ?? 0;
+      for (const row of rows)
+        row.style.setProperty(
+          '--_top',
+          sticky ? `${row.getBoundingClientRect().top - top}px` : '',
+        );
       const heading = table.querySelector('tr[data-pct-part="group"]');
       frame.style.setProperty(
         '--_group',
@@ -2013,7 +2120,7 @@ export class PctDataTable<
       this.observeSize();
       // The shown columns' header cells are the row's last ones, after the leading cells.
       const cells = Array.from(
-        (table.tHead as HTMLTableSectionElement).rows[0].cells,
+        (pctHeadersRow(table) as HTMLTableRowElement).cells,
       ).slice(-heads.length);
       const fit = pctFit(
         {
@@ -2065,7 +2172,7 @@ export class PctDataTable<
       this.resized();
       this.observeSize();
       const cells = Array.from(
-        (this.ownTable().tHead as HTMLTableSectionElement).rows[0].cells,
+        (pctHeadersRow(this.ownTable()) as HTMLTableRowElement).cells,
       );
       const widths = cells.map((cell) => cell.getBoundingClientRect().width);
       const drawn = new Map(
