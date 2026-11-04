@@ -415,6 +415,24 @@ td.pct-data-table__first {
   );
 }
 
+/* A tree's button stands before the first cell's text; a leaf holds its place, so the texts
+   of siblings line up. */
+.pct-data-table__node,
+.pct-data-table__leaf {
+  vertical-align: middle;
+  margin-inline-end: var(--pct-table-toggle-gap);
+}
+
+.pct-data-table__leaf {
+  display: inline-block;
+  inline-size: var(--pct-table-toggle-target-min);
+}
+
+/* A row kept for the matches below it: it matched nothing itself. */
+tr[data-pct-muted]:not([data-pct-tone]) {
+  color: var(--pct-table-fg-muted);
+}
+
 /* A group's heading: on its own surface, its label indented by its level. */
 tr[data-pct-part='group'] > * {
   background-color: var(--pct-table-group-bg);

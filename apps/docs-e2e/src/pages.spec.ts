@@ -652,7 +652,7 @@ test.describe('The pages', () => {
    * shrink-wrapped in the flex stage, the demo grew to the table and ran past the card's edge
    * (measured: 5px past the stage at a 1366px window, 13px in this runner's). And the content
    * pass titled each chart example by the comment over its data — "Midnight in Warsaw on 28
-   * October 2026" on seven of ten, eleven since the heatmap (0112) — because it read the JSDoc
+   * October 2026" on seven of ten, eleven since the heatmap (0113) — because it read the JSDoc
    * from the file's first `/**` to the decorator.
    */
   test('the chart examples fit their stage and carry their own titles', async ({
@@ -1041,7 +1041,7 @@ test.describe('The pages', () => {
     // data table's columns took a separator's line, and a pinned column its surface and shade
     // (0097); 785 since a cell open in an editor took its outline (0108); 805 since the card took its surface, its edges, its type
     // and its states (0109); 834 since the frame's bar, navigation and description list took
-    // theirs (0110); 880 since the heatmap's ramp took its steps and their text colours (0112).
+    // theirs (0110); 880 since the heatmap's ramp took its steps and their text colours (0113).
     await expect(count).toHaveText('880 of 880');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,

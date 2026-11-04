@@ -208,6 +208,16 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-table-toggle-target-min',
   },
   {
+    name: 'data table tree leaf',
+    applies: 'libs/components/table/src/data-table.scss .pct-data-table__leaf',
+    route: '/datatable',
+    selector: '[data-testid="table-tree"] tbody tr .pct-data-table__leaf',
+    axis: 'inline',
+    zero: ['--pct-table-font-size'],
+    ceiling: 24,
+    floor: '--pct-table-toggle-target-min',
+  },
+  {
     name: 'data table pick',
     applies:
       'libs/components/table/src/data-table-selection.scss .pct-data-table__target',

@@ -11,7 +11,7 @@ interface PctRampView {
 
 /**
  * The legend of a heatmap's colours
- * ([0112](../../../../docs/decisions/0112-a-heatmap-is-rows-the-scene-lays-and-a-colour-the-stylesheet-mixes.md)):
+ * ([0113](../../../../docs/decisions/0113-a-heatmap-is-rows-the-scene-lays-and-a-colour-the-stylesheet-mixes.md)):
  * for every mark of the chart that paints by a colour scale (`PctMark.colorScale`), its name, a
  * bar of the ramp — the skin's tokens, blended by the stylesheet as the cells are — and the
  * values its ends stand for, the middle too for a diverging ramp. It is hidden from a reader:

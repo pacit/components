@@ -65,7 +65,7 @@ interface PctCell {
  * or `diverging`, from `heat-bg-low` through `heat-bg-mid` to `heat-bg-high` — by mixing the two
  * steps its value falls between, so the theme paints it and the server draws it without
  * measuring a colour
- * ([0112](../../../../docs/decisions/0112-a-heatmap-is-rows-the-scene-lays-and-a-colour-the-stylesheet-mixes.md)).
+ * ([0113](../../../../docs/decisions/0113-a-heatmap-is-rows-the-scene-lays-and-a-colour-the-stylesheet-mixes.md)).
  *
  * Every row is a series: the legend lists it, the tooltip reads its value at the cursor and
  * the data table carries it as a column, so a reader walks the heatmap as the table it is. A

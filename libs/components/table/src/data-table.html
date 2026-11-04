@@ -322,6 +322,11 @@
         [class.pct-data-table__even]="row.index % 2 === 1"
         [style.--_level]="row.level || null"
         [attr.data-pct-selected]="row.selected ? '' : null"
+        [attr.data-pct-muted]="row.muted ? '' : null"
+        [attr.aria-level]="treegrid() ? row.depth : null"
+        [attr.aria-expanded]="treegrid() ? row.expanded : null"
+        [attr.aria-posinset]="treegrid() ? row.place?.position : null"
+        [attr.aria-setsize]="treegrid() ? row.place?.siblings : null"
       >
         @if (selection(); as selection) {
         <td
@@ -390,7 +395,34 @@
           [attr.data-pct-pinned]="sticks[$index]?.pinned"
           [style.--_at.px]="sticks[$index]?.at"
         >
-          @if (editorOf(row.id, cell.column.id); as editor) {
+          @if ($first && tree()) { @if (row.expanded !== null) {
+          <button
+            type="button"
+            class="pct-data-table__toggle pct-data-table__node"
+            data-pct-part="disclosure"
+            [attr.aria-expanded]="row.expanded"
+            [attr.aria-label]="row.expanded ? texts().tableNodeClose : texts().tableNodeOpen"
+            (click)="toggleNode(row.id)"
+          >
+            <pct-icon name="chevron-down" class="pct-data-table__chevron">
+              <svg
+                viewBox="0 0 16 16"
+                width="100%"
+                height="100%"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                focusable="false"
+              >
+                <path d="M4 6l4 4 4-4" />
+              </svg>
+            </pct-icon>
+          </button>
+          } @else {
+          <span class="pct-data-table__leaf" aria-hidden="true"></span>
+          } } @if (editorOf(row.id, cell.column.id); as editor) {
           <ng-container
             [ngTemplateOutlet]="editor"
             [ngTemplateOutletContext]="{ $implicit: row.row, id: row.id, column: cell.column }"

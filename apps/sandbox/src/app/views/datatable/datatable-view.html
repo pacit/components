@@ -753,3 +753,77 @@
     >
   </div>
 </sbx-demo>
+
+<sbx-demo
+  heading="The home as a tree"
+  summary="Floors hold rooms, rooms hold devices: each row opens the places inside it from the button in its first cell. The filter keeps the way to a match, its ancestors muted; the sort orders siblings; with the grid the table is a treegrid, and on a first cell the arrow into the line opens a branch, the arrow out of it closes one or goes to the parent."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-tree"
+>
+  <div class="datatable__widths" role="group" aria-label="Tree">
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="tree-expand"
+      (click)="tree.expandAll()"
+    >
+      Expand all
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="tree-collapse"
+      (click)="tree.collapseAll()"
+    >
+      Collapse all
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="tree-reveal"
+      (click)="treeTable.reveal('heater')"
+    >
+      Reveal the heater
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="tree-filter"
+      (click)="treeFilter.set(treeFilter() ? '' : 'lamp')"
+    >
+      {{ treeFilter() ? 'Clear the filter' : 'Filter: lamp' }}
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="tree-replace"
+      (click)="addRoom()"
+    >
+      Add an office
+    </button>
+  </div>
+  <pct-data-table
+    #tree="pctTableTree"
+    #treeTable="pctDataTable"
+    data-testid="table-tree"
+    caption="Home"
+    locale="en"
+    [pctTableTree]="treeColumns"
+    [children]="placesOf"
+    [(expanded)]="openPlaces"
+    [pctTableGrid]="treeColumns"
+    [filter]="treeFilter()"
+    [rows]="home()"
+    [columns]="treeColumns"
+    [rowId]="byPlaceId"
+  />
+  <p data-testid="tree-state">
+    Open: {{ openPlaces().join(' ') || 'none' }}. Rows: {{ treeTable.matched()
+    }}.
+  </p>
+</sbx-demo>

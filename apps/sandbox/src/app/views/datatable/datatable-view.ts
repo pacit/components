@@ -26,6 +26,7 @@ import {
   type PctRowId,
   PctTableDetails,
   PctTableGroups,
+  PctTableTree,
   PctTablePage,
   type PctTableAnswer,
   type PctTableCellRange,
@@ -311,6 +312,55 @@ function serveBlock(
  * and loading states stand beside the table; and the live rows change their values with
  * their ids kept, so the focus in a switch stays where it is.
  */
+/** A place of the home: a floor, a room or a device, each with the places inside it. */
+interface Place {
+  readonly id: string;
+  readonly name: string;
+  readonly kind: 'floor' | 'room' | 'device';
+  readonly power: number;
+  readonly places?: readonly Place[];
+}
+
+const device = (id: string, name: string, power: number): Place => ({
+  id,
+  name,
+  kind: 'device',
+  power,
+});
+const room = (id: string, name: string, places: readonly Place[]): Place => ({
+  id,
+  name,
+  kind: 'room',
+  power: places.reduce((sum, place) => sum + place.power, 0),
+  places,
+});
+const floor = (id: string, name: string, places: readonly Place[]): Place => ({
+  id,
+  name,
+  kind: 'floor',
+  power: places.reduce((sum, place) => sum + place.power, 0),
+  places,
+});
+
+const HOME: readonly Place[] = [
+  floor('ground', 'Ground floor', [
+    room('kitchen', 'Kitchen', [
+      device('kettle', 'Kettle', 2000),
+      device('fridge', 'Fridge', 120),
+      device('lamp-k', 'Lamp', 12),
+    ]),
+    room('hall', 'Hall', [device('sensor', 'Motion sensor', 1)]),
+    room('garage', 'Garage', []),
+  ]),
+  floor('upstairs', 'Upstairs', [
+    room('bedroom', 'Bedroom', [
+      device('lamp-b', 'Lamp', 9),
+      device('heater', 'Heater', 1500),
+    ]),
+    room('bath', 'Bathroom', [device('fan', 'Fan', 40)]),
+  ]),
+];
+
 @Component({
   selector: 'sbx-datatable-view',
   imports: [
@@ -324,6 +374,7 @@ function serveBlock(
     PctTableDetails,
     PctDetailsTemplate,
     PctTableGroups,
+    PctTableTree,
     PctTableSelection,
     PctTableWindow,
     PctTablePage,
@@ -392,6 +443,36 @@ export class DatatableView {
   ]);
   protected readonly closedGroups = signal<readonly string[]>([]);
   protected readonly groupRules = RULES.slice(0, 12);
+  protected readonly treeColumns = pctColumnsOf<Place>().of([
+    pctColumnsOf<Place>().key('name', { header: 'Name' }),
+    pctColumnsOf<Place>().key('kind', { header: 'Kind' }),
+    pctColumnsOf<Place>().key('power', {
+      header: 'Power',
+      kind: { number: { unit: 'W' } },
+    }),
+  ]);
+  protected readonly home = signal<readonly Place[]>(HOME);
+  protected readonly openPlaces = signal<readonly PctRowId[]>(['ground']);
+  protected readonly treeFilter = signal('');
+  protected readonly placesOf = (place: Place) => place.places;
+  protected readonly byPlaceId = (place: Place) => place.id;
+
+  /** A room added to the ground floor: the rows are new objects, the branches stay open. */
+  protected addRoom(): void {
+    this.home.update((floors) =>
+      floors.map((f) =>
+        f.id === 'ground'
+          ? {
+              ...f,
+              places: [
+                ...(f.places ?? []),
+                room('office', 'Office', [device('pc', 'Computer', 200)]),
+              ],
+            }
+          : f,
+      ),
+    );
+  }
   protected readonly widths = [1200, 720, 360] as const;
   protected readonly width = signal<number>(1200);
   protected readonly detailRules = signal<readonly Rule[]>(RULES.slice(0, 8));

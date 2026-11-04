@@ -340,6 +340,10 @@ export interface PctTexts {
   readonly tableDetailsOpen: string;
   /** Data table: the name of a row's button while its details are open. */
   readonly tableDetailsClose: string;
+  /** Data table: the name of a row's button while its children in a tree are hidden. */
+  readonly tableNodeOpen: string;
+  /** Data table: the name of a row's button while its children in a tree are shown. */
+  readonly tableNodeClose: string;
   /**
    * Data table: how many rows a group holds, beside its label. `{count}` stands for the number
    * in the table's locale.
@@ -511,6 +515,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableDetails: 'Details',
   tableDetailsOpen: 'Show details',
   tableDetailsClose: 'Hide details',
+  tableNodeOpen: 'Expand',
+  tableNodeClose: 'Collapse',
   tableGroupCount: '({count})',
   tableTotal: 'Total',
   tableGroupEmpty: 'No value',
