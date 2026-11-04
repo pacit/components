@@ -44,6 +44,10 @@ import {
 } from './model/gestures';
 import { pctThinLabels, pctTooltipPlace } from './model/layout';
 import { pctDomainOf } from './model/extent';
+import { pctPlaces } from './model/places';
+import { pctMeasureText } from './measure';
+import { pctSummarize, type PctSummary } from './model/summarize';
+import type { PctLegendSource } from './legend';
 import {
   pctBand,
   pctLinear,
@@ -317,9 +321,6 @@ const MIN_SPAN_TIME = 120_000;
 /** How much of the window the arrows with Shift move it. */
 const STEP = 0.1;
 
-/** One canvas for every chart's text measurements, made when first needed. */
-let measuring: CanvasRenderingContext2D | null | undefined;
-
 /**
  * A chart: a scene of scales and the marks drawn on them
  * ([0099](../../../../docs/decisions/0099-a-chart-is-scales-the-marks-share-and-a-ready-chart-is-a-recipe.md)).
@@ -362,7 +363,7 @@ let measuring: CanvasRenderingContext2D | null | undefined;
     '[attr.aria-busy]': 'loading() || !measured() ? "true" : null',
   },
 })
-export class PctChart extends PctChartScene {
+export class PctChart extends PctChartScene implements PctLegendSource {
   /**
    * The chart's name, which a reader announces with the picture, and which the data table
    * takes as its caption. A picture with no name is a hole in the page: give this or
@@ -715,7 +716,7 @@ export class PctChart extends PctChartScene {
     ReadonlyMap<string, number>
   >({
     source: this.series,
-    computation: (series, previous) => placesOf(series, previous?.value),
+    computation: (series, previous) => pctPlaces(series, previous?.value),
   });
   override readonly places = this.placesState.asReadonly();
 
@@ -1821,9 +1822,33 @@ export class PctChart extends PctChartScene {
     return this.notePlacement().find((n) => n.id === id) ?? null;
   }
 
-  /** The swatch template of the mark that declares a series, for the tooltip and the markers. */
-  protected swatchOf(id: string): TemplateRef<PctSwatchContext> | null {
+  /**
+   * The swatch template of the mark that declares a series, for the tooltip, the markers and
+   * the legend (`PctLegendSource`).
+   *
+   * @since next
+   */
+  swatchOf(id: string): TemplateRef<PctSwatchContext> | null {
     return this.markOf(id)?.swatch() ?? null;
+  }
+
+  /**
+   * What the legend writes beside a series while no cursor is on the chart: the latest
+   * reading in the window, or the sum or the mean of the readings there, written with the
+   * unit; `null` with no window or no mark (`PctLegendSource`).
+   *
+   * @since next
+   */
+  summaryOf(id: string, mode: 'latest' | PctSummary): string | null {
+    const shown = this.shown();
+    const mark = this.markOf(id);
+    if (!shown || !mark) return null;
+    const unit = this.series().find((s) => s.id === id)?.unit ?? '';
+    const value =
+      mode === 'latest'
+        ? this.valueAt(id, shown.to)
+        : pctSummarize(mark.readings(id), shown, mode);
+    return this.writeValue(value, unit);
   }
 
   /**
@@ -2435,14 +2460,7 @@ export class PctChart extends PctChartScene {
    * @since 0.3.0
    */
   override measure(text: string): number {
-    if (measuring === undefined) {
-      measuring =
-        this.document.createElement('canvas').getContext?.('2d') ?? null;
-    }
-    const { family, px } = this.font();
-    if (!measuring) return text.length * px * 0.6;
-    measuring.font = `${px}px ${family}`;
-    return measuring.measureText(text).width;
+    return pctMeasureText(this.document, this.font(), text);
   }
 
   /**
@@ -2520,34 +2538,4 @@ export class PctChart extends PctChartScene {
         'announced by its name, so a reader meets an image with none.',
     );
   }
-}
-
-/**
- * The palette place of each series: kept for a series already placed, the lowest free place
- * for a new one, from 1 to 8 and then round again. A series with a place of its own (a number)
- * takes it.
- */
-function placesOf(
-  series: readonly PctSeriesSpec[],
-  previous: ReadonlyMap<string, number> | undefined,
-): ReadonlyMap<string, number> {
-  const places = new Map<string, number>();
-  // A place the consumer gives wins; a place kept from before stays unless one of those took
-  // it; every other series takes the lowest free place, and round again past eight.
-  for (const s of series)
-    if (typeof s.color === 'number') places.set(s.id, s.color);
-  const given = new Set(places.values());
-  for (const s of series) {
-    const kept = previous?.get(s.id);
-    if (!places.has(s.id) && kept !== undefined && !given.has(kept))
-      places.set(s.id, kept);
-  }
-  for (const s of series) {
-    // A series in a row is painted by its mark's ramp, and takes no place (0113).
-    if (places.has(s.id) || s.row !== undefined) continue;
-    const taken = new Set(places.values());
-    const free = [1, 2, 3, 4, 5, 6, 7, 8].find((p) => !taken.has(p));
-    places.set(s.id, free ?? (places.size % 8) + 1);
-  }
-  return places;
 }

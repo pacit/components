@@ -14,11 +14,14 @@ import {
   PctChartTable,
   PctChartRamp,
   PctChartTooltip,
+  PctGauge,
+  type PctGaugeBand,
   PctHeat,
   pctIntervalStart,
   PctLine,
   PctNote,
   PctNow,
+  PctPie,
   type PctPick,
   PctPoints,
   PctRange,
@@ -416,6 +419,8 @@ const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
     PctRange,
     PctBox,
     PctHeat,
+    PctPie,
+    PctGauge,
     PctChartRamp,
     PctButton,
   ],
@@ -518,4 +523,37 @@ export class ChartView {
     const two = (v: number) => Math.round(v * 100) / 100;
     return `Values ${two(w.from)} to ${two(w.to)} kW`;
   });
+
+  /** A month's energy by what used it, the smallest uses many: a pie's shares. */
+  protected readonly uses = [
+    { use: 'Heat pump', kwh: 412 },
+    { use: 'Hot water', kwh: 168 },
+    { use: 'Ventilation', kwh: 96 },
+    { use: 'Lighting', kwh: 54 },
+    { use: 'Kitchen', kwh: 71 },
+    { use: 'Laundry', kwh: 38 },
+    { use: 'Server room', kwh: 29 },
+    { use: 'Chargers', kwh: 17 },
+    { use: 'Garden', kwh: 9 },
+  ];
+  protected readonly selectedUse = signal<string | null>('Heat pump');
+  protected readonly pickedSlice = signal('Nothing picked');
+  protected readonly comfort: readonly PctGaugeBand[] = [
+    { from: 10, to: 18, tone: 'info', label: 'Cold' },
+    { from: 18, to: 24, tone: 'success', label: 'Comfort' },
+    { from: 24, to: 30, tone: 'danger', label: 'Hot' },
+  ];
+  protected readonly loadBands: readonly PctGaugeBand[] = [
+    { from: 0, to: 70, tone: 'success', label: 'Normal' },
+    { from: 70, to: 90, tone: 'warning', label: 'High' },
+    { from: 90, to: 100, tone: 'danger', label: 'Overload' },
+  ];
+  protected readonly supplyNow = signal(21.5);
+  protected readonly loadNow = signal(62);
+
+  protected warmer(): void {
+    this.supplyNow.update((v) =>
+      v >= 30 ? 10 : Math.round((v + 2.5) * 10) / 10,
+    );
+  }
 }

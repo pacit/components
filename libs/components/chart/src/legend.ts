@@ -7,13 +7,44 @@ import {
   Directive,
   inject,
   input,
+  type ModelSignal,
   output,
+  type Signal,
   TemplateRef,
 } from '@angular/core';
-import { PCT_TEXTS, pctQuantityFormat } from '@pacit/components/core';
-import type { PctChart } from './chart';
-import { pctSummarize, type PctSummary } from './model/summarize';
-import type { PctSeriesIdentity, PctSwatchContext } from './scene';
+import { PCT_TEXTS } from '@pacit/components/core';
+import type { PctChartReading } from './chart';
+import type { PctSummary } from './model/summarize';
+import type {
+  PctMark,
+  PctSeriesIdentity,
+  PctSeriesSpec,
+  PctSwatchContext,
+} from './scene';
+
+/**
+ * What a legend lists: a chart's series, or a pie's slices
+ * ([0115](../../../../docs/decisions/0115-a-pie-is-a-scene-of-shares-and-a-gauge-is-a-meter-drawn-as-an-arc.md)).
+ * `PctChart` and `PctPie` are the two sources; the legend asks nothing else of either.
+ *
+ * @since next
+ */
+export interface PctLegendSource {
+  /** The series, in order. */
+  readonly series: Signal<readonly PctSeriesSpec[]>;
+  /** The ids not drawn: what a toggle of the legend writes. */
+  readonly hiddenSeries: ModelSignal<readonly string[]>;
+  /** The palette place of each series. */
+  readonly places: Signal<ReadonlyMap<string, number>>;
+  /** What the cursor reads, or `null`: the value the legend writes beside a series while there is one. */
+  readonly reading: Signal<PctChartReading | null>;
+  /** The marks whose `legendEntries` stand after the series; none on a pie. */
+  readonly marks: Signal<readonly PctMark[]>;
+  /** The swatch template a series is drawn small with, or `null` for none. */
+  swatchOf(id: string): TemplateRef<PctSwatchContext> | null;
+  /** What stands beside a series while no cursor is on the picture, for `value`, or `null` for nothing. */
+  summaryOf(id: string, mode: 'latest' | PctSummary): string | null;
+}
 
 /**
  * One entry of a legend: the series, its swatch and what the legend writes beside it.
@@ -109,11 +140,11 @@ export class PctLegendItem {
 })
 export class PctChartLegend {
   /**
-   * The chart whose series the legend lists.
+   * The chart whose series the legend lists, or the pie whose slices.
    *
    * @since 0.3.0
    */
-  readonly chart = input.required<PctChart>();
+  readonly chart = input.required<PctLegendSource>();
   /**
    * The list's name, which a reader announces on entering it: `chartLegend` ("Series") when
    * unset. Two legends on one page take names that tell them apart.
@@ -158,12 +189,6 @@ export class PctChartLegend {
   private readonly item = contentChild(PctLegendItem);
   protected readonly custom = computed(() => this.item()?.template ?? null);
 
-  private readonly format = computed(() =>
-    pctQuantityFormat(this.chart().effectiveLocale(), {
-      fractionDigits: [0, 3],
-    }),
-  );
-
   /**
    * The entries, in the chart's order.
    *
@@ -188,8 +213,8 @@ export class PctChartLegend {
         value: isHidden
           ? null
           : (reading?.rows.find((r) => r.id === s.id)?.text ??
-            this.summary(s.id, s.unit)),
-        swatch: chart.markOf(s.id)?.swatch() ?? null,
+            this.summary(s.id)),
+        swatch: chart.swatchOf(s.id),
       };
     });
     // The annotations asked to stand here, after the series: no unit, and as the value the text
@@ -231,22 +256,9 @@ export class PctChartLegend {
     return () => this.toggle(entry);
   }
 
-  /** What `value` asks for, written with the unit; `null` for none or nothing to write. */
-  private summary(id: string, unit: string): string | null {
+  /** What `value` asks for, as the source writes it; `null` for none or nothing to write. */
+  private summary(id: string): string | null {
     const mode = this.value();
-    const chart = this.chart();
-    const shown = chart.shown();
-    if (mode === 'none' || !shown) return null;
-    const mark = chart.markOf(id);
-    if (!mark) return null;
-    const value =
-      mode === 'latest'
-        ? chart.valueAt(id, shown.to)
-        : pctSummarize(mark.readings(id), shown, mode);
-    if (value === null) return this.texts().chartGap;
-    if (unit === 'boolean')
-      return value >= 0.5 ? this.texts().chartOn : this.texts().chartOff;
-    const number = this.format().format(value);
-    return unit ? `${number} ${unit}` : number;
+    return mode === 'none' ? null : this.chart().summaryOf(id, mode);
   }
 }

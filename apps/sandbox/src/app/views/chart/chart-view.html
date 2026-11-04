@@ -858,3 +858,90 @@
   <pct-chart-legend [chart]="diverging" data-testid="heat-legend" />
   <pct-chart-ramp [chart]="diverging" data-testid="heat-diverging-ramp" />
 </sbx-demo>
+
+<sbx-demo
+  heading="A pie of shares"
+  summary="pct-pie is a scene of its own: each row a slice and a series the legend lists and the table holds with its share; a label on a leader for each slice that has the room, the smallest values folded into one slice of the rest past others, the arrow keys walking the slices on the cursor's range, and a press picking one."
+  [reqs]="['req-api-templates', 'req-a11y-built-in', 'req-a11y-wcag']"
+  data-testid="demo-pie"
+>
+  <pct-pie
+    #pie
+    ariaLabel="Energy by use, October 2026"
+    [data]="uses"
+    value="kwh"
+    name="use"
+    unit="kWh"
+    locale="en-GB"
+    class="sbx-pie"
+    [(selected)]="selectedUse"
+    (pick)="pickedSlice.set($event.series + ': ' + $event.value + ' kWh')"
+    data-testid="chart-pie"
+  />
+  <pct-chart-legend [chart]="pie" data-testid="pie-legend" />
+  <p data-testid="pie-picked">{{ pickedSlice() }}</p>
+  <pct-chart-table [chart]="pie" summary="sum" data-testid="pie-table" />
+</sbx-demo>
+
+<sbx-demo
+  heading="A donut with the rest folded"
+  summary="donut hollows the pie by a share of its radius; startAngle turns the first slice to the top; others keeps that many slices and folds the rest into one, named Others, that holds their sum; labels='none' leaves the names to the legend and the table."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-donut"
+>
+  <pct-pie
+    #donut
+    ariaLabel="Energy by use, October 2026, as a donut"
+    [data]="uses"
+    value="kwh"
+    name="use"
+    unit="kWh"
+    locale="en-GB"
+    class="sbx-pie"
+    donut="0.6"
+    startAngle="-90"
+    [others]="4"
+    labels="none"
+    data-testid="chart-donut"
+  />
+  <pct-chart-legend [chart]="donut" data-testid="donut-legend" />
+</sbx-demo>
+
+<sbx-demo
+  heading="A gauge with bands"
+  summary="pct-gauge is a meter drawn as an arc: the value with its unit in the middle, the bands of its range in their tones and the word of the band the value falls in under it, which a reader hears too; indicator='needle' draws a needle instead of the arc, sweep the angle the arc spans, and no value reads No reading."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-gauge"
+>
+  <div class="sbx-gauges">
+    <pct-gauge
+      ariaLabel="Supply air"
+      [value]="supplyNow()"
+      [min]="10"
+      [max]="30"
+      unit="°C"
+      locale="en-GB"
+      [bands]="comfort"
+      data-testid="chart-gauge"
+    />
+    <pct-gauge
+      ariaLabel="Heat pump load"
+      [value]="loadNow()"
+      unit="%"
+      locale="en-GB"
+      [bands]="loadBands"
+      indicator="needle"
+      data-testid="chart-gauge-needle"
+    />
+    <pct-gauge
+      ariaLabel="Battery"
+      [value]="null"
+      unit="%"
+      [sweep]="180"
+      data-testid="chart-gauge-empty"
+    />
+  </div>
+  <button pctButton type="button" (click)="warmer()" data-testid="gauge-warmer">
+    Warmer
+  </button>
+</sbx-demo>

@@ -142,6 +142,14 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chart-cursor-border color component public
 --pct-chart-edge-width dimension component public
 --pct-chart-font-size dimension component public
+--pct-chart-gauge-bg color component public
+--pct-chart-gauge-bg-danger color component public
+--pct-chart-gauge-bg-info color component public
+--pct-chart-gauge-bg-success color component public
+--pct-chart-gauge-bg-warning color component public
+--pct-chart-gauge-fg color component public
+--pct-chart-gauge-font-size dimension component public
+--pct-chart-gauge-width dimension component public
 --pct-chart-grid-border color component public
 --pct-chart-heat-bg-1 color component public
 --pct-chart-heat-bg-2 color component public
@@ -176,6 +184,9 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chart-note-border color component public
 --pct-chart-note-fg color component public
 --pct-chart-now-border color component public
+--pct-chart-pie-border color component public
+--pct-chart-pie-gap dimension component public
+--pct-chart-pie-size-selected dimension component public
 --pct-chart-ramp-height dimension component public
 --pct-chart-reference-border color component public
 --pct-chart-reference-fg color component public

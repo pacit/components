@@ -226,6 +226,8 @@ const DRAWS_DATA = new Set([
   'chart/src/box.scss',
   'chart/src/heat.scss',
   'chart/src/ramp.scss',
+  'chart/src/pie.scss',
+  'chart/src/gauge.scss',
 ]);
 const drawsData = (file) =>
   DRAWS_DATA.has(
