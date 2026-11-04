@@ -10,7 +10,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { PctDataTable, type PctScrollAlign } from './data-table';
+import { PctDataTable, pctHeadersRow, type PctScrollAlign } from './data-table';
 import type { PctTableLine } from './model/lines';
 import {
   PctLineHeights,
@@ -453,7 +453,7 @@ export class PctTableWindow {
     this.pinned = key;
     const table = this.tableOf(this.frame());
     const cells = Array.from(
-      (table.tHead as HTMLTableSectionElement).rows[0].cells,
+      (pctHeadersRow(table) as HTMLTableRowElement).cells,
     );
     table.style.tableLayout = '';
     for (const cell of cells) cell.style.inlineSize = '';

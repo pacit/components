@@ -1150,8 +1150,12 @@ export class PctTableCellHarness extends PctHarness<never> {
 const DATA_ROWS =
   ':scope > pct-table-frame > table > tbody > tr[data-pct-index]:not([data-pct-part])';
 
-/** The header cells of a data table's own table, not of one nested in a cell. */
-const HEADS = ':scope > pct-table-frame > table > thead > tr > th';
+/**
+ * The header cells of a data table's own table, not of one nested in a cell, and not the
+ * headers of groups over them.
+ */
+const HEADS =
+  ':scope > pct-table-frame > table > thead > tr > th:not([scope="colgroup"])';
 
 /** What a header's label leaves out: a later key's place, and the words only a reader hears. */
 const NOT_THE_LABEL =

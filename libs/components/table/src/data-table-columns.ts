@@ -314,7 +314,9 @@ export class PctTableColumnParts {
 
   /** Pins the column to an edge, or takes it off, its menu keeping the focus as a move does. */
   protected pin(column: PctAnyColumn<unknown>, pin: PctColumnPin | null): void {
-    this.link.write(pctPinColumn(this.link.layout(), column.id, pin));
+    this.link.write(
+      pctPinColumn(this.link.layout(), column.id, pin, this.columnsGiven()),
+    );
     this.focusMenuOf(column.id);
   }
 

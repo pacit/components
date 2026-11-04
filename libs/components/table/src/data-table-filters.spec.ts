@@ -759,25 +759,31 @@ describe('PctTableColumnFilters — each column’s own filter', () => {
     expect(panelInput.value).toBe('sensor');
   });
 
-  it('measures the headers’ row apart, for the row of filters to stick below it', async () => {
+  it('measures each row of the header its offset, for the row of filters to stick below the headers’', async () => {
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
       function (this: HTMLElement) {
+        const filters = this.classList.contains('pct-data-table__filters');
         const height =
           this.tagName === 'THEAD'
             ? 64
             : this.tagName === 'TR' && this.parentElement?.tagName === 'THEAD'
-              ? this.classList.contains('pct-data-table__filters')
+              ? filters
                 ? 24
                 : 40
               : 0;
-        return { width: 0, height } as DOMRect;
+        // The headers' row at the top, the filters' below it.
+        return { width: 0, height, top: filters ? 40 : 0 } as DOMRect;
       },
     );
     const fixture = await render(Host);
     fixture.componentInstance.row.set(true);
     await settle(fixture);
     const frame = document.querySelector('pct-table-frame') as HTMLElement;
-    expect(frame.style.getPropertyValue('--_first')).toBe('40px');
+    const [heads, filters] = Array.from(
+      document.querySelectorAll<HTMLElement>('thead tr'),
+    );
+    expect(heads.style.getPropertyValue('--_top')).toBe('0px');
+    expect(filters.style.getPropertyValue('--_top')).toBe('40px');
     expect(frame.style.getPropertyValue('--_head')).toBe('64px');
   });
 
@@ -800,8 +806,12 @@ describe('PctTableColumnFilters — each column’s own filter', () => {
       readonly byId = byId;
     }
     await render(Loose);
-    const frame = document.querySelector('pct-table-frame') as HTMLElement;
-    expect(frame.style.getPropertyValue('--_first')).toBe('');
+    const rows = Array.from(document.querySelectorAll<HTMLElement>('thead tr'));
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.style.getPropertyValue('--_top'))).toEqual([
+      '',
+      '',
+    ]);
   });
 
   it('counts the row of filters among the header’s rows a reader is told of', async () => {

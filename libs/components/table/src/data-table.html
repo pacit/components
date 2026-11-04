@@ -60,7 +60,54 @@
     </colgroup>
     }
     <thead>
-      <tr [attr.aria-rowindex]="rowCount() === null ? null : 1">
+      @for (level of headGroups(); track $index) {
+      <!-- A row of header groups: a group's header spans its columns, an empty cell the rest. -->
+      <tr
+        class="pct-data-table__heads"
+        [attr.aria-rowindex]="rowCount() === null ? null : $index + 1"
+      >
+        @if (selection()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.pick?.pinned"
+          [style.--_at.px]="lead.pick?.at"
+        ></td>
+        } @if (disclosure()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.disclosure?.pinned"
+          [style.--_at.px]="lead.disclosure?.at"
+        ></td>
+        } @if (rowNumbers()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.number?.pinned"
+          [style.--_at.px]="lead.number?.at"
+        ></td>
+        } @for (cell of level; track cell.from) { @if (cell.label !== null) {
+        <th
+          pctHeader
+          scope="colgroup"
+          class="pct-data-table__head-group"
+          [attr.colspan]="cell.span === 1 ? null : cell.span"
+          [attr.data-pct-pinned]="cell.pinned"
+          [style.--_at.px]="cell.at"
+        >
+          {{ cell.label }}
+        </th>
+        } @else {
+        <td
+          pctCell
+          [attr.colspan]="cell.span === 1 ? null : cell.span"
+          [attr.data-pct-pinned]="cell.pinned"
+          [style.--_at.px]="cell.at"
+        ></td>
+        } }
+      </tr>
+      }
+      <tr
+        [attr.aria-rowindex]="rowCount() === null ? null : headGroups().length + 1"
+      >
         @if (selection(); as selection) {
         <!-- The column of picks: what is in it is the selection's to draw. -->
         <th
@@ -146,7 +193,7 @@
       <!-- The row of filters: each column's control under its header, the panel's own. -->
       <tr
         class="pct-data-table__filters"
-        [attr.aria-rowindex]="rowCount() === null ? null : 2"
+        [attr.aria-rowindex]="rowCount() === null ? null : headGroups().length + 2"
       >
         @if (selection()) {
         <td

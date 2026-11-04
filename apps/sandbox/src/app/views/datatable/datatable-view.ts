@@ -551,6 +551,39 @@ export class DatatableView {
   protected readonly ruleLayoutText = computed(() =>
     JSON.stringify(this.ruleLayout()),
   );
+
+  /** The rules under grouped headers: a group's header spans its columns, two levels deep. */
+  protected readonly headColumns = col.of([
+    col.key('name', { header: 'Name', width: 200, minWidth: 140 }),
+    col.key('room', { header: 'Room', width: 150, group: 'Where' }),
+    col.key('address', {
+      header: 'Address',
+      numeric: true,
+      width: 150,
+      group: 'Where',
+    }),
+    col.key('energy', {
+      header: 'Used',
+      kind: { number: { unit: 'kWh', fractionDigits: 1 } },
+      width: 140,
+      group: 'Energy/This month',
+    }),
+    col.key('nextAt', {
+      header: 'At',
+      kind: { instant: { relative: true, timeZone: 'Europe/Warsaw' } },
+      width: 160,
+      group: 'Energy/Next run',
+    }),
+    col.key('enabled', { header: 'Enabled', kind: 'boolean' }),
+  ]);
+  protected readonly headLayout = signal<
+    PctTableLayout<
+      'name' | 'room' | 'address' | 'energy' | 'nextAt' | 'enabled'
+    >
+  >({});
+  protected readonly headLayoutText = computed(() =>
+    JSON.stringify(this.headLayout()),
+  );
   protected readonly laidPicked = signal<readonly PctRowId[]>([]);
 
   /** The grid's stop, its range and its picks, said under it as they change. */

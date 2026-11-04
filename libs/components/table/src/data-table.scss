@@ -43,23 +43,25 @@ table {
   block-size: var(--_tail);
 }
 
-:host([data-pct-sticky]) thead th {
+/* Each row of the header sticks below the rows above it, at the offset the table measures on
+   the row: the groups' rows, the headers', the filters'. */
+:host([data-pct-sticky]) thead th,
+:host([data-pct-sticky]) thead td {
   position: sticky;
-  inset-block-start: 0;
+  inset-block-start: var(--_top, 0px);
   z-index: calc(3 + var(--_lift, 0));
 }
 
-/* The row of filters sticks below the headers' row, whose height the table measures. */
-:host([data-pct-sticky]) .pct-data-table__filters > td {
-  position: sticky;
-  inset-block-start: var(--_first, 0px);
-  z-index: calc(3 + var(--_lift, 0));
-}
-
-.pct-data-table__filters > td {
+.pct-data-table__filters > td,
+.pct-data-table__heads > td {
   border-block-end: 1px solid var(--pct-table-heading-border);
   background: var(--pct-table-heading-bg);
   vertical-align: top;
+}
+
+/* A group's header stands over the middle of its columns. */
+.pct-data-table__head-group {
+  text-align: center;
 }
 
 /* A column's buttons — its filter's, its menu's, its separator — stand at its header's end
