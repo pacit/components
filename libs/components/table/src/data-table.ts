@@ -828,9 +828,13 @@ export class PctDataTable<
       (this.rowNumbers() ? 1 : 0),
   );
 
-  private readonly resolvedLocale = computed(
-    () => this.locale() || this.appLocale,
-  );
+  /**
+   * The locale the table writes in: its own `locale`, or the application's. What an export
+   * reads its separators from.
+   *
+   * @since next
+   */
+  readonly resolvedLocale = computed(() => this.locale() || this.appLocale);
 
   private readonly collator = computed(
     () =>
@@ -981,6 +985,14 @@ export class PctDataTable<
     const id = this.rowId();
     return this.filtered().map((row) => id(row));
   });
+
+  /**
+   * The rows the filter let through, in the order the table sorts them, groups or none: what
+   * an export writes. From a remote source, those of the rows it has delivered.
+   *
+   * @since next
+   */
+  readonly matchedRows = computed<readonly T[]>(() => this.ordered());
 
   private readonly ordered = computed(() => {
     const rows = this.filtered();

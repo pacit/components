@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { inflateRawSync } from 'node:zlib';
 import { expect, Locator, Page, test } from '@playwright/test';
 import { visit } from './support/dom';
 
@@ -1811,3 +1813,118 @@ test.describe('PctTableEditing — the rules edited in place', () => {
     await expect(cell(page, 5, 3)).toBeFocused();
   });
 });
+
+test.describe('PctTableEditing — the rules copied, pasted and written out', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const table = (page: Page) => page.getByTestId('table-editing');
+  const cell = (page: Page, row: number, column: number) =>
+    table(page).locator('tbody tr').nth(row).locator('td').nth(column);
+  const said = (page: Page) => page.locator('[data-pct-live="polite"]');
+
+  test('copies a range on Ctrl+C and pastes it from another stop on Ctrl+V, one step Ctrl+Z gives back', async ({
+    page,
+  }) => {
+    const name = (await cell(page, 0, 0).textContent())?.trim() ?? '';
+    const room = (await cell(page, 0, 1).textContent())?.trim() ?? '';
+    const before = [
+      (await cell(page, 2, 0).textContent())?.trim(),
+      (await cell(page, 2, 1).textContent())?.trim(),
+    ];
+    await cell(page, 0, 0).click();
+    await page.keyboard.press('Shift+ArrowRight');
+    await page.keyboard.press('ControlOrMeta+c');
+    await expect(said(page)).toHaveText('Cells copied: 2');
+    // Shift took the stop along to the range's end; the paste goes from two rows down, at the start.
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowLeft');
+    await expect(cell(page, 2, 0)).toBeFocused();
+    await page.keyboard.press('ControlOrMeta+v');
+    // The room is the page's own select, whose rules a paste would pass by: it is left out.
+    await expect(said(page)).toHaveText('Cells pasted: 1, left out: 1');
+    await expect(cell(page, 2, 0)).toHaveText(name);
+    await expect(cell(page, 2, 1)).toHaveText(before[1] ?? '');
+    expect(room).not.toBe('');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(cell(page, 2, 0)).toHaveText(before[0] ?? '');
+    await expect(cell(page, 2, 1)).toHaveText(before[1] ?? '');
+  });
+
+  test('pastes a number as the column reads it, and leaves out what is none', async ({
+    page,
+  }) => {
+    // What a sheet puts on the clipboard, copied there by the engine from a field of its own.
+    await page.evaluate(() => {
+      const field = document.createElement('textarea');
+      field.id = 'sheet';
+      field.value = '1,950.5\n12 W';
+      document.body.append(field);
+      field.select();
+    });
+    await page.keyboard.press('ControlOrMeta+c');
+    await page.evaluate(() => document.getElementById('sheet')?.remove());
+    await cell(page, 0, 2).click();
+    await page.keyboard.press('ControlOrMeta+v');
+    await expect(said(page)).toHaveText('Cells pasted: 1, left out: 1');
+    await expect(cell(page, 0, 2)).toHaveText(/1,950\.5/);
+  });
+
+  test('downloads the rules as CSV and as an Excel workbook the page writes with the table', async ({
+    page,
+  }) => {
+    const name = (await cell(page, 0, 0).textContent())?.trim() ?? '';
+    const [csv] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Download CSV' }).click(),
+    ]);
+    expect(csv.suggestedFilename()).toBe('rules.csv');
+    const text = readFileSync(await csv.path(), 'utf8');
+    expect(
+      text.startsWith(
+        `${String.fromCharCode(0xfeff)}Name,Room,Energy,Enabled\r\n${name},`,
+      ),
+    ).toBe(true);
+    const [xlsx] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Download Excel' }).click(),
+    ]);
+    expect(xlsx.suggestedFilename()).toBe('rules.xlsx');
+    const sheet = partOf(
+      readFileSync(await xlsx.path()),
+      'xl/worksheets/sheet1.xml',
+    );
+    expect(sheet).toContain(
+      '<sheetData><row r="1"><c r="A1" t="inlineStr" s="1"><is><t xml:space="preserve">Name</t>',
+    );
+    expect(sheet).toContain(
+      `<c r="A2" t="inlineStr"><is><t xml:space="preserve">${name}</t></is></c>`,
+    );
+    expect(sheet).toContain('<c r="D2" t="b"><v>1</v></c>');
+  });
+});
+
+/** A part of a zip, found by its central directory and inflated. */
+function partOf(zip: Buffer, name: string): string {
+  const end = zip.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+  let at = zip.readUInt32LE(end + 16);
+  for (let n = zip.readUInt16LE(end + 10); n > 0; n--) {
+    const length = zip.readUInt16LE(at + 28);
+    const offset = zip.readUInt32LE(at + 42);
+    if (zip.toString('utf8', at + 46, at + 46 + length) === name) {
+      const start =
+        offset +
+        30 +
+        zip.readUInt16LE(offset + 26) +
+        zip.readUInt16LE(offset + 28);
+      const body = zip.subarray(start, start + zip.readUInt32LE(at + 20));
+      return (
+        zip.readUInt16LE(at + 10) === 8 ? inflateRawSync(body) : body
+      ).toString('utf8');
+    }
+    at += 46 + length + zip.readUInt16LE(at + 30) + zip.readUInt16LE(at + 32);
+  }
+  throw new Error(`No ${name} in the zip.`);
+}

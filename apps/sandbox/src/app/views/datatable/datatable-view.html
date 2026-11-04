@@ -467,7 +467,7 @@
 
 <sbx-demo
   heading="Rules edited in place"
-  summary="Enter, F2 or a double press opens a cell; a letter or a digit opens it with what was typed. Enter commits and goes a row down, Tab to the next cell, Escape lets the draft go. The name and the energy are edited in fields of their kinds, the room in a select of the rooms, which commits on a pick. The table proposes, the page applies; Ctrl+Z asks the last edit back."
+  summary="Enter, F2 or a double press opens a cell; a letter or a digit opens it with what was typed. Enter commits and goes a row down, Tab to the next cell, Escape lets the draft go. The name and the energy are edited in fields of their kinds, the room in a select of the rooms, which commits on a pick. The table proposes, the page applies; Ctrl+Z asks the last edit back. Ctrl+C copies the cell, or a range drawn with Shift, as a sheet takes it, and Ctrl+V pastes a sheet's cells from the stop; the two buttons are the page's, around the table's CSV and Excel writers."
   [reqs]="['req-a11y-built-in']"
   data-testid="demo-editing"
 >
@@ -493,9 +493,28 @@
     >
       Redo
     </button>
+    <button
+      pctButton
+      type="button"
+      size="sm"
+      variant="outline"
+      (click)="downloadCsv()"
+    >
+      Download CSV
+    </button>
+    <button
+      pctButton
+      type="button"
+      size="sm"
+      variant="outline"
+      (click)="downloadXlsx()"
+    >
+      Download Excel
+    </button>
   </div>
   <pct-data-table
     data-testid="table-editing"
+    #editTable="pctDataTable"
     caption="Rules"
     locale="en"
     [pctTableGrid]="editColumns"

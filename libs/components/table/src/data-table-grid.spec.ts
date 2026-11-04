@@ -8,6 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { PctAnnouncer } from '@pacit/components/core';
 import { PctDataTable } from './data-table';
 import { PctTableColumns } from './data-table-columns';
 import { PctTableDetails } from './data-table-details';
@@ -80,6 +81,7 @@ const DEVICES: Device[] = [
 })
 class Host {
   readonly table = viewChild.required(PctDataTable<Device>);
+  readonly selection = viewChild.required(PctTableSelection);
   readonly columns = columns;
   readonly byId = byId;
   readonly rows = signal(DEVICES);
@@ -876,5 +878,184 @@ describe('PctTableGrid — the table as a grid', () => {
     const caption = table().querySelector('caption') as HTMLElement;
     const event = await press(fixture, 'ArrowUp', {}, caption);
     expect(event.defaultPrevented).toBe(false);
+  });
+});
+
+describe('PctTableGrid — a copy', () => {
+  /** A copy on the element with the focus, as the platform sends it, and what it put. */
+  function copy(init: { prevented?: boolean; clipboard?: boolean } = {}): {
+    event: Event;
+    text: string | null;
+  } {
+    const event = new Event('copy', { bubbles: true, cancelable: true });
+    const put: { text: string | null } = { text: null };
+    Object.defineProperty(event, 'clipboardData', {
+      value:
+        init.clipboard === false
+          ? null
+          : {
+              setData: (format: string, text: string) => {
+                expect(format).toBe('text/plain');
+                put.text = text;
+              },
+            },
+    });
+    if (init.prevented) event.preventDefault();
+    active().dispatchEvent(event);
+    return {
+      event,
+      get text() {
+        return put.text;
+      },
+    };
+  }
+
+  it("copies the stop's cell, a number as another program reads it, and says how many", async () => {
+    const fixture = await render(Host);
+    const announcer = TestBed.inject(PctAnnouncer);
+    const announce = vi.spyOn(announcer, 'announce');
+    const retract = vi.spyOn(announcer, 'retract');
+    fixture.componentInstance.focused.set({ row: 2, column: 'name' });
+    await settle(fixture);
+    cell(2, 3).focus();
+    const first = copy();
+    expect(first.event.defaultPrevented).toBe(true);
+    expect(first.text).toBe('Boiler');
+    expect(announce).toHaveBeenLastCalledWith('Cells copied: 1');
+    // The same count again is said again.
+    expect(retract).toHaveBeenLastCalledWith('Cells copied: 1');
+    fixture.componentInstance.focused.set({ row: 2, column: 'power' });
+    await settle(fixture);
+    expect(copy().text).toBe('1900');
+    expect(announce).toHaveBeenCalledTimes(2);
+  });
+
+  it('copies the range, either way it was drawn, before the rows picked', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    const announce = vi.spyOn(TestBed.inject(PctAnnouncer), 'announce');
+    host.selection().value.set([3]);
+    host.range.set({
+      from: { row: 2, column: 'power' },
+      to: { row: 1, column: 'name' },
+    });
+    await settle(fixture);
+    cell(1, 3).focus();
+    expect(copy().text).toBe('Lamp\tKitchen\t12\r\nBoiler\tCellar\t1900');
+    expect(announce).toHaveBeenLastCalledWith('Cells copied: 6');
+    host.range.set({
+      from: { row: 3, column: 'room' },
+      to: { row: 3, column: 'room' },
+    });
+    await settle(fixture);
+    expect(copy().text).toBe('Attic');
+  });
+
+  it('copies the rows picked, in the order the table shows them, where no range is drawn', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    host.selection().value.set([3, 1]);
+    host.focused.set({ row: 2, column: 'name' });
+    await settle(fixture);
+    cell(2, 3).focus();
+    expect(copy().text).toBe('Lamp\tKitchen\t12\r\nFan\tAttic\t40');
+    // A range of a row no longer drawn copies what there is without it.
+    host.range.set({
+      from: { row: 9, column: 'name' },
+      to: { row: 1, column: 'name' },
+    });
+    await settle(fixture);
+    expect(copy().text).toBe('Lamp\tKitchen\t12\r\nFan\tAttic\t40');
+    host.range.set({
+      from: { row: 1, column: 'name' },
+      to: { row: 1, column: 'seen' as Id },
+    });
+    await settle(fixture);
+    expect(copy().text).toBe('Lamp\tKitchen\t12\r\nFan\tAttic\t40');
+  });
+
+  it('leaves a copy to the platform in a field, in text selected, in a cell stepped into, and off the grid', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    host.focused.set({ row: 1, column: 'room' });
+    await settle(fixture);
+    // A field of a cell.
+    (cell(1, 4).querySelector('.note') as HTMLElement).focus();
+    expect(copy().event.defaultPrevented).toBe(false);
+    // Text the user selected.
+    cell(1, 3).focus();
+    host.focused.set({ row: 1, column: 'name' });
+    await settle(fixture);
+    const selection = document.getSelection() as Selection;
+    selection.selectAllChildren(cell(1, 3));
+    expect(copy().event.defaultPrevented).toBe(false);
+    selection.removeAllRanges();
+    expect(copy().event.defaultPrevented).toBe(true);
+    // A copy someone else took, or one with no clipboard.
+    expect(copy({ prevented: true }).text).toBeNull();
+    expect(copy({ clipboard: false }).event.defaultPrevented).toBe(false);
+    // A cell stepped into: its controls are the user's.
+    host.focused.set({ row: 1, column: 'room' });
+    await settle(fixture);
+    cell(1, 4).focus();
+    await press(fixture, 'Enter');
+    expect(active()).toBe(cell(1, 4).querySelector('.go'));
+    expect(copy().event.defaultPrevented).toBe(false);
+    await press(fixture, 'Escape');
+    // Off the grid.
+    (document.activeElement as HTMLElement).blur();
+    expect(copy().event.defaultPrevented).toBe(false);
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    outside.focus();
+    expect(copy().event.defaultPrevented).toBe(false);
+    outside.remove();
+  });
+
+  it('writes a text a sheet would run as a formula after an apostrophe, a number as it is', async () => {
+    const fixture = await render(Host);
+    const host = fixture.componentInstance;
+    host.rows.set([{ id: 1, name: '=SUM(A1)', room: '-cold', power: -5 }]);
+    host.range.set({
+      from: { row: 1, column: 'name' },
+      to: { row: 1, column: 'power' },
+    });
+    await settle(fixture);
+    cell(1, 3).focus();
+    expect(copy().text).toBe("'=SUM(A1)\t'-cold\t-5");
+  });
+
+  it('copies the cells while text is selected outside the table, and leaves an editor its copy', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.focused.set({ row: 1, column: 'name' });
+    await settle(fixture);
+    const outside = document.createElement('p');
+    outside.textContent = 'Elsewhere';
+    document.body.append(outside);
+    const selection = document.getSelection() as Selection;
+    selection.selectAllChildren(outside);
+    cell(1, 3).focus();
+    expect(copy().text).toBe('Lamp');
+    selection.removeAllRanges();
+    outside.remove();
+    // An editor's own control, whatever it is, copies as the platform copies it.
+    const editor = document.createElement('div');
+    editor.setAttribute('data-pct-part', 'editor');
+    const control = document.createElement('button');
+    editor.append(control);
+    cell(1, 3).append(editor);
+    control.focus();
+    expect(copy().event.defaultPrevented).toBe(false);
+    editor.remove();
+  });
+
+  it('copies nothing where there is no stop', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.focused.set(null);
+    await settle(fixture);
+    table().focus();
+    const { event, text } = copy();
+    expect(event.defaultPrevented).toBe(false);
+    expect(text).toBeNull();
   });
 });

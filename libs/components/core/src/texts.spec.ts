@@ -138,6 +138,9 @@ const ENGLISH: PctTexts = {
   tableMoveUp: 'Move {column} up',
   tableMoveDown: 'Move {column} down',
   tableEdit: 'Edit {column}',
+  tableCopied: 'Cells copied: {count}',
+  tablePasted: 'Cells pasted: {count}',
+  tablePasteSkipped: 'Cells pasted: {count}, left out: {skipped}',
 };
 
 describe('PCT_TEXTS', () => {
