@@ -1,5 +1,10 @@
 import type { PctColumns } from './columns';
-import { pctDecimate, pctPyramid, pctRangeExtent } from './decimate';
+import {
+  pctDecimate,
+  pctPyramid,
+  pctPyramidPays,
+  pctRangeExtent,
+} from './decimate';
 import {
   pctForAll,
   pctInt,
@@ -232,6 +237,7 @@ describe('pctDecimate', () => {
     );
   });
 
+  // Half a million readings and two pyramids: past the five seconds of a test under coverage.
   it('reads the pyramid rather than the readings, so the cost follows the pixels', () => {
     const readsFor = (n: number) => {
       const c = noisy(n, 3, 0);
@@ -260,7 +266,7 @@ describe('pctDecimate', () => {
     // a level more per column
     expect(large).toBeLessThan(small * 1.5);
     expect(large).toBeLessThan(400_000 / 4);
-  });
+  }, 30_000);
 
   it('reads the readings one by one below 64 a column, and the pyramid from 64', () => {
     const readsAt = (n: number) => {
@@ -357,6 +363,7 @@ describe('pctRangeExtent', () => {
     );
   });
 
+  // Half a million readings and two pyramids: past the five seconds of a test under coverage.
   it('reads whole runs of the pyramid, so the cost follows the logarithm', () => {
     const readsFor = (n: number) => {
       const c = noisy(n, 3, 0);
@@ -378,7 +385,7 @@ describe('pctRangeExtent', () => {
     };
     expect(readsFor(100_000)).toBeLessThan(400);
     expect(readsFor(400_000)).toBeLessThan(450);
-  });
+  }, 30_000);
 
   it('reads no pyramid built over other columns', () => {
     const c = of([
@@ -396,5 +403,27 @@ describe('pctRangeExtent', () => {
       ]),
     );
     expect(pctRangeExtent(c, -1, 4, other)).toEqual([1, 9]);
+  });
+});
+
+describe('pctPyramidPays', () => {
+  const count = (n: number): PctColumns => ({
+    xs: Float64Array.from({ length: n }, (_, i) => i),
+    ys: new Float64Array(n),
+    length: n,
+  });
+
+  it('pays past 16 384 readings in the window, and not at it', () => {
+    const many = count(16_385);
+    expect(pctPyramidPays(many, { from: 0, to: 16_385 })).toBe(true);
+    expect(pctPyramidPays(many, { from: 0, to: 16_384 })).toBe(false);
+    expect(pctPyramidPays(many, { from: 1, to: 16_385 })).toBe(false);
+    expect(pctPyramidPays(count(16_384), { from: 0, to: 1e9 })).toBe(false);
+  });
+
+  it('counts the readings inside the window, not the series', () => {
+    const many = count(40_000);
+    expect(pctPyramidPays(many, { from: 30_000, to: 40_000 })).toBe(false);
+    expect(pctPyramidPays(many, { from: 10_000, to: 40_000 })).toBe(true);
   });
 });

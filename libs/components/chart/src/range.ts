@@ -11,7 +11,7 @@ import {
 import { PCT_TEXTS } from '@pacit/components/core';
 import { pctSeriesColor } from './line';
 import {
-  pctColumnsOf,
+  pctColumnsReader,
   pctFirstUnordered,
   type PctAccessor,
   type PctColumns,
@@ -181,10 +181,15 @@ export class PctRange<T> extends PctMark {
     this.candles() ? 'step' : this.curve(),
   );
 
+  /** Each reads only the rows added since the last change, where the rest are the same (0121). */
+  private readonly readLow = pctColumnsReader<T>();
+  private readonly readHigh = pctColumnsReader<T>();
+  private readonly readOpen = pctColumnsReader<T>();
+  private readonly readClose = pctColumnsReader<T>();
   /** The rows' columns: the lows and the highs, a gap in either a gap in both. */
   private readonly pair = computed(() => {
-    const lows = pctColumnsOf(this.data(), this.x(), this.low());
-    const highs = pctColumnsOf(this.data(), this.x(), this.high());
+    const lows = this.readLow(this.data(), this.x(), this.low());
+    const highs = this.readHigh(this.data(), this.x(), this.high());
     return mask(lows, highs);
   });
   private readonly lows = computed(() => this.pair().a);
@@ -195,8 +200,8 @@ export class PctRange<T> extends PctMark {
     const close = this.close();
     if (open === null || close === null) return null;
     return mask(
-      pctColumnsOf(this.data(), this.x(), open),
-      pctColumnsOf(this.data(), this.x(), close),
+      this.readOpen(this.data(), this.x(), open),
+      this.readClose(this.data(), this.x(), close),
     );
   });
   private readonly opens = computed(() => this.ends()?.a ?? null);

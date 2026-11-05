@@ -163,6 +163,13 @@ export abstract class PctChartScene {
    */
   abstract readonly pixel: Signal<number>;
   /**
+   * Whether a change of data that only moves values is eased into place, rather than drawn at
+   * once. Off unless the scene asks for it.
+   *
+   * @since next
+   */
+  readonly animate: Signal<boolean> = signal(false);
+  /**
    * The palette place of each series, from 1 to 8.
    *
    * @since 0.3.0

@@ -1948,4 +1948,62 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       expect(Math.abs(drawn - 2 * width)).toBeLessThanOrEqual(2);
     });
   });
+  test.describe('live readings and a recount eased', () => {
+    test('a reading added at the end is drawn, and the window follows the meter', async ({
+      page,
+    }) => {
+      const picture = chart(page, 'chart-live').getByRole('img', {
+        name: 'Supply air read each minute, 25 October 2026',
+      });
+      await expect(picture).toHaveAccessibleDescription(
+        /^From 25 Oct 2026, 01:29:00 to 25 Oct 2026, 01:59:00\. Meter from 19\.5 °C to 21\.9 °C, last 21\.9 °C, (rising|falling|level)\.$/,
+      );
+      await page.getByTestId('live-add').click();
+      await expect(picture).toHaveAccessibleDescription(
+        /^From 25 Oct 2026, 01:30:00 to 25 Oct 2026, 02:00:00\. Meter from 19\.5 °C to 22 °C, last 22 °C, (rising|falling|level)\.$/,
+      );
+    });
+
+    /** The first bar's height on every frame for a while after the recount is asked for. */
+    const heights = (page: import('@playwright/test').Page) =>
+      page.evaluate(async () => {
+        const bar = () =>
+          Number(
+            document
+              .querySelector('[data-testid=chart-recount] [data-pct-part=bar]')
+              ?.getAttribute('height'),
+          );
+        const seen = [bar()];
+        (
+          document.querySelector('[data-testid=live-recount]') as HTMLElement
+        ).click();
+        const until = performance.now() + 700;
+        while (performance.now() < until) {
+          await new Promise(requestAnimationFrame);
+          seen.push(bar());
+        }
+        return seen;
+      });
+
+    test('a recount eases the bars into place, through heights between', async ({
+      page,
+    }) => {
+      await chart(page, 'chart-recount').scrollIntoViewIfNeeded();
+      const seen = await heights(page);
+      const first = seen[0];
+      const last = seen.at(-1)!;
+      expect(last).toBeGreaterThan(first);
+      expect(seen.some((h) => h > first + 1 && h < last - 1)).toBe(true);
+    });
+
+    test('with reduced motion a recount is drawn at once', async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await chart(page, 'chart-recount').scrollIntoViewIfNeeded();
+      const seen = await heights(page);
+      const first = seen[0];
+      const last = seen.at(-1)!;
+      expect(last).toBeGreaterThan(first);
+      expect(seen.filter((h) => h !== first && h !== last)).toEqual([]);
+    });
+  });
 });

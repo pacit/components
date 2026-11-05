@@ -10,13 +10,19 @@ import {
   viewChild,
 } from '@angular/core';
 import {
-  pctColumnsOf,
+  pctColumnsReader,
   pctFirstUnordered,
   type PctAccessor,
   type PctColumns,
 } from './model/columns';
-import { pctDecimate, pctPyramid, type PctPyramid } from './model/decimate';
+import {
+  pctDecimate,
+  pctPyramid,
+  pctPyramidPays,
+  type PctPyramid,
+} from './model/decimate';
 import { pctExtent } from './model/extent';
+import { pctTweened } from './tween';
 import { pctAreaPath, pctLinePath } from './model/path';
 import type { PctDomain } from './model/scale';
 import { pctValueAt, type PctCurve } from './model/value-at';
@@ -184,10 +190,14 @@ export class PctLine<T> extends PctMark {
 
   private readonly key = computed(() => this.id() || this.name());
 
+  /** Reads only the rows added since the last change, where the rest are the same (0121). */
+  private readonly read = pctColumnsReader<T>();
   /** The rows as two columns of numbers. */
   private readonly readingsOf = computed<PctColumns>(() =>
-    pctColumnsOf(this.data(), this.x(), this.y()),
+    this.read(this.data(), this.x(), this.y()),
   );
+  /** The readings as drawn: on their way to the rows while a change is eased (0121). */
+  private readonly drawnOf = pctTweened(this.readingsOf, this.scene.animate);
   private readonly pyramid = computed(() => pctPyramid(this.readingsOf()));
   private readonly held = computed(() => this.end() ?? undefined);
 
@@ -212,11 +222,12 @@ export class PctLine<T> extends PctMark {
   private readonly drawn = computed(() => {
     const window = this.scene.shown();
     if (!window) return null;
+    const readings = this.drawnOf();
     return pctDecimate(
-      this.readingsOf(),
+      readings,
       window,
       this.scene.plotWidth(),
-      this.pyramid(),
+      this.pyramidFor(readings, window),
     );
   });
 
@@ -334,11 +345,11 @@ export class PctLine<T> extends PctMark {
   override extent(id: string, window: PctWindow): PctDomain | null {
     return id === this.key()
       ? pctExtent(
-          this.readingsOf(),
+          this.drawnOf(),
           window,
           this.curve(),
           this.held(),
-          this.pyramid(),
+          this.pyramidFor(this.drawnOf(), window),
         )
       : null;
   }
@@ -350,7 +361,7 @@ export class PctLine<T> extends PctMark {
    */
   override valueAt(id: string, x: number): number | null {
     return id === this.key()
-      ? pctValueAt(this.readingsOf(), x, this.curve(), this.held())
+      ? pctValueAt(this.drawnOf(), x, this.curve(), this.held())
       : null;
   }
 
@@ -369,6 +380,19 @@ export class PctLine<T> extends PctMark {
    */
   override pyramidOf(): PctPyramid {
     return this.pyramid();
+  }
+
+  /**
+   * The pyramid of the readings, where the window holds enough of them to be worth one; none
+   * for readings on their way, which are drawn for a moment and scanned (0121).
+   */
+  private pyramidFor(
+    readings: PctColumns,
+    window: PctWindow,
+  ): PctPyramid | undefined {
+    return readings === this.readingsOf() && pctPyramidPays(readings, window)
+      ? this.pyramid()
+      : undefined;
   }
 
   private warnOnUnordered(): void {

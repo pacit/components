@@ -8,7 +8,7 @@ import {
   PctTableHeader,
 } from '@pacit/components/table';
 import type { PctChart } from './chart';
-import { pctDecimate } from './model/decimate';
+import { pctDecimate, pctPyramidPays } from './model/decimate';
 import type { PctShareSource } from './pie';
 
 /** One row of a pie's table: a slice, its value and its share. */
@@ -240,7 +240,9 @@ export class PctChartTable {
         mark.readings(s.id),
         window,
         columns,
-        mark.pyramidOf(s.id) ?? undefined,
+        pctPyramidPays(mark.readings(s.id), window)
+          ? (mark.pyramidOf(s.id) ?? undefined)
+          : undefined,
       );
       for (let i = 0; i < drawn.length; i++) {
         const x = drawn.xs[i];
