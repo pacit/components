@@ -24,6 +24,7 @@ export * from './model/color';
 export * from './model/columns';
 export * from './model/cursor';
 export * from './model/decimate';
+export * from './model/describe';
 export * from './model/duration';
 export * from './model/extent';
 export * from './model/intervals';

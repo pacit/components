@@ -92,8 +92,16 @@ const lineOf = (fixture: ComponentFixture<unknown>) => {
     ? ['x1', 'x2', 'y1', 'y2'].map((n) => Number(line.getAttribute(n)))
     : null;
 };
-const described = (fixture: ComponentFixture<unknown>) =>
-  element(fixture).querySelector('.description')?.textContent?.trim() ?? null;
+/** The marks' sentences: what follows the chart's description of its data (0120). */
+const described = (fixture: ComponentFixture<unknown>) => {
+  const text =
+    element(fixture).querySelector('.description')?.textContent?.trim() ?? '';
+  const chart = fixture.debugElement.query((d) => d.name === 'pct-chart');
+  const own = (chart.componentInstance as { describe(): string }).describe();
+  return (
+    (own && text.startsWith(own) ? text.slice(own.length) : text).trim() || null
+  );
+};
 
 describe('PctNow', () => {
   beforeEach(() => {

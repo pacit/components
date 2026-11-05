@@ -38,6 +38,8 @@ import {
   type PctBrushGrip,
 } from './model/brush';
 import { pctCursorJump, pctCursorStep } from './model/cursor';
+import { pctFactsOf } from './model/describe';
+import { pctPictureOf, pctPngOf } from './export';
 import {
   pctIntervals,
   pctIntervalText,
@@ -330,6 +332,13 @@ const MIN_SPAN_TIME = 120_000;
 /** How much of the window the arrows with Shift move it. */
 const STEP = 0.1;
 
+/** A text of `PCT_TEXTS` with each `{name}` in it replaced by its value; an unknown one stays. */
+function fill(text: string, values: Record<string, string>): string {
+  return text.replace(/\{(\w+)\}/g, (whole, name: string) =>
+    Object.hasOwn(values, name) ? values[name] : whole,
+  );
+}
+
 /**
  * A chart: a scene of scales and the marks drawn on them
  * ([0099](../../../../docs/decisions/0099-a-chart-is-scales-the-marks-share-and-a-ready-chart-is-a-recipe.md)).
@@ -360,6 +369,7 @@ const STEP = 0.1;
  *
  * @since 0.3.0
  */
+
 @Component({
   selector: 'pct-chart',
   imports: [NgTemplateOutlet, PctSkeleton, PctChartZoom],
@@ -735,14 +745,70 @@ export class PctChart extends PctChartScene implements PctLegendSource {
   });
 
   /**
-   * The picture's description for a reader: the consumer's `description`, then what each mark
-   * adds for what a reader cannot see — a reference line, a band, a note, the moment of now.
+   * The picture's description for a reader: the consumer's `description` — or, with none, the
+   * data's own words (`describe()`) — then what each mark adds for what a reader cannot see: a
+   * reference line, a band, a note, the moment of now.
    */
   protected readonly fullDescription = computed(() =>
-    [this.description(), ...this.marks().map((mark) => mark.describe())]
+    [
+      this.description().trim() || this.generated(),
+      ...this.marks().map((mark) => mark.describe()),
+    ]
       .filter(Boolean)
       .join(' '),
   );
+
+  /**
+   * The window in words, then a sentence for each series shown with a value axis: its lowest,
+   * highest and last reading in the window, which way it went and how often it fell silent
+   * (0120). A series in a row — a heatmap's — is the table's to read, not a sentence's.
+   */
+  private readonly generated = computed(() => {
+    const shown = this.shown();
+    if (!shown) return '';
+    const hidden = this.hiddenSeries();
+    const sentences: string[] = [];
+    for (const mark of this.marks()) {
+      for (const spec of mark.series()) {
+        if (spec.row !== undefined || hidden.includes(spec.id)) continue;
+        const facts = pctFactsOf(mark.readings(spec.id), shown);
+        if (!facts) continue;
+        const write = (value: number) => this.writeValue(value, spec.unit);
+        const parts = [
+          fill(this.texts().chartDescribeSeries, {
+            name: spec.name,
+            min: write(facts.min),
+            max: write(facts.max),
+            last: write(facts.last),
+          }),
+        ];
+        // A yes/no series rises and falls by the hour: its trend says nothing.
+        if (facts.trend && spec.unit !== 'boolean')
+          parts.push(
+            facts.trend === 'rising'
+              ? this.texts().chartRising
+              : facts.trend === 'falling'
+                ? this.texts().chartFalling
+                : this.texts().chartFlat,
+          );
+        if (facts.gaps > 0)
+          parts.push(
+            fill(this.texts().chartDescribeGaps, {
+              count: String(facts.gaps),
+            }),
+          );
+        sentences.push(`${parts.join(', ')}.`);
+      }
+    }
+    if (sentences.length === 0) return '';
+    return [
+      fill(this.texts().chartDescribe, {
+        from: this.writePosition(shown.from, 'full'),
+        to: this.writePosition(shown.to, 'full'),
+      }),
+      ...sentences,
+    ].join(' ');
+  });
 
   /** Every mark's notes placed together, so that none covers another (`pctPlaceNotes`). */
   private readonly notePlacement = computed(() =>
@@ -2100,6 +2166,52 @@ export class PctChart extends PctChartScene implements PctLegendSource {
     this.window.set(selected);
     this.selected.set(null);
     this.announceWindow();
+  }
+
+  /**
+   * The data's own description of what the window shows: its ends, then each series shown —
+   * its lowest, highest and last reading, which way it went, how often it fell silent. The
+   * picture reads it when the consumer gives no `description`; `''` before the chart has a
+   * window or with nothing in it.
+   *
+   * @since next
+   */
+  describe(): string {
+    return this.generated();
+  }
+
+  /**
+   * The picture as a standalone SVG document: the data and the axes as drawn, with the styles
+   * the page computed written into every element, the chart's name as its `<title>` and its
+   * description as its `<desc>`, on the surface's colour. The cursor, the tooltip and the zoom
+   * bar are not in it — they are the page's — and a font travels by its name alone. `''` while
+   * the chart has not drawn.
+   *
+   * @since next
+   */
+  svg(): string {
+    return pctPictureOf(
+      this.host,
+      this.size(),
+      this.ariaLabel(),
+      this.ariaLabelledby(),
+      this.fullDescription(),
+    );
+  }
+
+  /**
+   * The picture as a PNG: `svg()` drawn onto a canvas `scale` times its size — the screen's
+   * pixel ratio by default. It rejects while the chart has not drawn, or where the browser has
+   * no canvas to draw on.
+   *
+   * @since next
+   */
+  png(scale = this.document.defaultView?.devicePixelRatio ?? 1): Promise<Blob> {
+    const svg = this.svg();
+    if (!svg)
+      return Promise.reject(new Error('pct-chart: nothing drawn to export'));
+    const { width, height } = this.size();
+    return pctPngOf(svg, width, height, scale, this.document);
   }
 
   /**

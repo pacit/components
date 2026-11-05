@@ -596,6 +596,146 @@ describe('PctChart', () => {
     expect(messages.some((m) => m.includes('"E" (e) has no axis'))).toBe(true);
     expect(messages.some((m) => m.includes('share the id "A"'))).toBe(true);
   });
+
+  /** The chart of the host with no description of the consumer's. */
+  @Component({
+    imports: [PctChart, PctLine],
+    template: `<pct-chart
+        ariaLabelledby="plain-name"
+        timeZone="UTC"
+        locale="en-US"
+        [(window)]="window"
+        [(hiddenSeries)]="hidden"
+      >
+        <pct-line
+          [data]="temperature"
+          x="at"
+          y="value"
+          name="Supply air"
+          unit="°C"
+        />
+        <pct-line [data]="power" x="at" y="value" name="Fan power" unit="W" />
+        <pct-line
+          [data]="heater"
+          x="at"
+          y="value"
+          name="Heater"
+          unit="boolean"
+          curve="step"
+        />
+      </pct-chart>
+      <h2 id="plain-name">Air handler</h2>`,
+  })
+  class Plain {
+    readonly temperature = temperature;
+    readonly power = power;
+    readonly heater = heater;
+    readonly window = signal<{ from: number; to: number } | null>(null);
+    readonly hidden = signal<readonly string[]>([]);
+  }
+
+  it('describes the data in words of its own where the consumer gives none', async () => {
+    const fixture = await render(Plain);
+    const chart = chartOf(fixture);
+    const words = chart.describe();
+    expect(words).toMatch(/^From .+ to .+\. /);
+    expect(words).toContain(
+      'Supply air from 19.5 °C to 22.5 °C, last 19.5 °C, falling, stretches without readings: 1.',
+    );
+    expect(words).toContain(
+      'Fan power from 400 W to 1,200 W, last 800 W, rising.',
+    );
+    // a yes/no series has no trend to tell
+    expect(words).toContain('Heater from Off to On, last Off.');
+    const described = query(fixture, '[role="img"]')!.getAttribute(
+      'aria-describedby',
+    )!;
+    expect(query(fixture, `#${described}`)?.textContent).toBe(words);
+  });
+
+  it('describes only the window and the series shown', async () => {
+    const fixture = await render(Plain);
+    fixture.componentInstance.window.set({
+      from: T0 + 12 * H,
+      to: T0 + 24 * H,
+    });
+    fixture.componentInstance.hidden.set(['Heater', 'Supply air']);
+    await settle(fixture);
+    const words = chartOf(fixture).describe();
+    expect(words).toContain(
+      'Fan power from 800 W to 1,200 W, last 800 W, falling.',
+    );
+    expect(words).not.toContain('Supply air');
+    expect(words).not.toContain('Heater');
+  });
+
+  it("keeps the consumer's description on the picture and its own in describe()", async () => {
+    const fixture = await render(Host);
+    const words = chartOf(fixture).describe();
+    expect(words).toContain('Supply air from 19.5 °C to 22.5 °C');
+    const described = query(fixture, '[role="img"]')!.getAttribute(
+      'aria-describedby',
+    )!;
+    expect(query(fixture, `#${described}`)?.textContent).toBe(
+      'Supply air between 19.5 and 22.5 °C.',
+    );
+  });
+
+  it("describes in the application's words, a placeholder it does not know left as written", async () => {
+    const fixture = await render(Plain, [
+      providePctTexts({
+        chartDescribe: 'Shown: {to} back to {from} {from}, {unknown}.',
+        chartDescribeSeries: '{name}: {last} ({min}–{max}) {name}',
+        chartDescribeGaps: '{count} holes',
+        chartFalling: 'down',
+        chartRising: 'up',
+      }),
+    ]);
+    const words = chartOf(fixture).describe();
+    expect(words).toMatch(/^Shown: (.+) back to (.+) \2, \{unknown\}\. /);
+    expect(words).toContain(
+      'Supply air: 19.5 °C (19.5 °C–22.5 °C) Supply air, down, 1 holes.',
+    );
+    expect(words).toContain('Fan power: 800 W (400 W–1,200 W) Fan power, up.');
+  });
+
+  it('describes nothing with nothing to draw', async () => {
+    const fixture = await render(Empty);
+    expect(chartOf(fixture).describe()).toBe('');
+  });
+
+  it('exports the picture as a standalone SVG, named and described', async () => {
+    const fixture = await render(Plain);
+    const chart = chartOf(fixture);
+    const root = new DOMParser().parseFromString(
+      chart.svg(),
+      'image/svg+xml',
+    ).documentElement;
+    expect(root.localName).toBe('svg');
+    expect(root.getAttribute('width')).toBe('600');
+    expect(root.getAttribute('height')).toBe('300');
+    expect(root.querySelector('title')?.textContent).toBe('Air handler');
+    expect(root.querySelector('desc')?.textContent).toBe(chart.describe());
+    expect(root.querySelectorAll('[data-pct-part="series"]')).toHaveLength(3);
+    expect(root.querySelector('[class]')).toBeNull();
+  });
+
+  it('exports nothing before it has drawn, and rejects a PNG then', async () => {
+    size = { width: 0, height: 0 };
+    const fixture = await render(Plain);
+    const chart = chartOf(fixture);
+    expect(chart.svg()).toBe('');
+    await expect(chart.png()).rejects.toThrow(
+      'pct-chart: nothing drawn to export',
+    );
+  });
+
+  it('rejects a PNG where the browser has no canvas to draw it on', async () => {
+    const chart = chartOf(await render(Plain));
+    await expect(chart.png(2)).rejects.toThrow(
+      'pct-chart: no canvas to draw the PNG on',
+    );
+  });
 });
 
 describe('pctSeriesColor', () => {

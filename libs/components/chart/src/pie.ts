@@ -45,6 +45,7 @@ import {
   type PctSeriesSpec,
   type PctSwatchContext,
 } from './scene';
+import { pctPictureOf, pctPngOf } from './export';
 
 /** The id of the slice the smallest values fold into: no row of the consumer's carries it. */
 const OTHERS = 'pct-others';
@@ -568,6 +569,37 @@ export class PctPie<T> implements PctShareSource {
       y: Math.max(0, Math.min(box.height - height, point.y - height / 2)),
     };
   });
+
+  /**
+   * The pie as a standalone SVG document, as `pct-chart`'s `svg()` writes its picture: the
+   * slices, their leaders and labels with their computed styles written in, the pie's name as
+   * its `<title>` and its description as its `<desc>`. `''` while the pie has not drawn.
+   *
+   * @since next
+   */
+  svg(): string {
+    return pctPictureOf(
+      this.host,
+      this.size(),
+      this.ariaLabel(),
+      this.ariaLabelledby(),
+      this.fullDescription(),
+    );
+  }
+
+  /**
+   * The pie as a PNG, `svg()` drawn onto a canvas `scale` times its size — the screen's pixel
+   * ratio by default. It rejects while the pie has not drawn, or with no canvas to draw on.
+   *
+   * @since next
+   */
+  png(scale = this.document.defaultView?.devicePixelRatio ?? 1): Promise<Blob> {
+    const svg = this.svg();
+    if (!svg)
+      return Promise.reject(new Error('pct-pie: nothing drawn to export'));
+    const { width, height } = this.size();
+    return pctPngOf(svg, width, height, scale, this.document);
+  }
 
   /** The description a reader hears: the consumer's, or the slices' names and shares. */
   protected readonly fullDescription = computed(() => {

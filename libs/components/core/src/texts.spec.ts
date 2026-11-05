@@ -83,6 +83,12 @@ const ENGLISH: PctTexts = {
   chartBrushTo: 'End of the selection',
   chartBrushKeys:
     'Arrow keys move this edge by a hundredth of the view, Page Up and Page Down by a tenth, Home and End to the ends of the view; Enter shows the selection; Escape clears it.',
+  chartDescribe: 'From {from} to {to}.',
+  chartDescribeSeries: '{name} from {min} to {max}, last {last}',
+  chartDescribeGaps: 'stretches without readings: {count}',
+  chartRising: 'rising',
+  chartFalling: 'falling',
+  chartFlat: 'level',
   chartSum: 'Sum',
   chartMean: 'Mean',
   chartDifference: 'Difference',
