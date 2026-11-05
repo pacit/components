@@ -116,6 +116,7 @@
     "libs/components/pagination/src/pagination.ts",
     "libs/components/popover/src/popover.ts",
     "libs/components/progress/src/progress.ts",
+    "libs/components/sparkline/src/sparkline.ts",
     "libs/components/radio/src/radio-group.ts",
     "libs/components/radio/src/radio.ts",
     "libs/components/regions/src/regions.ts",

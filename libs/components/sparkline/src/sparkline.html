@@ -1,0 +1,46 @@
+<!--
+  The drawing, hidden: the host is the image a reader is given, named by the consumer and
+  described by the words below. Laid in a box of a hundred by a hundred and stretched to the host.
+-->
+<svg
+  class="picture"
+  data-pct-part="picture"
+  aria-hidden="true"
+  viewBox="0 0 100 100"
+  preserveAspectRatio="none"
+>
+  @switch (kind()) { @case ('line') { @if (area() && fill()) {
+  <path data-pct-part="area" [attr.d]="fill()" />
+  } @if (line()) {
+  <path data-pct-part="line" [attr.d]="line()" />
+  } } @case ('bars') { @for (bar of bars(); track bar.index) {
+  <rect
+    data-pct-part="bar"
+    [attr.x]="bar.x"
+    [attr.y]="bar.y"
+    [attr.width]="bar.width"
+    [attr.height]="bar.height"
+  />
+  } } @case ('band') { @for (slot of slots(); track slot.index) {
+  <rect
+    data-pct-part="slot"
+    y="0"
+    height="100"
+    [attr.x]="slot.x"
+    [attr.width]="slot.width"
+    [attr.data-pct-on]="slot.on ? '' : null"
+  />
+  } } }
+</svg>
+@for (dot of dots(); track dot.kind) {
+<i
+  class="dot"
+  data-pct-part="dot"
+  aria-hidden="true"
+  [attr.data-pct-dot]="dot.kind"
+  [style.left.%]="dot.left"
+  [style.top.%]="dot.top"
+></i>
+}
+<!-- Hidden: the host reads it as its description. -->
+<span hidden [id]="ids.description" [textContent]="description()"></span>

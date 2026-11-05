@@ -216,6 +216,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
       import('./views/progress/progress-view').then((m) => m.ProgressView),
   },
   {
+    path: 'sparkline',
+    title: 'Sparkline',
+    summary:
+      'One series drawn small in a row or a card — an image named by its row.',
+    group: 'components',
+    load: () =>
+      import('./views/sparkline/sparkline-view').then((m) => m.SparklineView),
+  },
+  {
     path: 'skeleton',
     title: 'Skeleton',
     summary:

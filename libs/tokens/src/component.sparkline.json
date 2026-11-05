@@ -1,0 +1,37 @@
+{
+  "pct": {
+    "sparkline": {
+      "$comment": "One series drawn small, in a table's cell or a card (0117). Its own tier and not the chart's: a component tier may not point at another component's token, and a sparkline that took the chart's colours through them would re-theme with every chart override.",
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "The drawing: the line, the bars and a band's on-slots, unless the consumer gives a colour."
+      },
+      "width": {
+        "$type": "dimension",
+        "$value": "1.5px",
+        "$description": "The width of the line, kept whatever the box is stretched to."
+      },
+      "area-alpha": {
+        "$type": "dimension",
+        "$value": "20%",
+        "$description": "How much of the drawing's colour fills the area under the line."
+      },
+      "band-bg": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "A band's off-slot: the surface's own shade."
+      },
+      "dot-size": {
+        "$type": "dimension",
+        "$value": "0.4em",
+        "$description": "The width of the dots on the last value and on the extremes."
+      },
+      "dot-fg": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "The dots, unless the consumer gives a colour."
+      }
+    }
+  }
+}

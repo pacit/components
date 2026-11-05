@@ -729,6 +729,12 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-space-4 dimension primitive public
 --pct-space-5 dimension primitive public
 --pct-space-6 dimension primitive public
+--pct-sparkline-area-alpha dimension component public
+--pct-sparkline-band-bg color component public
+--pct-sparkline-dot-fg color component public
+--pct-sparkline-dot-size dimension component public
+--pct-sparkline-fg color component public
+--pct-sparkline-width dimension component public
 --pct-stack-gap dimension component public
 --pct-stack-gap-lg dimension component public
 --pct-stack-gap-sm dimension component public

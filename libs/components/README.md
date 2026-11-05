@@ -85,6 +85,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/radio`       | `PctRadioGroup`, `PctRadio`                                                                                                                                     |
 | `@pacit/components/select`      | `PctSelect`, `PctMultiSelect`, `PctSelectOptionTemplate`, the filter helpers                                                                                    |
 | `@pacit/components/skeleton`    | `PctSkeleton`                                                                                                                                                   |
+| `@pacit/components/sparkline`   | `PctSparkline` — one series as a line, bars or a band, in a cell's space                                                                                        |
 | `@pacit/components/slider`      | `PctSlider`                                                                                                                                                     |
 | `@pacit/components/switch`      | `PctSwitch`                                                                                                                                                     |
 | `@pacit/components/table`       | `PctTable`, `PctTableCaption`, `PctTableHeader`, `PctTableCell`, `PctTableFrame`, `PctDataTable` and its slots, `pctColumnsOf`                                  |

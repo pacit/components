@@ -1,0 +1,33 @@
+.sbx-spark-table {
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: var(--pct-space-2) var(--pct-space-3);
+    text-align: start;
+  }
+
+  caption {
+    text-align: start;
+    margin-block-end: var(--pct-space-2);
+  }
+}
+
+.sbx-spark-list {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: var(--pct-space-2) var(--pct-space-4);
+  align-items: center;
+  margin: 0;
+
+  dd {
+    margin: 0;
+  }
+}
+
+.view__row {
+  display: flex;
+  gap: var(--pct-space-3);
+  align-items: center;
+  margin-block-start: var(--pct-space-3);
+}

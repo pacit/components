@@ -42,6 +42,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   select: () => import('./select.demo').then((m) => m.SelectDemo),
   skeleton: () => import('./skeleton.demo').then((m) => m.SkeletonDemo),
   slider: () => import('./slider.demo').then((m) => m.SliderDemo),
+  sparkline: () => import('./sparkline.demo').then((m) => m.SparklineDemo),
   stack: () => import('./stack.demo').then((m) => m.StackDemo),
   stepper: () => import('./stepper.demo').then((m) => m.StepperDemo),
   switch: () => import('./switch.demo').then((m) => m.SwitchDemo),
@@ -279,6 +280,13 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       key: 'card',
       load: () =>
         import('./skeleton.card.demo').then((m) => m.SkeletonCardDemo),
+    },
+  ],
+  sparkline: [
+    {
+      key: 'kinds',
+      load: () =>
+        import('./sparkline.kinds.demo').then((m) => m.SparklineKindsDemo),
     },
   ],
   progress: [

@@ -1,0 +1,86 @@
+// A sparkline's box: a word's height and six wide, on the line of the text it stands in; a
+// consumer sizes it with CSS. The drawing stretches to it, the dots stand over it.
+:host {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  inline-size: 6em;
+  block-size: 1em;
+}
+
+.picture {
+  /* pct-exception direction: a series runs from its first value on the left to its last on
+     the right in every direction of the page, as the chart's axis does. */
+  direction: ltr;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+[data-pct-part='line'] {
+  fill: none;
+  stroke: var(--_pct-sparkline-color, var(--pct-sparkline-fg));
+  stroke-width: var(--pct-sparkline-width);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-pct-part='area'] {
+  // The drawing's colour first, so the mix below takes one colour and its share.
+  --_pct-sparkline-area: var(--_pct-sparkline-color, var(--pct-sparkline-fg));
+
+  fill: color-mix(
+    in srgb,
+    var(--_pct-sparkline-area) var(--pct-sparkline-area-alpha),
+    transparent
+  );
+}
+
+[data-pct-part='bar'],
+[data-pct-part='slot'][data-pct-on] {
+  fill: var(--_pct-sparkline-color, var(--pct-sparkline-fg));
+}
+
+[data-pct-part='slot'] {
+  fill: var(--pct-sparkline-band-bg);
+}
+
+.dot {
+  position: absolute;
+  inline-size: var(--pct-sparkline-dot-size);
+  block-size: var(--pct-sparkline-dot-size);
+  border-radius: 50%;
+  background: var(--_pct-sparkline-color, var(--pct-sparkline-dot-fg));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+// With the colours gone the line, the bars, the on-slots and the dots are the text's colour, the
+// area is left empty and an off-slot is an edge.
+@media (forced-colors: active) {
+  [data-pct-part='line'] {
+    stroke: CanvasText;
+  }
+
+  [data-pct-part='area'] {
+    fill: none;
+  }
+
+  [data-pct-part='bar'],
+  [data-pct-part='slot'][data-pct-on] {
+    fill: CanvasText;
+  }
+
+  [data-pct-part='slot'] {
+    fill: Canvas;
+    stroke: CanvasText;
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .dot {
+    background: CanvasText;
+  }
+}

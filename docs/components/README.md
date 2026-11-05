@@ -36,6 +36,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctPagination`](pagination.md) | `@pacit/components/pagination` | a control that owns the current page      |
 | [`PctProgress`](progress.md)     | `@pacit/components/progress`   | how far along a task is                   |
 | [`PctSkeleton`](skeleton.md)     | `@pacit/components/skeleton`   | the shape of content still coming         |
+| [`PctSparkline`](sparkline.md)   | `@pacit/components/sparkline`  | a series drawn in a word's space          |
 | [`PctChips`](chips.md)           | `@pacit/components/chips`      | chosen values the user can take back      |
 | [`PctAvatar`](avatar.md)         | `@pacit/components/avatar`     | the picture beside a name                 |
 | [`PctBadge`](badge.md)           | `@pacit/components/badge`      | a word wearing a tone                     |

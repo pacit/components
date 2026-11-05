@@ -198,6 +198,7 @@ libs/components/select/src/select.template.ts 33.33 1(0) 0 0 2 2
 libs/components/select/src/select.ts 88.89 32(0) 3 1 0 0
 libs/components/skeleton/src/skeleton.ts 92.59 25(0) 2 0 0 2
 libs/components/slider/src/slider.ts 80.11 149(0) 36 0 1 9
+libs/components/sparkline/src/sparkline.ts 97.73 215(1) 5 0 0 3
 libs/components/stack/src/stack.ts 100.00 1(0) 0 0 0 0
 libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 0 2
 libs/components/svg-icon/src/svg-icon.ts 89.60 181(0) 20 0 1 2
@@ -249,5 +250,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.38 20840/23059
+TOTAL 90.45 21055/23279
 ```

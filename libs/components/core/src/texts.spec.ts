@@ -106,6 +106,8 @@ const ENGLISH: PctTexts = {
   chartOthers: 'Others',
   chartPieKeys:
     'Arrow keys move from slice to slice, Home and End to the first and last; Enter selects the slice under the cursor; Escape clears the cursor.',
+  sparklineLast: 'last',
+  sparklineEmpty: 'No data',
   tableEmpty: 'No rows',
   tableNoMatches: 'No matches',
   tableLoading: 'Loading…',
