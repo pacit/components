@@ -79,7 +79,7 @@ before an application ships them.
 ./stepper 17605 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
 ./switch 23486 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./table 390775 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./table 390874 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./tabs 19419 ./core @angular/core,@angular/forms/signals
 ./testing 15653 - @angular/cdk/testing
 ./theme 518 - @angular/core
@@ -154,7 +154,7 @@ single number this file had ever moved.
 ./radio PctRadio 2 26368 26370
 ./select PctMultiSelect 2 54633 80820
 ./stepper PctStep 2 17462 17464
-./table PctDataTable 14 116176 380237
+./table PctDataTable 14 116207 380336
 ./tabs PctTab 2 19250 19253
 ./time PctTime 2 50587 50588
 ./topbar PctTopbar 2 1685 2230

@@ -147,6 +147,7 @@
           pctHeader
           scope="col"
           class="pct-data-table__pick"
+          [attr.aria-label]="selection.name()"
           [attr.data-pct-pinned]="lead.pick?.pinned"
           [style.--_at.px]="lead.pick?.at"
         >
