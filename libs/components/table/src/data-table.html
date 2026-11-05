@@ -21,6 +21,9 @@
 } @if (order(); as order) {
 <!-- The order's parts, made in this view: a row's handle is drawn below. -->
 <ng-container [ngComponentOutlet]="order.parts" />
+} @if (menu(); as menu) {
+<!-- The rows' menu's parts, made in this view: a row's button is drawn below. -->
+<ng-container [ngComponentOutlet]="menu.parts" />
 } @let lead = leadSticks(); @let sticks = lead.cells;
 <pct-table-frame
   [focusable]="!grid()"
@@ -61,6 +64,8 @@
       <col class="pct-data-table__number-col" />
       } @for (head of heads(); track head.column.id) {
       <col [style.inline-size.px]="head.width" />
+      } @if (menu()) {
+      <col class="pct-data-table__toggle-col" />
       }
     </colgroup>
     }
@@ -113,7 +118,13 @@
           [attr.data-pct-pinned]="cell.pinned"
           [style.--_at.px]="cell.at"
         ></td>
-        } }
+        } } @if (menu()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.menu?.pinned"
+          [style.--_at.px]="lead.menu?.at"
+        ></td>
+        }
       </tr>
       }
       <tr
@@ -209,6 +220,17 @@
           </span>
           }
         </th>
+        } @if (menu(); as menu) {
+        <!-- The column of the rows' menus: its header is the menu's to draw. -->
+        <th
+          pctHeader
+          scope="col"
+          class="pct-data-table__menu"
+          [attr.data-pct-pinned]="lead.menu?.pinned"
+          [style.--_at.px]="lead.menu?.at"
+        >
+          <ng-container [ngTemplateOutlet]="menu.head()" />
+        </th>
         }
       </tr>
       @if (filters()?.row()) {
@@ -254,6 +276,12 @@
           />
           }
         </td>
+        } @if (menu()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.menu?.pinned"
+          [style.--_at.px]="lead.menu?.at"
+        ></td>
         }
       </tr>
       }
@@ -294,6 +322,12 @@
         >
           <pct-skeleton />
         </td>
+        } @if (menu()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.menu?.pinned"
+          [style.--_at.px]="lead.menu?.at"
+        ></td>
         }
       </tr>
       }
@@ -345,6 +379,8 @@
         </th>
         @for (cell of group.cells; track $index) {
         <td pctCell [numeric]="cell.numeric">{{ cell.text }}</td>
+        } @if (menu()) {
+        <td pctCell></td>
         }
       </tr>
       } @for (row of section.rows; track row.key) { @if (row.kind === 'hole') {
@@ -393,6 +429,12 @@
         >
           <pct-skeleton />
         </td>
+        } @if (menu()) {
+        <td
+          pctCell
+          [attr.data-pct-pinned]="lead.menu?.pinned"
+          [style.--_at.px]="lead.menu?.at"
+        ></td>
         } } @else {
         <td pctCell [attr.colspan]="span()">
           @if (row.first) {
@@ -493,7 +535,7 @@
         <td
           pctCell
           [class.pct-data-table__first]="$first"
-          [attr.id]="(selection() || order()) && $index === row.nameAt ? row.nameId : null"
+          [attr.id]="(selection() || order() || menu()) && $index === row.nameAt ? row.nameId : null"
           [numeric]="cell.numeric"
           [attr.data-pct-tone]="cell.tone"
           [attr.title]="cell.title"
@@ -573,6 +615,19 @@
           >
           } @else { {{ cell.text }} }
         </td>
+        } @if (menu(); as menu) {
+        <!-- The column of the rows' menus: a row's button is the menu's to draw. -->
+        <td
+          pctCell
+          class="pct-data-table__menu"
+          [attr.data-pct-pinned]="lead.menu?.pinned"
+          [style.--_at.px]="lead.menu?.at"
+        >
+          <ng-container
+            [ngTemplateOutlet]="menu.cell()"
+            [ngTemplateOutletContext]="{ $implicit: row }"
+          />
+        </td>
         }
       </tr>
       @if (row.open) {
@@ -630,12 +685,17 @@
         </th>
         @for (cell of total.cells; track $index) {
         <td pctCell [numeric]="cell.numeric">{{ cell.text }}</td>
+        } @if (menu()) {
+        <td pctCell></td>
         }
       </tr>
     </tfoot>
     }
   </table>
-  @if (message(); as sentence) {
+  @if (window()?.cut(); as sentence) {
+  <!-- On paper only: a print of a window past its limit says where it stopped. -->
+  <p class="pct-data-table__cut">{{ sentence }}</p>
+  } @if (message(); as sentence) {
   <div class="pct-data-table__message" data-pct-part="message">
     @if (failedEmpty()) {
     <ng-container

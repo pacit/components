@@ -1,8 +1,10 @@
+import { FlexibleConnectedPositionStrategy } from '@angular/cdk/overlay';
 import {
   Component,
   provideZonelessChangeDetection,
   signal,
   Type,
+  viewChild,
   WritableSignal,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -1436,5 +1438,54 @@ describe('PctMenu', () => {
         expect(inlinePanel(fixture)?.style.fontFamily).toBe('');
       });
     });
+  });
+});
+
+@Component({
+  imports: [PctMenu, PctMenuItem],
+  template: `<button id="one">One</button>
+    <button id="two">Two</button>
+    <pct-menu #menu (closed)="reasons.push($event)">
+      <button id="act" pctMenuItem>Act</button>
+    </pct-menu>`,
+})
+class MovedHost {
+  readonly menu = viewChild.required(PctMenu);
+  readonly reasons: PctMenuCloseReason[] = [];
+}
+
+describe('PctMenu, a control registered while it is open', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+  });
+
+  it('hangs the panel off the new control, and a press on the one before is outside', async () => {
+    const fixture = await render(MovedHost);
+    const menu = fixture.componentInstance.menu();
+    menu.bindTrigger(byId('one') as HTMLElement, null);
+    menu.openFrom('first');
+    await settle(fixture);
+    expect(panels()).toHaveLength(1);
+    const origin = vi.spyOn(
+      FlexibleConnectedPositionStrategy.prototype,
+      'setOrigin',
+    );
+    menu.unbindTrigger(byId('one') as HTMLElement);
+    menu.bindTrigger(byId('two') as HTMLElement, null);
+    menu.openFrom('first');
+    await settle(fixture);
+    expect(panels()).toHaveLength(1);
+    expect(origin).toHaveBeenCalledWith(byId('two'));
+    expect(panel()?.getAttribute('aria-labelledby')).toBe('two');
+    // A press on the control the panel hangs off now is the control's own.
+    pressOn(byId('two') as HTMLElement);
+    await settle(fixture);
+    expect(panel()).not.toBeNull();
+    pressOn(byId('one') as HTMLElement);
+    await settle(fixture);
+    expect(panel()).toBeNull();
+    expect(fixture.componentInstance.reasons).toEqual(['outside']);
   });
 });

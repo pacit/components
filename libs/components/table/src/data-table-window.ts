@@ -1,15 +1,21 @@
 import {
+  afterNextRender,
   afterRenderEffect,
+  ApplicationRef,
   computed,
   DestroyRef,
   Directive,
+  DOCUMENT,
   ElementRef,
   inject,
+  input,
   isDevMode,
   linkedSignal,
+  numberAttribute,
   signal,
   untracked,
 } from '@angular/core';
+import { PCT_TEXTS } from '@pacit/components/core';
 import { PctDataTable, pctHeadersRow, type PctScrollAlign } from './data-table';
 import type { PctTableLine } from './model/lines';
 import {
@@ -99,6 +105,11 @@ class LineHeights {
  * `scrollTo` and `reveal` reach a row the window has not drawn: its place is the sum of the
  * heights above it. Find-in-page finds only the lines drawn, which is the price of the window.
  *
+ * **A print draws every line**, up to `printLimit`: the browser's `beforeprint` draws them
+ * all before the page is laid out for paper, and `afterprint` draws the window again. Past the
+ * limit the print stops there and says so under the table
+ * ([0118](../../../../docs/decisions/0118-a-rows-menu-is-the-applications-menu-opened-from-the-row.md)).
+ *
  * @example
  * <pct-data-table pctTableWindow [rows]="history()" [columns]="columns" [rowId]="byId" style="block-size: 30rem" />
  *
@@ -111,6 +122,37 @@ class LineHeights {
 export class PctTableWindow {
   private readonly table = inject(PctDataTable);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly texts = inject(PCT_TEXTS);
+
+  /**
+   * The most lines a print draws — rows, their details and the groups' headings: past it the
+   * print stops there and says so under the table. Five thousand by default, which a browser
+   * lays out on paper in about a second.
+   *
+   * @since next
+   */
+  readonly printLimit = input(5000, { transform: numberAttribute });
+
+  /** Between the browser's `beforeprint` and its `afterprint`: every line is drawn. */
+  private readonly printing = signal(false);
+
+  /**
+   * What a print of more lines than `printLimit` says under the table; `null` on the screen,
+   * and for a print of them all.
+   */
+  private readonly cut = computed(() => {
+    const lines = this.table.lines();
+    const end = this.current().end;
+    if (!this.printing() || end >= lines.length) return null;
+    // A reader of the paper counts rows: the groups' headings and the details are not.
+    const rows = (part: readonly PctTableLine<unknown>[]) =>
+      part.filter((line) => line.kind === 'row').length;
+    const digits = new Intl.NumberFormat(this.table.resolvedLocale());
+    const sentence = this.texts().tablePrintLimit;
+    return sentence
+      .replace('{limit}', digits.format(rows(lines.slice(0, end))))
+      .replace('{count}', digits.format(rows(lines)));
+  });
 
   /**
    * Each line's height as last measured, by its key: kept when the lines are sorted or
@@ -158,6 +200,20 @@ export class PctTableWindow {
   private readonly current = computed(() => {
     this.version();
     const heights = this.heights();
+    if (this.printing())
+      // Every line to the limit, and no space for any other: paper has no scroll.
+      return this.paired(
+        {
+          start: 0,
+          end: Math.min(this.table.lines().length, this.printLimit()),
+          lead: 0,
+          tail: 0,
+          space: 0,
+          total: 0,
+          top: 0,
+        },
+        heights,
+      );
     const { offset, view } = this.geometry();
     return this.paired(
       pctWindow({
@@ -224,8 +280,10 @@ export class PctTableWindow {
           // a measurement to finish on, and a later one would pull the reader back to it.
           this.reaching = this.frame().scrollTop === was ? null : reaching;
         },
+        cut: this.cut,
       },
     });
+    this.watchPrint();
     let rows: ResizeObserver | null = null;
     let frame: ResizeObserver | null = null;
     inject(DestroyRef).onDestroy(() => {
@@ -266,6 +324,31 @@ export class PctTableWindow {
         ),
       ))
         rows.observe(row);
+    });
+  }
+
+  /**
+   * Draws every line for the browser's print, at once: the page is laid out for paper right
+   * after `beforeprint`, so the render cannot wait for the next frame. Heard in the browser
+   * alone, from its first render: a server prints nothing.
+   */
+  private watchPrint(): void {
+    const document = inject(DOCUMENT);
+    const app = inject(ApplicationRef);
+    const destroyed = inject(DestroyRef);
+    const before = () => {
+      this.printing.set(true);
+      app.tick();
+    };
+    const after = () => this.printing.set(false);
+    afterNextRender(() => {
+      const view = document.defaultView as Window;
+      view.addEventListener('beforeprint', before);
+      view.addEventListener('afterprint', after);
+      destroyed.onDestroy(() => {
+        view.removeEventListener('beforeprint', before);
+        view.removeEventListener('afterprint', after);
+      });
     });
   }
 
@@ -325,7 +408,13 @@ export class PctTableWindow {
   private measure(entries: readonly ResizeObserverEntry[]): void {
     const lines = this.table.lines();
     // Rows drawn for lines since gone: the render of the new ones observes its rows afresh.
-    if (lines !== this.observed || lines.length === 0) return;
+    // A print's rows are the paper's: the window measures its own when it is drawn again.
+    if (
+      lines !== this.observed ||
+      lines.length === 0 ||
+      untracked(this.printing)
+    )
+      return;
     const before = this.heights();
     const frame = this.frame();
     const { offset, view } = this.geometry();

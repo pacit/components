@@ -1,0 +1,39 @@
+<!--
+  What a table of rows with a menu draws, in the places the table keeps for it: the header of
+  the trailing column, and a row's button. The menu is the application's (0118).
+-->
+<ng-template #head>
+  <span class="pct-data-table__word" [id]="wordId"
+    >{{ texts().tableRowActions }}</span
+  >
+</ng-template>
+
+<ng-template #cell let-row>
+  <button
+    #button
+    type="button"
+    class="pct-data-table__actions"
+    data-pct-part="actions"
+    aria-haspopup="menu"
+    [id]="row.nameId + '-actions'"
+    [attr.aria-expanded]="rowMenu.isOpenFor(row.id)"
+    [attr.aria-controls]="rowMenu.isOpenFor(row.id) ? rowMenu.menu().panelId : null"
+    [attr.aria-labelledby]="wordId + ' ' + row.nameId"
+    (click)="rowMenu.toggleFor(row.id, button)"
+    (keydown)="key(row.id, $event)"
+  >
+    <pct-icon name="more" class="pct-data-table__dots">
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="currentColor"
+        focusable="false"
+      >
+        <circle cx="3.5" cy="8" r="1.3" />
+        <circle cx="8" cy="8" r="1.3" />
+        <circle cx="12.5" cy="8" r="1.3" />
+      </svg>
+    </pct-icon>
+  </button>
+</ng-template>

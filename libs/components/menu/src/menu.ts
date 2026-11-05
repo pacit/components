@@ -2,6 +2,7 @@ import {
   createFlexibleConnectedPositionStrategy,
   createOverlayRef,
   createRepositionScrollStrategy,
+  type FlexibleConnectedPositionStrategy,
   OverlayRef,
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
@@ -325,6 +326,9 @@ export class PctMenu {
 
   /** The overlay while it is up; `null` whenever the menu is closed. */
   private ref: OverlayRef | null = null;
+
+  /** What places the panel by its control, while the overlay is up. */
+  private position: FlexibleConnectedPositionStrategy | null = null;
 
   /**
    * Whether the inline panel is on the screen — what `ref` is for the overlay, in the mode that
@@ -735,10 +739,13 @@ export class PctMenu {
   private attach(trigger: HTMLElement): void {
     if (this.ref) {
       // Asked for again before its leave had finished — so the fade is turned round rather
-      // than a second panel attached over the first.
+      // than a second panel attached over the first. A control registered since hangs the
+      // panel off itself: a table's row menu opens from the row it was asked on.
       this.cancelLeave?.();
       this.cancelLeave = null;
       this.leaving.set(false);
+      this.position?.setOrigin(trigger);
+      this.ref.updatePosition();
       return;
     }
 
@@ -754,6 +761,7 @@ export class PctMenu {
     )
       .withPositions(pctPlacementPositions(this.placement(), OFFSET, this.dir))
       .withPush(true);
+    this.position = position;
 
     const ref = createOverlayRef(this.injector, {
       positionStrategy: position,
@@ -789,7 +797,8 @@ export class PctMenu {
     // panel above it ([`lesson-93`](../../../../docs/lessons.md#lesson-93)).
     ref.outsidePointerEvents().subscribe((event) => {
       const target = event.target as Node | null;
-      if (!target || trigger.contains(target)) return;
+      // The control as it stands now: one registered since the panel opened is the trigger.
+      if (!target || untracked(this.trigger)?.contains(target)) return;
       if (this.holds(target)) return;
       // A press that landed on the menu ABOVE this one closes this one and stops there.
       if (untracked(this.parent)?.holds(target)) {

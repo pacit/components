@@ -24,3 +24,10 @@
   inline-size: 1rem;
   block-size: 1rem;
 }
+
+/* On paper a handle moves nothing: its place stays, so the columns keep their widths. */
+@media print {
+  .pct-data-table__handle {
+    visibility: hidden;
+  }
+}

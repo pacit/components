@@ -173,6 +173,8 @@ export interface PctTableFeature {
     readonly first: Signal<number>;
     readonly tail: Signal<number>;
     readonly reach: (line: number, align: PctScrollAlign) => void;
+    /** What a print of more lines than the window prints says under it; `null` otherwise. */
+    readonly cut: Signal<string | null>;
   };
   /** The rows given are a page of more: how many stand before it, and how many in all. */
   readonly page?: {
@@ -259,6 +261,12 @@ export interface PctTableFeature {
    * table draws the rows as they are given.
    */
   readonly order?: {
+    readonly parts: Type<unknown>;
+    readonly head: Signal<TemplateRef<unknown>>;
+    readonly cell: Signal<TemplateRef<unknown>>;
+  };
+  /** The rows' menu: the parts, the header of the trailing column, and a row's button. */
+  readonly menu?: {
     readonly parts: Type<unknown>;
     readonly head: Signal<TemplateRef<unknown>>;
     readonly cell: Signal<TemplateRef<unknown>>;
@@ -797,6 +805,9 @@ export class PctDataTable<
   /** The order of the rows, while `pctTableRowOrder` is on. */
   protected readonly order = computed(() => this.contributed().order ?? null);
 
+  /** The rows' menu, while `pctTableRowMenu` is on: a trailing column of buttons. */
+  protected readonly menu = computed(() => this.contributed().menu ?? null);
+
   /** The rows pinned to each edge, while `pctTablePinnedRows` is on; else none. */
   private readonly pinnedRows = computed(() => {
     const pinned = this.contributed().pinned;
@@ -942,8 +953,13 @@ export class PctDataTable<
       (this.hiddenColumns().length > 0 || this.detailsSlot() !== undefined),
   );
 
-  /** The cells a details row spans: every column shown, and the leading ones. */
-  protected readonly span = computed(() => this.shown().length + this.lead());
+  /** The cells a details row spans: every column shown, the leading ones and the trailing. */
+  protected readonly span = computed(
+    () => this.shown().length + this.lead() + this.trail(),
+  );
+
+  /** The cells after a row's data: its button of actions. */
+  private readonly trail = computed(() => (this.menu() ? 1 : 0));
 
   /** The cells before a row's data: its checkbox, its disclosure and its number. */
   private readonly lead = computed(
@@ -2376,10 +2392,11 @@ export class PctDataTable<
       // Only where a column may hide: the frame needs an observer of its own anyway, and a
       // table with nothing to hide reads no width at all.
       this.observeSize();
-      // The shown columns' header cells are the row's last ones, after the leading cells.
+      // The shown columns' header cells, after the leading cells and before the trailing.
+      const lead = this.lead();
       const cells = Array.from(
         (pctHeadersRow(table) as HTMLTableRowElement).cells,
-      ).slice(-heads.length);
+      ).slice(lead, lead + heads.length);
       const fit = pctFit(
         {
           width: frame.clientWidth,
@@ -2426,7 +2443,8 @@ export class PctDataTable<
       const layout = this.layout();
       if (layout === null) return;
       const heads = this.heads();
-      this.lead();
+      const lead = this.lead();
+      this.trail();
       this.resized();
       this.observeSize();
       const cells = Array.from(
@@ -2434,10 +2452,7 @@ export class PctDataTable<
       );
       const widths = cells.map((cell) => cell.getBoundingClientRect().width);
       const drawn = new Map(
-        heads.map((head, h) => [
-          head.column.id,
-          widths[widths.length - heads.length + h],
-        ]),
+        heads.map((head, h) => [head.column.id, widths[lead + h]]),
       );
       untracked(() => {
         const before = this.cellWidths();
@@ -2466,9 +2481,13 @@ export class PctDataTable<
     const shown = this.shown();
     if (!shown.some(({ pin }) => pin !== null)) return [];
     const starts = shown.some(({ pin }) => pin === 'start');
+    const ends = shown.some(({ pin }) => pin === 'end');
+    // The trailing cell sticks after the columns pinned to the end, as the leading ones stick
+    // before those pinned to the start: a row's actions stay with the row's last values.
     const pins = [
       ...Array.from({ length: this.lead() }, () => (starts ? 'start' : null)),
       ...shown.map(({ pin }) => pin),
+      ...Array.from({ length: this.trail() }, () => (ends ? 'end' : null)),
     ];
     const widths = this.cellWidths();
     const last = pins.lastIndexOf('start');
@@ -2507,6 +2526,9 @@ export class PctDataTable<
       disclosure: next(this.disclosure()),
       number: next(this.rowNumbers()),
       cells: sticks.slice(this.lead()),
+      menu: this.menu()
+        ? (sticks[this.lead() + this.shown().length] ?? null)
+        : null,
     };
   });
 
@@ -2529,7 +2551,8 @@ export class PctDataTable<
     const toggles =
       (this.order() ? 1 : 0) +
       (this.selection() ? 1 : 0) +
-      (this.disclosure() ? 1 : 0);
+      (this.disclosure() ? 1 : 0) +
+      this.trail();
     const numbers = this.rowNumbers() ? 1 : 0;
     return `calc(${fixed}px + ${toggles} * var(--pct-table-toggle-target-min) + ${numbers} * var(--_number))`;
   });
@@ -2573,9 +2596,10 @@ export class PctDataTable<
 
   /**
    * Hands the focus on when its element went — with a column, a collapsed group, a row the
-   * application took away — rather than leaving it to the page: to its row's first control
-   * if the row is still drawn, to the heading of the group that hides it if not, to the
-   * group's own heading, or to the line that now stands where it stood. A line a window
+   * application took away — rather than leaving it to the page: to its row's control of the
+   * same part, or its first, if the row is still drawn, to the heading of the group that hides
+   * it if not, to the group's own heading, or to the line that now stands where it stood. A
+   * focus the user has since taken elsewhere stays there. A line a window
    * does not draw hands it to the frame, which scrolls with the keys, so the focus stays in
    * the table rather than going to the page.
    */
@@ -2586,6 +2610,8 @@ export class PctDataTable<
       const at = this.focusAt;
       if (at === null || at.element.isConnected) return;
       this.focusAt = null;
+      const document = at.element.ownerDocument;
+      if (document.activeElement !== document.body) return;
       // A grid hands its focus on by its own stop.
       if (untracked(this.grid)) return;
       untracked(() => this.handFocus(at));
@@ -2608,9 +2634,17 @@ export class PctDataTable<
         line = back;
     }
     if (line < 0) line = Math.min(at.line, lines.length - 1);
-    const control = this.rowOf(line)?.querySelector<HTMLElement>(
-      '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
-    );
+    // The same part where the line has one — a row's menu button for a row's menu button —
+    // so a reader working down the rows stays in the column they were in.
+    const part = (at.element as HTMLElement).dataset['pctPart'];
+    const row = this.rowOf(line);
+    const control =
+      (part === undefined
+        ? null
+        : row?.querySelector<HTMLElement>(`[data-pct-part="${part}"]`)) ??
+      row?.querySelector<HTMLElement>(
+        '[data-pct-part="disclosure"], button, a[href], input, select, textarea, [tabindex]',
+      );
     // A line not drawn, or one with nothing to focus — a hole whose retry was pressed —
     // hands it to the frame, which keeps the keys when it scrolls.
     if (control) control.focus();

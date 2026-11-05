@@ -2310,3 +2310,112 @@ test.describe('Pinned rows and the order of the rows — a sum above, handles th
     ).toHaveCount(0);
   });
 });
+
+test.describe('A row’s menu, a status bar and a print — the application’s menu opened from the row', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+  const menuTable = (page: Page) => page.getByTestId('table-menu');
+  const menuRows = (page: Page) =>
+    menuTable(page)
+      .locator('tbody tr td.pct-data-table__first')
+      .allTextContents()
+      .then((texts) => texts.map((text) => text.trim()));
+  const rowActions = (page: Page, name: string) =>
+    menuTable(page).getByRole('button', {
+      name: `Actions ${name}`,
+      exact: true,
+    });
+  const menuStatus = (page: Page) => page.getByTestId('menu-status');
+
+  test('Shift+F10 opens a row’s menu at its first item, and Escape gives the focus back to the row’s button', async ({
+    page,
+  }) => {
+    const [, second, third] = await menuRows(page);
+    await rowActions(page, second).scrollIntoViewIfNeeded();
+    await rowActions(page, second).focus();
+    await page.keyboard.press('Shift+F10');
+    const menu = page.getByRole('menu');
+    await expect(menu).toBeVisible();
+    await expect(page.getByTestId('menu-duplicate')).toBeFocused();
+    await expect(rowActions(page, second)).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(rowActions(page, second)).toBeFocused();
+    await expect(rowActions(page, second)).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    // Enter on the button opens it too; a command that removes the row hands the focus to
+    // the button now where the row stood.
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('menu-duplicate')).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByTestId('menu-remove')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect.poll(() => menuRows(page)).not.toContain(second);
+    await expect(rowActions(page, third)).toBeFocused();
+    await expect(menuStatus(page)).toContainText('7 of 7 rules shown');
+  });
+
+  test('a press of the secondary button on a row opens its menu, a command acts on that row, and the status bar counts', async ({
+    page,
+  }) => {
+    await expect(menuStatus(page)).toHaveText(
+      '8 of 8 rules shown · 0 picked · 0 kWh picked',
+    );
+    const [first, , third] = await menuRows(page);
+    const row = menuTable(page).locator('tbody tr').nth(2);
+    await row.scrollIntoViewIfNeeded();
+    await row.locator('td.pct-data-table__first').click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await expect(rowActions(page, third)).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await page.getByTestId('menu-duplicate').click();
+    await expect(page.getByRole('menu')).toBeHidden();
+    expect((await menuRows(page))[3]).toBe(`${third} (copy)`);
+    await expect(menuStatus(page)).toContainText('9 of 9 rules shown');
+    await menuTable(page)
+      .getByRole('checkbox', { name: `Select ${first}` })
+      .check();
+    await expect(menuStatus(page)).toContainText(
+      /1 picked · [\d.,]+ kWh picked/,
+    );
+    await page.getByTestId('menu-filter').fill('copy');
+    await expect(menuStatus(page)).toContainText('1 of 9 rules shown');
+  });
+
+  test('a print draws every register up to its limit, says where it stopped, and the window comes back', async ({
+    page,
+  }) => {
+    const registers = page.getByTestId('table-registers');
+    const rows = registers.locator('tbody tr[data-pct-index]');
+    await expect(rows.first()).toBeVisible();
+    const onScreen = await rows.count();
+    expect(onScreen).toBeLessThan(100);
+    await page.emulateMedia({ media: 'print' });
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(rows).toHaveCount(1000);
+    const cut = registers.locator('.pct-data-table__cut');
+    await expect(cut).toBeVisible();
+    await expect(cut).toHaveText('The first 1,000 of 10,000 rows printed');
+    // On paper nothing sticks and the frame does not scroll.
+    await expect(registers.locator('thead th').first()).toHaveCSS(
+      'position',
+      'static',
+    );
+    await expect(registers.locator('pct-table-frame')).toHaveCSS(
+      'overflow-y',
+      'visible',
+    );
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await page.emulateMedia({ media: 'screen' });
+    await expect(cut).toHaveCount(0);
+    await expect.poll(() => rows.count()).toBeLessThan(100);
+  });
+});

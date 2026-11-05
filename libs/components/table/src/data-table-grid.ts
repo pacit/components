@@ -28,12 +28,14 @@ import {
 import { pctLineKey, type PctTableLine } from './model/lines';
 
 /**
- * A leading column of the grid, which has no id of its own: the rows' checkboxes, their
- * disclosures, their numbers.
+ * A column of the grid the table adds, which has no id of its own: the rows' checkboxes, their
+ * disclosures, their numbers, their handles (`#order`, since next), and the trailing column of
+ * their menus' buttons (`#actions`, since next).
  *
  * @since 0.3.0
  */
-export type PctTableLeadColumn = '#select' | '#details' | '#number';
+export type PctTableLeadColumn =
+  '#select' | '#details' | '#number' | '#order' | '#actions';
 
 /**
  * A cell of the grid: of a row, by its id, or of the header, `null`; in a column, by its id
@@ -85,10 +87,20 @@ const LONE = 'button, a[href], input[type="checkbox"], [role="button"]';
 
 /** The leading cells, by the class the table draws them with. */
 const LEADS: readonly (readonly [string, PctTableLeadColumn])[] = [
+  ['pct-data-table__order', '#order'],
   ['pct-data-table__pick', '#select'],
   ['pct-data-table__disclosure', '#details'],
   ['pct-data-table__number', '#number'],
+  ['pct-data-table__menu', '#actions'],
 ];
+
+/** How many of the columns the table adds stand before the data's: all but a trailing one. */
+function leadsOf(ids: readonly string[]): number {
+  return (
+    ids.filter((id) => id.startsWith('#')).length -
+    (ids.at(-1) === '#actions' ? 1 : 0)
+  );
+}
 
 /** How many renders a stop asked to take the focus waits for its line to be drawn. */
 const PATIENCE = 10;
@@ -636,17 +648,20 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
     set(table, 'role', this.treeOn() ? 'treegrid' : 'grid');
     set(table, 'aria-multiselectable', 'true');
     const order = this.table.columnOrder();
-    const leads = ids.filter((id) => id.startsWith('#')).length;
-    set(table, 'aria-colcount', String(leads + order.length));
+    const leads = leadsOf(ids);
+    const trails = ids.at(-1) === '#actions' ? 1 : 0;
+    set(table, 'aria-colcount', String(leads + order.length + trails));
     this.follow(lines, ids);
     this.rehome(lines, ids);
     const stop = this.stop(lines);
-    const hidden = ids.length - leads < order.length;
+    const hidden = ids.length - leads - trails < order.length;
     // Where each drawn column stands among all of them, the hidden ones in their places.
     const among = ids.map((id, c) =>
-      id.startsWith('#')
-        ? c + 1
-        : leads + order.indexOf(id as keyof M & string) + 1,
+      id === '#actions'
+        ? leads + order.length + 1
+        : id.startsWith('#')
+          ? c + 1
+          : leads + order.indexOf(id as keyof M & string) + 1,
     );
     const picks = table.tHead?.querySelector('.pct-data-table__pick') !== null;
     const range = this.rect(lines, ids);
@@ -916,7 +931,7 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
   ): boolean {
     if (!this.treeOn() || (move !== 'next' && move !== 'previous'))
       return false;
-    const leads = ids.filter((id) => id.startsWith('#')).length;
+    const leads = leadsOf(ids);
     if (from.column !== leads) return false;
     // The grid's lines count the header's first: the table's line is found by its key.
     const all = this.table.lines();

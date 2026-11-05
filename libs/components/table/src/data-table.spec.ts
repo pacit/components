@@ -10,7 +10,9 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PctAnnouncer } from '@pacit/components/core';
+import { PctMenu } from '@pacit/components/menu';
 import { PctDataTable } from './data-table';
+import { PctTableRowMenu } from './data-table-row-menu';
 import { PctTableDetails } from './data-table-details';
 import { PctTableGroups } from './data-table-groups';
 import {
@@ -2069,6 +2071,27 @@ class DetailsHost {
   readonly loading = signal(false);
 }
 
+/** The same table with a menu per row: a trailing column after the columns that may hide. */
+@Component({
+  imports: [PctDataTable, PctTableDetails, PctTableRowMenu, PctMenu],
+  template: `
+    <pct-data-table
+      pctTableDetails
+      [pctTableRowMenu]="actions"
+      [rows]="rows"
+      [columns]="columns"
+      [rowId]="byId"
+      caption="Devices"
+    />
+    <pct-menu #actions />
+  `,
+})
+class MenuDetailsHost {
+  readonly rows = DEVICES;
+  readonly columns = fitting;
+  readonly byId = byId;
+}
+
 const disclosures = () =>
   Array.from(
     document.querySelectorAll('[data-pct-part="disclosure"]'),
@@ -2233,6 +2256,7 @@ describe('PctDataTable — a narrow table hides columns', () => {
       Seen: 60,
       '#Row': 40,
       Details: 30,
+      Actions: 30,
     };
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
       function (this: HTMLElement) {
@@ -2322,6 +2346,18 @@ describe('PctDataTable — a narrow table hides columns', () => {
     // 30 + 40 + 360 = 430 wide, 350 of room: Seen (60) and Power (120) go.
     await resize(fixture, width, 350);
     expect(labels()).toEqual(['#Row', 'Name', 'Room']);
+  });
+
+  it('measures the shown columns before the trailing cell', async () => {
+    const fixture = await render(MenuDetailsHost);
+    const width = { value: 1000 };
+    lay(width);
+    await resize(fixture, width, 1000);
+    expect(labels()).toEqual(['Name', 'Room', 'Power', 'Seen', 'Actions']);
+    // 390 wide, 280 of room: Seen (60) and Power (120) go, read off their own headers, not
+    // off the header after each.
+    await resize(fixture, width, 280);
+    expect(labels()).toEqual(['Name', 'Room', 'Actions']);
   });
 
   it('hides a dozen columns in one render', async () => {
