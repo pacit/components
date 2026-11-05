@@ -1756,7 +1756,7 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
   });
 
   test.describe('a brush and a navigator', () => {
-    const MAIN = 'Supply air on 25 October 2026';
+    const MAIN = 'Supply air with a navigator, 25 October 2026';
     const H = 3_600_000;
     const spanOf = (page: import('@playwright/test').Page) =>
       page
@@ -1860,7 +1860,7 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(brushed.locator('[data-pct-part="selection"]')).toHaveCount(
         1,
       );
-      const name = 'Fan power on 25 October 2026';
+      const name = 'Fan power brushed, 25 October 2026';
       const span = () =>
         brushed
           .getByRole('slider', { name, exact: true })
