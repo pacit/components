@@ -3671,6 +3671,38 @@ describe('PctChart, its window', () => {
       to: T0 + 24 * H + 1000,
     });
   });
+  it('follows a clock that reads a signal of the application, the newest reading time', async () => {
+    vi.useFakeTimers();
+    @Component({
+      imports: [PctChart, PctLine],
+      template: `<pct-chart
+        ariaLabel="Live"
+        timeZone="UTC"
+        follow
+        [now]="clock"
+        [(window)]="window"
+      >
+        <pct-line [data]="rows" x="at" y="value" name="Supply" />
+      </pct-chart>`,
+    })
+    class Signalled {
+      readonly rows = temperature;
+      readonly newest = signal(T0 + 24 * H);
+      readonly clock = () => this.newest();
+      readonly window = signal<{ from: number; to: number } | null>({
+        from: T0 + 12 * H,
+        to: T0 + 24 * H,
+      });
+    }
+    const fixture = await render(Signalled);
+    fixture.componentInstance.newest.set(T0 + 24 * H + 60_000);
+    await settle(fixture);
+    vi.advanceTimersByTime(1000);
+    expect(fixture.componentInstance.window()).toEqual({
+      from: T0 + 12 * H + 60_000,
+      to: T0 + 24 * H + 60_000,
+    });
+  });
 
   it('answers neither pointer nor capture when the cursor and the window are both still, and each alone when the other is', async () => {
     @Component({

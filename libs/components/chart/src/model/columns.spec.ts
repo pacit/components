@@ -1,5 +1,12 @@
 import {
+  pctForAll,
+  pctInt,
+  pctRandom,
+  pctRecord,
+} from '../../../testing/src/property.testkit';
+import {
   pctColumnsOf,
+  pctColumnsReader,
   pctFirstUnordered,
   pctRead,
   type PctKey,
@@ -97,6 +104,225 @@ describe('pctColumnsOf', () => {
       (v) => v,
     );
     expect([...c.xs]).toEqual([0, 10, 20]);
+  });
+});
+
+describe('pctColumnsReader', () => {
+  type Row = { at: number; value: number | null };
+  const row = (at: number, value: number | null = at * 10): Row => ({
+    at,
+    value,
+  });
+  const plain = (c: {
+    xs: Float64Array;
+    ys: Float64Array;
+    length: number;
+  }) => ({
+    xs: [...c.xs.subarray(0, c.length)],
+    ys: [...c.ys.subarray(0, c.length)],
+    length: c.length,
+  });
+  const counted = () => {
+    const seen: number[] = [];
+    const x = (r: Row) => {
+      seen.push(r.at);
+      return r.at;
+    };
+    return { seen, x };
+  };
+
+  it('reads new rows whole, as pctColumnsOf reads them', () => {
+    const read = pctColumnsReader<Row>();
+    const rows = [row(1), row(2, null), row(NaN), row(4)];
+    expect(plain(read(rows, 'at', 'value'))).toEqual(
+      plain(pctColumnsOf(rows, 'at', 'value')),
+    );
+    expect(plain(read([], 'at', 'value'))).toEqual({
+      xs: [],
+      ys: [],
+      length: 0,
+    });
+  });
+
+  it('reads only the rows added when the rest are the rows it read, some dropped from the front', () => {
+    const read = pctColumnsReader<Row>();
+    const { seen, x } = counted();
+    const rows = [row(1), row(2), row(3)];
+    read(rows, x, 'value');
+    seen.length = 0;
+    const next = [...rows.slice(1), row(4), row(5)];
+    expect(plain(read(next, x, 'value'))).toEqual({
+      xs: [2, 3, 4, 5],
+      ys: [20, 30, 40, 50],
+      length: 4,
+    });
+    expect(seen).toEqual([4, 5]);
+    // grown at the back alone, and with nothing added
+    seen.length = 0;
+    expect(read([...next, row(6)], x, 'value').length).toBe(5);
+    expect(seen).toEqual([6]);
+  });
+
+  it('hands back the same columns for the same rows in a new array', () => {
+    const read = pctColumnsReader<Row>();
+    const { seen, x } = counted();
+    const rows = [row(1), row(2)];
+    const first = read(rows, x, 'value');
+    seen.length = 0;
+    expect(read([...rows], x, 'value')).toBe(first);
+    expect(seen).toEqual([]);
+  });
+
+  it('reads whole when a kept row is another object, or an accessor changed', () => {
+    const read = pctColumnsReader<Row>();
+    const { seen, x } = counted();
+    const rows = [row(1), row(2), row(3)];
+    read(rows, x, 'value');
+    seen.length = 0;
+    // the middle row corrected: a new object
+    const corrected = [rows[0], row(2, 99), rows[2]];
+    expect(plain(read(corrected, x, 'value')).ys).toEqual([10, 99, 30]);
+    expect(seen).toEqual([1, 2, 3]);
+    // the same rows read through another accessor
+    seen.length = 0;
+    const other = (r: Row) => {
+      seen.push(r.at);
+      return r.at * 2;
+    };
+    expect(plain(read(corrected, other, 'value')).xs).toEqual([2, 4, 6]);
+    expect(seen).toEqual([1, 2, 3]);
+    // and back through the value's name changed
+    expect(plain(read(corrected, other, (r) => r.at)).ys).toEqual([1, 2, 3]);
+  });
+
+  it('reads whole when the rows lost one at the back, or none of them is kept', () => {
+    const read = pctColumnsReader<Row>();
+    const { seen, x } = counted();
+    const rows = [row(1), row(2), row(3)];
+    read(rows, x, 'value');
+    seen.length = 0;
+    expect(plain(read(rows.slice(0, 2), x, 'value')).xs).toEqual([1, 2]);
+    expect(seen).toEqual([1, 2]);
+    seen.length = 0;
+    expect(plain(read([row(7)], x, 'value')).xs).toEqual([7]);
+    expect(seen).toEqual([7]);
+  });
+
+  it("reads whole when an accessor takes the row's index, whose answer moves with the rows", () => {
+    const read = pctColumnsReader<Row>();
+    const byIndex = (_: Row, i: number) => i;
+    const rows = [row(1), row(2), row(3)];
+    read(rows, byIndex, 'value');
+    expect(
+      plain(read([...rows.slice(1), row(4)], byIndex, 'value')).xs,
+    ).toEqual([0, 1, 2]);
+  });
+
+  it('reads whole after a row left out, and when an added row has nowhere to stand', () => {
+    const read = pctColumnsReader<Row>();
+    const { seen, x } = counted();
+    const rows = [row(1), row(NaN), row(3)];
+    read(rows, x, 'value');
+    seen.length = 0;
+    const next = [...rows, row(4)];
+    expect(plain(read(next, x, 'value')).xs).toEqual([1, 3, 4]);
+    expect(seen).toEqual([1, NaN, 3, 4]);
+    const whole = [row(1), row(2)];
+    read(whole, x, 'value');
+    seen.length = 0;
+    expect(
+      plain(read([...whole, row(Infinity), row(5)], x, 'value')).xs,
+    ).toEqual([1, 2, 5]);
+    expect(seen).toEqual([Infinity, 1, 2, Infinity, 5]);
+  });
+
+  it('reads no rows after no rows as no rows', () => {
+    const read = pctColumnsReader<Row>();
+    read([], 'at', 'value');
+    expect(plain(read([], 'at', 'value'))).toEqual({
+      xs: [],
+      ys: [],
+      length: 0,
+    });
+  });
+
+  it('reads an infinity added at the back as a gap', () => {
+    const read = pctColumnsReader<Row>();
+    const rows = [row(1)];
+    read(rows, 'at', 'value');
+    const columns = read([...rows, row(2, Infinity)], 'at', 'value');
+    expect(plain(columns).ys.map((y) => (Number.isNaN(y) ? 'gap' : y))).toEqual(
+      [10, 'gap'],
+    );
+  });
+
+  it('adds into the room it keeps, and moves to twice the rows only once that is full', () => {
+    const read = pctColumnsReader<Row>();
+    let rows = [row(0), row(1), row(2)];
+    read(rows, 'at', 'value');
+    rows = [...rows, row(3)];
+    // four rows: room for 64, the least it makes
+    const moved = read(rows, 'at', 'value');
+    while (rows.length < 64) rows = [...rows, row(rows.length)];
+    const full = read(rows, 'at', 'value');
+    expect(full.xs.buffer).toBe(moved.xs.buffer);
+    expect(full.length).toBe(64);
+    const past = read([...rows, row(64)], 'at', 'value');
+    expect(past.xs.buffer).not.toBe(full.xs.buffer);
+    expect(past.xs.buffer.byteLength).toBe(130 * 8);
+  });
+
+  it('never writes over the columns it handed out before, through a move to more room', () => {
+    const read = pctColumnsReader<Row>();
+    let rows = Array.from({ length: 40 }, (_, i) => row(i));
+    const handed = [read(rows, 'at', 'value')];
+    const copies = [plain(handed[0])];
+    for (let k = 40; k < 200; k++) {
+      rows = [...rows.slice(1), row(k)];
+      const columns = read(rows, 'at', 'value');
+      handed.push(columns);
+      copies.push(plain(columns));
+    }
+    handed.forEach((columns, i) => expect(plain(columns)).toEqual(copies[i]));
+    expect(copies.at(-1)?.xs).toEqual(
+      Array.from({ length: 40 }, (_, i) => 160 + i),
+    );
+  });
+
+  it('always gives what pctColumnsOf gives, whatever the rows did between two reads', () => {
+    pctForAll(
+      pctRecord({ seed: pctInt(1, 1_000_000) }),
+      ({ seed }) => {
+        const random = pctRandom(seed);
+        const read = pctColumnsReader<Row>();
+        let at = 0;
+        const fresh = () => {
+          at++;
+          const r = random();
+          return row(r < 0.05 ? NaN : at, r > 0.9 ? null : at * 10);
+        };
+        let rows: Row[] = [];
+        for (let step = 0; step < 30; step++) {
+          const r = random();
+          const drop = Math.floor(random() * 3);
+          const add = Math.floor(random() * 4);
+          if (r < 0.7)
+            rows = [
+              ...rows.slice(Math.min(drop, rows.length)),
+              ...Array.from({ length: add }, fresh),
+            ];
+          else if (r < 0.8) rows = rows.slice(0, Math.max(0, rows.length - 1));
+          else if (r < 0.9 && rows.length > 0) {
+            const i = Math.floor(random() * rows.length);
+            rows = rows.map((old, j) => (j === i ? row(old.at, -1) : old));
+          } else rows = [...rows];
+          expect(plain(read(rows, 'at', 'value'))).toEqual(
+            plain(pctColumnsOf(rows, 'at', 'value')),
+          );
+        }
+      },
+      { runs: 60 },
+    );
   });
 });
 

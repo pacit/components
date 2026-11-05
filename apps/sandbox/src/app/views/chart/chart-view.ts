@@ -386,6 +386,17 @@ function roomDeltas(): RoomDelta[] {
   );
 }
 
+/** The meter's reading at minute `k` of the night: a slow swing around 21 °C. */
+function meterValue(k: number): number {
+  return Math.round((21 + 1.5 * Math.sin(k / 9)) * 10) / 10;
+}
+
+/** Two hours of a meter, a reading a minute. */
+const meterReadings: Reading[] = Array.from({ length: 120 }, (_, k) => ({
+  at: START + k * MINUTE,
+  value: meterValue(k),
+}));
+
 const curve: Reading[] = Array.from({ length: 41 }, (_, i) => ({
   at: i * 2.5,
   value: Math.round(100 * (1 - Math.exp(-i / 9)) * 10) / 10,
@@ -467,6 +478,43 @@ export class ChartView {
     this.exportedPng.set(URL.createObjectURL(png));
     this.exportSaid.set(`PNG of type ${png.type}`);
   }
+
+  /** The meter's readings: a new one at the end drops the oldest. */
+  protected readonly meter = signal<readonly Reading[]>(meterReadings);
+  /** The meter's clock: the time of its newest reading, which the window follows. */
+  protected readonly meterClock = () => this.meter().at(-1)?.at ?? START;
+  protected readonly meterWindow = signal<{ from: number; to: number } | null>({
+    from: START + 89 * MINUTE,
+    to: START + 119 * MINUTE,
+  });
+
+  /** The next minute's reading, and the oldest one gone. */
+  protected addMinute(): void {
+    this.meter.update((rows) => {
+      const at = (rows.at(-1)?.at ?? START) + MINUTE;
+      return [
+        ...rows.slice(1),
+        { at, value: meterValue((at - START) / MINUTE) },
+      ];
+    });
+  }
+
+  /** Whether the rooms' energy has been counted again. */
+  protected readonly recounted = signal(false);
+  /** The rooms' energy: a recount moves only the values, so the bars ease to them. */
+  protected readonly roomCount = computed(() =>
+    this.recounted()
+      ? [
+          { room: 0, energy: 9.5 },
+          { room: 1, energy: 3 },
+          { room: 2, energy: 6.5 },
+        ]
+      : [
+          { room: 0, energy: 4.5 },
+          { room: 1, energy: 7 },
+          { room: 2, energy: 2.5 },
+        ],
+  );
 
   /** The brushed stretch on Warsaw's wall clock. */
   protected readonly brushedText = computed(() => {

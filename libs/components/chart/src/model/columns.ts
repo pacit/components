@@ -86,6 +86,120 @@ export function pctColumnsOf<T>(
   };
 }
 
+/** A finite reading, or the gap a value that is not one stands for. */
+const valueOf = (y: unknown): number =>
+  typeof y === 'number' && Number.isFinite(y) ? y : NaN;
+
+/**
+ * A reader of a series' rows into columns that keeps the rows it read last: when the next rows
+ * are those with some dropped from the front and some added at the back — the same objects, in
+ * the same order — only the rows added are read
+ * ([0121](../../../../../docs/decisions/0121-live-data-is-read-where-it-changed.md)). Any other
+ * rows are read whole, as `pctColumnsOf` reads them, and give the same columns.
+ *
+ * A row kept is not read again, so a row whose values change is a new object; and an accessor
+ * that takes the row's index, whose answer moves with the rows dropped, reads every row every
+ * time. The columns it hands out are never written over: the rows added go past the end of
+ * every one handed out before.
+ *
+ * @example
+ * const read = pctColumnsReader<Reading>();
+ * const columns = computed(() => read(this.data(), 'at', 'value'));
+ *
+ * @since next
+ */
+export function pctColumnsReader<T>(): (
+  rows: readonly T[],
+  x: PctAccessor<NoInfer<T>, number>,
+  y: PctAccessor<NoInfer<T>, number | null | undefined>,
+) => PctColumns {
+  let last: readonly T[] = [];
+  let lastX: unknown;
+  let lastY: unknown;
+  let xs = new Float64Array(0);
+  let ys = new Float64Array(0);
+  let start = 0;
+  // Whether the last columns hold one reading for each row: a row left out breaks the count.
+  let whole = false;
+  let columns: PctColumns = { xs, ys, length: 0 };
+  // An accessor by name, or a function of the row alone.
+  const rowOnly = (accessor: unknown) =>
+    typeof accessor !== 'function' || accessor.length < 2;
+  return (rows, x, y) => {
+    const readX = pctRead(x);
+    const readY = pctRead(y);
+    const drop =
+      whole && x === lastX && y === lastY && rowOnly(x) && rowOnly(y)
+        ? last.indexOf(rows[0])
+        : -1;
+    const kept = last.length - drop;
+    let same = drop >= 0 && rows.length >= kept;
+    for (let k = 0; same && k < kept; k++) same = rows[k] === last[drop + k];
+    if (same) {
+      const added = rows.length - kept;
+      if (drop === 0 && added === 0) {
+        last = rows;
+        return columns;
+      }
+      let from = start + drop;
+      if (from + rows.length > xs.length) {
+        // Out of room: the readings kept move to new columns twice their size.
+        const room = Math.max(64, 2 * rows.length);
+        const nextXs = new Float64Array(room);
+        const nextYs = new Float64Array(room);
+        nextXs.set(xs.subarray(from, from + kept));
+        nextYs.set(ys.subarray(from, from + kept));
+        xs = nextXs;
+        ys = nextYs;
+        from = 0;
+      }
+      let at = from + kept;
+      for (let i = kept; i < rows.length; i++) {
+        const position = readX(rows[i], i);
+        if (!Number.isFinite(position)) {
+          same = false;
+          break;
+        }
+        xs[at] = position;
+        ys[at] = valueOf(readY(rows[i], i));
+        at++;
+      }
+      if (same) {
+        start = from;
+        last = rows;
+        columns = {
+          xs: xs.subarray(start, at),
+          ys: ys.subarray(start, at),
+          length: at - start,
+        };
+        return columns;
+      }
+    }
+    // Read whole: the first rows added after move the readings to columns with room.
+    xs = new Float64Array(rows.length);
+    ys = new Float64Array(rows.length);
+    let length = 0;
+    for (let i = 0; i < rows.length; i++) {
+      const position = readX(rows[i], i);
+      if (!Number.isFinite(position)) continue;
+      xs[length] = position;
+      ys[length] = valueOf(readY(rows[i], i));
+      length++;
+    }
+    start = 0;
+    whole = length === rows.length;
+    last = rows;
+    lastX = x;
+    lastY = y;
+    columns = {
+      xs: xs.subarray(0, length),
+      ys: ys.subarray(0, length),
+      length,
+    };
+    return columns;
+  };
+}
+
 /**
  * The index of the first reading whose position is below the one before it, or `-1` when the
  * columns are in order. A mark reports it in development rather than sorting: the rows must

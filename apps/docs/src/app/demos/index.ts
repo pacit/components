@@ -186,6 +186,10 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       load: () => import('./chart.export.demo').then((m) => m.ChartExportDemo),
     },
     {
+      key: 'live',
+      load: () => import('./chart.live.demo').then((m) => m.ChartLiveDemo),
+    },
+    {
       key: 'legend',
       load: () => import('./chart.legend.demo').then((m) => m.ChartLegendDemo),
     },

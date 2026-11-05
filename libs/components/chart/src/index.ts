@@ -43,6 +43,7 @@ export * from './model/stats';
 export * from './model/summarize';
 export * from './model/ticks';
 export * from './model/time-ticks';
+export * from './model/tween';
 export * from './model/value-at';
 export * from './model/window';
 export * from './scene';

@@ -1067,3 +1067,60 @@
   />
   }
 </sbx-demo>
+
+<sbx-demo
+  heading="Live readings and a recount eased"
+  summary="A reading added at the end and the oldest dropped is read alone: the chart keeps the columns of the readings it already has, so eight series of sixty thousand readings take a reading a tenth of a second under follow. With animate, a change that only moves the values — the same rooms, recounted — eases into place over twice the motion axis's transition; readings added are drawn at once, and prefers-reduced-motion draws every change at once."
+  [reqs]="['req-api-templates', 'req-a11y-motion']"
+  data-testid="demo-live"
+>
+  <pct-chart
+    ariaLabel="Supply air read each minute, 25 October 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    follow
+    [now]="meterClock"
+    [(window)]="meterWindow"
+    data-testid="chart-live"
+  >
+    <pct-line [data]="meter()" x="at" y="value" name="Meter" unit="°C" />
+  </pct-chart>
+  <pct-chart
+    ariaLabel="Energy by room, recounted"
+    x="band"
+    [categories]="roomNames"
+    locale="en-GB"
+    class="sbx-chart"
+    animate
+    data-testid="chart-recount"
+  >
+    <pct-bars
+      [data]="roomCount()"
+      x="room"
+      y="energy"
+      name="Energy"
+      unit="kWh"
+    />
+  </pct-chart>
+  <p class="sbx-chart-controls">
+    <button
+      pctButton
+      variant="soft"
+      size="sm"
+      data-testid="live-add"
+      (click)="addMinute()"
+    >
+      Add a minute
+    </button>
+    <button
+      pctButton
+      variant="soft"
+      size="sm"
+      data-testid="live-recount"
+      (click)="recounted.set(!recounted())"
+    >
+      Recount
+    </button>
+  </p>
+</sbx-demo>

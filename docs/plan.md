@@ -275,8 +275,8 @@ form exists and is a condition of entering a release. Forty-two cards are filled
     areas on a stack or as shares, a monotone curve the tooltip reads too, a histogram recipe,
     a range band and candles, boxes with whiskers and outliers (0106); a heatmap on rows the
     scene lays (0113); a pie of shares and a donut, a gauge as a meter drawn on an arc (0115);
-    a sparkline with no scene (0117); a brush (0119); an export, a description, a print (0120)
-  - then live data and motion; a canvas layer only behind a measurement (0100)
+    a sparkline with no scene (0117); a brush (0119); an export, a description, a print (0120);
+    live data read where it changed, a recount eased (0121); a canvas layer only if measured (0100)
   - ends with: every mark's card, the sandbox in three engines, the readers' walk of the cursor
 
 ## 3. Publication

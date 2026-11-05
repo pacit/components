@@ -82,6 +82,34 @@ export function pctPyramid(columns: PctColumns): PctPyramid {
   return pyramid;
 }
 
+/**
+ * The readings a window holds past which a frame reads them from a pyramid. Below it a scan of
+ * the window costs a frame about a millisecond a series, and a pyramid built again on each
+ * change of data costs more than the scans it saves (0121, P3).
+ */
+const PYRAMID_FROM = 16_384;
+
+/**
+ * Whether a frame of `window` is worth a pyramid of `columns`: whether the window holds so
+ * many readings that a scan of them costs more than reading their runs. A series that changes
+ * on every frame and shows a short window draws by a scan, and builds no pyramid at all.
+ *
+ * @example
+ * const pyramid = pctPyramidPays(columns, window) ? pctPyramid(columns) : undefined;
+ *
+ * @since next
+ */
+export function pctPyramidPays(
+  columns: PctColumns,
+  window: PctWindow,
+): boolean {
+  const { xs, length } = columns;
+  return (
+    lowerBound(xs, length, window.to) - lowerBound(xs, length, window.from) >
+    PYRAMID_FROM
+  );
+}
+
 /** The first index whose position is at or after `x`. */
 function lowerBound(xs: Float64Array, length: number, x: number): number {
   let lo = 0;

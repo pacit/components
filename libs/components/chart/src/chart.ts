@@ -18,6 +18,7 @@ import {
   model,
   signal,
   TemplateRef,
+  untracked,
   viewChild,
   viewChildren,
 } from '@angular/core';
@@ -577,6 +578,17 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * @since 0.3.0
    */
   readonly minSpan = input<number | undefined>(undefined);
+  /**
+   * A change of data that only moves the values — the same positions, in the same number — is
+   * eased into place over twice the motion axis's transition: a forecast revised, the bars of a
+   * period recounted. Readings added or dropped are drawn at once, so live data does not slide
+   * under the eye, and `prefers-reduced-motion` draws every change at once
+   * ([0121](../../../../docs/decisions/0121-live-data-is-read-where-it-changed.md)). Off by
+   * default. The table and the description read the data, never a step on the way.
+   *
+   * @since next
+   */
+  override readonly animate = input(false, { transform: booleanAttribute });
   /**
    * The window follows the present: while its end touches `now()`, it moves with the clock
    * every second and keeps its span. A window the reader moved back stays where it was put.
@@ -1896,7 +1908,9 @@ export class PctChart extends PctChartScene implements PctLegendSource {
     afterRenderEffect((onCleanup) => {
       if (!this.follow()) return;
       const clock = this.now();
-      let before = clock();
+      // Read untracked: a clock of the application's signals — the newest reading's time —
+      // would otherwise start the follow again at every reading, and it would never move.
+      let before = untracked(clock);
       const timer = setInterval(() => {
         const now = clock();
         const window = this.window();

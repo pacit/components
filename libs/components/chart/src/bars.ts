@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { PCT_TEXTS, pctQuantityFormat } from '@pacit/components/core';
 import {
-  pctColumnsOf,
+  pctColumnsReader,
   pctRead,
   type PctAccessor,
   type PctColumns,
@@ -23,6 +23,7 @@ import type { PctDomain } from './model/scale';
 import type { PctStacked } from './model/stack';
 import type { PctWindow } from './model/window';
 import { pctSeriesColor } from './line';
+import { pctTweened } from './tween';
 import {
   PCT_SERIES_MARKERS,
   PctChartScene,
@@ -251,9 +252,11 @@ export class PctBars<T> extends PctMark {
     stack: this.stack() ?? null,
   }));
 
+  /** Reads only the rows added since the last change, where the rest are the same (0121). */
+  private readonly read = pctColumnsReader<T>();
   /** The rows' positions and values, as columns. */
   private readonly readingsOf = computed<PctColumns>(() =>
-    pctColumnsOf(this.data(), this.x(), this.y()),
+    this.read(this.data(), this.x(), this.y()),
   );
 
   /**
@@ -274,9 +277,11 @@ export class PctBars<T> extends PctMark {
     ];
   });
 
-  /** The value of each band: the last row that falls in it, or none. */
+  /** The readings as drawn: on their way to the rows while a change is eased (0121). */
+  private readonly drawnOf = pctTweened(this.readingsOf, this.scene.animate);
+  /** The value of each band as drawn: the last row that falls in it, or none. */
   private readonly values = computed<readonly (number | null)[]>(() =>
-    this.valuesOf(this.readingsOf(), this.scene.bands()),
+    this.valuesOf(this.drawnOf(), this.scene.bands()),
   );
 
   /** The compared period's value at each band, by position. */
@@ -532,7 +537,11 @@ export class PctBars<T> extends PctMark {
    */
   override readings(id: string): PctColumns {
     const bands = this.scene.bands();
-    const values = id === this.key() ? this.values() : this.comparedValues();
+    // The rows' values, never a step on the way to them.
+    const values =
+      id === this.key()
+        ? this.valuesOf(this.readingsOf(), bands)
+        : this.comparedValues();
     return {
       xs: Float64Array.from(bands.map((b) => b.from)),
       ys: Float64Array.from(values.map((v) => v ?? NaN)),
@@ -560,7 +569,7 @@ export class PctBars<T> extends PctMark {
           : null;
       });
     }
-    return this.valuesOf(this.readingsOf(), bands);
+    return this.valuesOf(this.drawnOf(), bands);
   }
 
   /**
