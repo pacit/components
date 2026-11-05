@@ -92,13 +92,12 @@ const distinct = (phrases) => [...new Set(phrases)];
  * A phrase with the automation's own noise taken out. Firefox under Playwright titles its
  * window `JUGGLER <uuid>`, a new one every run, and a reader that names the window says it: a
  * record that changes on every pass for nothing a person would hear, and whose hexadecimal
- * runs the language gate reads as words (2026-10-30).
+ * runs the language gate reads as words (2026-10-30). NVDA, heard whole, spells the uuid in
+ * runs of its own choosing — `JUGGLER bcd 23e 06-ac 14-48b …` (2026-11-05) — so what is taken
+ * out is its 32 hexadecimal digits, whatever stands between them.
  */
 const quiet = (phrase) =>
-  phrase.replace(
-    /\bJUGGLER [0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b/gi,
-    'JUGGLER <window>',
-  );
+  phrase.replace(/\bJUGGLER(?:[ -]*[0-9a-f]){32}\b/gi, 'JUGGLER <window>');
 
 const spokenOf = (step, said, fromLog) =>
   (fromLog
