@@ -602,7 +602,12 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
     const column = ids[Math.min(place.column, ids.length - 1)];
     if (key === `head:${lines.columns}`) return { row: null, column };
     const line = this.table.lines()[place.line - this.headCount()];
-    return line?.kind === 'row' ? { row: line.key, column } : null;
+    if (line?.kind !== 'row') return null;
+    // A cell that spans is named by the first column it covers, whichever the stop keeps.
+    const row = lines.row(place.line);
+    const cells = row ? this.spans(row) : [];
+    const at = cells[pctGridCellAt(cells, place.column)];
+    return { row: line.key, column: at ? ids[at.start] : column };
   }
 
   /** Moves the stop, and the focus with it when asked. */

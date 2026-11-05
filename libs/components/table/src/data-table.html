@@ -533,8 +533,11 @@
           @if (row.pinned === null) { {{ row.index + 1 }} }
         </td>
         } @for (cell of row.cells; track cell.column.id) {
+        <!-- A cell another spans over is not drawn: the one before it takes its column. -->
+        @if (row.spans?.[$index] !== 0) {
         <td
           pctCell
+          [attr.colspan]="(row.spans?.[$index] ?? 1) > 1 ? row.spans?.[$index] : null"
           [class.pct-data-table__first]="$first"
           [attr.id]="(selection() || order() || menu()) && $index === row.nameAt && !($first && tree()) ? row.nameId : null"
           [numeric]="cell.numeric"
@@ -621,7 +624,7 @@
           >
           } @else { {{ cell.text }} }
         </td>
-        } @if (menu(); as menu) {
+        } } @if (menu(); as menu) {
         <!-- The column of the rows' menus: a row's button is the menu's to draw. -->
         <td
           pctCell

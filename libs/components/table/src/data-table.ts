@@ -53,6 +53,7 @@ import {
 import { pctAggregate } from './model/aggregate';
 import type { PctAnyColumnFilter } from './model/filters';
 import { pctFit } from './model/fit';
+import { pctCellSpans } from './model/grid';
 import type {
   pctTree,
   pctTreeAbove,
@@ -444,6 +445,11 @@ interface Row<T> {
   readonly nameId: string;
   /** Which of the cells shown is that one: the first with no template or check mark, or the first. */
   readonly nameAt: number;
+  /**
+   * How many columns each cell shown takes, `0` for one a cell before it covers; `null` while
+   * no column spans.
+   */
+  readonly spans: readonly number[] | null;
   /** The row is picked. */
   readonly selected: boolean;
   /** Some of the rows below the row are picked and some not: a cascading selection's branch. */
@@ -1958,6 +1964,9 @@ export class PctDataTable<
     const hiddenColumns = hiddenAt.map(
       (c) => columns[c],
     ) as unknown as Row<T>['hiddenColumns'];
+    // A column that spans asks each row; the pinned ones are where no span reaches.
+    const spanning = shownAt.some((c) => columns[c].colSpan !== undefined);
+    const pinned = this.leadSticks().cells.map((stick) => stick !== null);
     const picked = this.picked();
     const mixed = this.mixed();
     type RowLine = Extract<PctTableLine<T>, { kind: 'row' }>;
@@ -1988,6 +1997,12 @@ export class PctDataTable<
         };
       });
       const shown = shownAt.map((c) => all[c]);
+      const spans = spanning
+        ? pctCellSpans(
+            shownAt.map((c) => columns[c].colSpan?.(line.row) ?? 1),
+            pinned,
+          )
+        : null;
       return {
         kind: 'row',
         key: where.key,
@@ -2008,10 +2023,15 @@ export class PctDataTable<
         open: where.open,
         detailsId: `${this.uid}-details-${number}`,
         nameId: `${this.uid}-name-${number}`,
+        // A cell another covers is not drawn, and names nothing.
         nameAt: Math.max(
           0,
-          shown.findIndex((cell) => cell.slot === null && cell.yes === null),
+          shown.findIndex(
+            (cell, c) =>
+              cell.slot === null && cell.yes === null && spans?.[c] !== 0,
+          ),
         ),
+        spans,
         selected: picked.has(line.key),
         mixed: mixed.has(line.key),
         pinned: where.pinned,

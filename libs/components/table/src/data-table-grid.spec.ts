@@ -184,6 +184,49 @@ class RovingHost {
 }
 
 let errors: unknown[] = [];
+const spanned = col.of([
+  col.key('name', {
+    header: 'Name',
+    colSpan: (device) => (device.id === 1 ? 1 : device.id),
+  }),
+  col.key('room', { header: 'Room' }),
+  col.key('power', { header: 'Power', kind: { number: { unit: 'W' } } }),
+]);
+
+@Component({
+  imports: [
+    PctDataTable,
+    PctTableGrid,
+    PctTableSelection,
+    PctTableColumns,
+    PctCellTemplate,
+  ],
+  template: `
+    <pct-data-table
+      pctTableSelection
+      [pctTableGrid]="columns"
+      [(focused)]="focused"
+      [pctTableColumns]="columns"
+      [(layout)]="layout"
+      [rows]="rows"
+      [columns]="columns"
+      [rowId]="byId"
+      caption="Devices"
+    >
+      <ng-template [pctCell]="columns" pctCellOf="name" let-device>
+        <b>{{ device.name }}</b>
+      </ng-template>
+    </pct-data-table>
+  `,
+})
+class SpanHost {
+  readonly columns = spanned;
+  readonly byId = byId;
+  readonly rows = DEVICES;
+  readonly focused = signal<PctTableGridCell<Id> | null>(null);
+  readonly layout = signal<PctTableLayout<Id>>({});
+}
+
 const globals = globalThis as {
   ResizeObserver?: unknown;
   IntersectionObserver?: unknown;
@@ -1057,5 +1100,91 @@ describe('PctTableGrid — a copy', () => {
     const { event, text } = copy();
     expect(event.defaultPrevented).toBe(false);
     expect(text).toBeNull();
+  });
+});
+
+describe('PctDataTable — a cell that spans the columns after it', () => {
+  /** A text with its spaces as one kind: a unit stands after a space that does not break. */
+  const words = (text: string | null | undefined) =>
+    text?.trim().replace(/\s/g, ' ');
+  /** A row's cells: their text, and how many columns each takes. */
+  const drawn = (line: number) =>
+    Array.from(table().rows[line].cells)
+      .slice(1)
+      .map((cell) => [words(cell.textContent), cell.colSpan]);
+  /** The words a row's checkbox is named by. */
+  const named = (line: number) =>
+    (
+      table()
+        .rows[line].querySelector('[data-pct-part="select"]')
+        ?.getAttribute('aria-labelledby') as string
+    )
+      .split(' ')
+      .map((id) => words(document.getElementById(id)?.textContent));
+
+  it('draws a cell over the columns its row asks for, and none for the ones it covers', async () => {
+    await render(SpanHost);
+    expect(drawn(1)).toEqual([
+      ['Lamp', 1],
+      ['Kitchen', 1],
+      ['12 W', 1],
+    ]);
+    expect(table().rows[1].cells[1].hasAttribute('colspan')).toBe(false);
+    expect(drawn(2)).toEqual([
+      ['Boiler', 2],
+      ['1,900 W', 1],
+    ]);
+    // An ask past the row's last column stops there.
+    expect(drawn(3)).toEqual([['Fan', 3]]);
+  });
+
+  it('names a row by its first cell of text that is drawn', async () => {
+    await render(SpanHost);
+    expect(named(1)).toEqual(['Select', 'Kitchen']);
+    expect(named(2)).toEqual(['Select', '1,900 W']);
+    // Every text covered: the first cell names the row.
+    expect(named(3)).toEqual(['Select', 'Fan']);
+  });
+
+  it('stops a span before a pinned column, and spans no pinned cell', async () => {
+    const fixture = await render(SpanHost);
+    fixture.componentInstance.layout.set({ pinned: { end: ['power'] } });
+    await settle(fixture);
+    expect(drawn(3)).toEqual([
+      ['Fan', 2],
+      ['40 W', 1],
+    ]);
+    fixture.componentInstance.layout.set({ pinned: { start: ['name'] } });
+    await settle(fixture);
+    expect(drawn(2)).toEqual([
+      ['Boiler', 1],
+      ['Cellar', 1],
+      ['1,900 W', 1],
+    ]);
+  });
+
+  it('puts the stop on the cell covering the column, naming it by its own, and keeps the column asked for', async () => {
+    const fixture = await render(SpanHost);
+    const power = cell(1, 3);
+    power.focus();
+    power.click();
+    await settle(fixture);
+    expect(fixture.componentInstance.focused()).toEqual({
+      row: 1,
+      column: 'power',
+    });
+    await press(fixture, 'ArrowDown');
+    await press(fixture, 'ArrowDown');
+    expect(active()).toBe(cell(3, 1));
+    expect(fixture.componentInstance.focused()).toEqual({
+      row: 3,
+      column: 'name',
+    });
+    await press(fixture, 'ArrowUp');
+    expect(active()).toBe(cell(2, 2));
+    expect(fixture.componentInstance.focused()).toEqual({
+      row: 2,
+      column: 'power',
+    });
   });
 });

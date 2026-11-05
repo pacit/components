@@ -199,6 +199,13 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * @since next
    */
   readonly group?: string;
+  /**
+   * How many of the columns shown a row's cell takes, from its own: the cells it covers are
+   * not drawn. Never into a pinned column; read down to a whole number, at least one.
+   *
+   * @since next
+   */
+  readonly colSpan?: (row: T) => number;
 }
 
 /**
