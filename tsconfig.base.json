@@ -53,6 +53,9 @@
         "./libs/components/pagination/src/index.ts"
       ],
       "@pacit/components/progress": ["./libs/components/progress/src/index.ts"],
+      "@pacit/components/sparkline": [
+        "./libs/components/sparkline/src/index.ts"
+      ],
       "@pacit/components/regions": ["./libs/components/regions/src/index.ts"],
       "@pacit/components/skeleton": ["./libs/components/skeleton/src/index.ts"],
       "@pacit/components/chips": ["./libs/components/chips/src/index.ts"],

@@ -34,6 +34,7 @@
     "menu/**/*.ts",
     "pagination/**/*.ts",
     "progress/**/*.ts",
+    "sparkline/**/*.ts",
     "regions/**/*.ts",
     "skeleton/**/*.ts",
     "chips/**/*.ts",

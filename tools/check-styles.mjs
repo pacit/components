@@ -228,6 +228,7 @@ const DRAWS_DATA = new Set([
   'chart/src/ramp.scss',
   'chart/src/pie.scss',
   'chart/src/gauge.scss',
+  'sparkline/src/sparkline.scss',
 ]);
 const drawsData = (file) =>
   DRAWS_DATA.has(

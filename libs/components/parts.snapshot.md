@@ -238,6 +238,12 @@ from what the browser really gets.
 ./slider PctSlider thumb
 ./slider PctSlider track
 ./slider PctSlider warning
+./sparkline PctSparkline area
+./sparkline PctSparkline bar
+./sparkline PctSparkline dot
+./sparkline PctSparkline line
+./sparkline PctSparkline picture
+./sparkline PctSparkline slot
 ./stepper PctStep marker
 ./stepper PctStep track
 ./switch PctSwitch control

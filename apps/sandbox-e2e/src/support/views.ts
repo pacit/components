@@ -31,6 +31,7 @@ export const SBX_ROUTES = [
   '/toast',
   '/pagination',
   '/progress',
+  '/sparkline',
   '/skeleton',
   '/chips',
   '/avatar',

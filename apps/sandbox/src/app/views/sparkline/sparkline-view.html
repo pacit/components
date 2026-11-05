@@ -1,0 +1,93 @@
+<h2 class="view__title">Sparkline</h2>
+<p class="muted view__intro">
+  One series drawn small, where its values already stand: a table's row, a card.
+  No axes, no cursor, no legend. The picture is an image, named by the consumer
+  and described by its lowest, highest and last value.
+</p>
+
+<sbx-demo
+  heading="A line in each row, named by the row"
+  summary="Each sparkline is named by its row's header and describes its lowest, highest and last value. The attic missed an hour, so its line breaks there. A new hour moves every line."
+  [reqs]="['req-api-templates', 'req-a11y-built-in', 'req-project-tree-shaking']"
+  data-testid="demo-rows"
+>
+  <table class="sbx-spark-table" data-testid="spark-table">
+    <caption>
+      Energy in the last eight hours
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Room</th>
+        <th scope="col">Last eight hours</th>
+        <th scope="col">Now</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (room of rooms(); track room.id) {
+      <tr>
+        <th scope="row" [id]="'spark-' + room.id">{{ room.room }}</th>
+        <td>
+          <pct-sparkline
+            [data]="room.hours"
+            unit="kWh"
+            locale="en-GB"
+            [area]="true"
+            [ariaLabelledby]="'spark-' + room.id"
+            [attr.data-testid]="'spark-' + room.id"
+          />
+        </td>
+        <td>{{ last(room) }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+  <div class="view__row">
+    <button
+      pctButton
+      variant="outline"
+      (click)="tick()"
+      data-testid="spark-tick"
+    >
+      Next hour
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Bars from nought, a band of on and off, and no data"
+  summary="Bars rise from nought and hang below it, the lowest and the highest marked. A band fills a slot where the heater was on. A sparkline with no value draws nothing and says so."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-kinds"
+>
+  <dl class="sbx-spark-list">
+    <dt>Balance this week</dt>
+    <dd>
+      <pct-sparkline
+        [data]="balance"
+        kind="bars"
+        [extremes]="true"
+        unit="kWh"
+        locale="en-GB"
+        ariaLabel="Balance this week"
+        data-testid="spark-bars"
+      />
+    </dd>
+    <dt>Heater</dt>
+    <dd>
+      <pct-sparkline
+        [data]="heater"
+        kind="band"
+        ariaLabel="Heater"
+        data-testid="spark-band"
+      />
+    </dd>
+    <dt>New meter</dt>
+    <dd>
+      <pct-sparkline
+        [data]="nothing"
+        ariaLabel="New meter"
+        data-testid="spark-empty"
+      />
+    </dd>
+  </dl>
+</sbx-demo>

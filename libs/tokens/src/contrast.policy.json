@@ -3221,6 +3221,41 @@
       "severity": "warn"
     },
     {
+      "name": "UI: sparkline — the drawing on surface",
+      "fg": "pct.sparkline.fg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: sparkline — the drawing on surface-100",
+      "fg": "pct.sparkline.fg",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: sparkline — a dot on surface",
+      "fg": "pct.sparkline.dot-fg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: sparkline — a dot on surface-100",
+      "fg": "pct.sparkline.dot-fg",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: sparkline — a band's off-slot on surface",
+      "fg": "pct.sparkline.band-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "name": "UI: chart — the edge of the tooltip",
       "fg": "pct.chart.tooltip-border",
       "bg": "pct.surface",

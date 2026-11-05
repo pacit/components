@@ -313,6 +313,10 @@ export interface PctTexts {
   readonly chartOthers: string;
   /** Pie: the keys of its cursor, one sentence, read as the range's description. */
   readonly chartPieKeys: string;
+  /** Sparkline: before the last value in its description — `last 21 kWh`. */
+  readonly sparklineLast: string;
+  /** Sparkline: its description when no value is a number, and nothing is drawn. */
+  readonly sparklineEmpty: string;
   /** Data table: beside a table with no rows at all. */
   readonly tableEmpty: string;
   /**
@@ -535,6 +539,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartOthers: 'Others',
   chartPieKeys:
     'Arrow keys move from slice to slice, Home and End to the first and last; Enter selects the slice under the cursor; Escape clears the cursor.',
+  sparklineLast: 'last',
+  sparklineEmpty: 'No data',
   tableEmpty: 'No rows',
   tableNoMatches: 'No matches',
   tableLoading: 'Loading…',
