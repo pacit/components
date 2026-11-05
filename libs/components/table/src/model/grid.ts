@@ -103,6 +103,36 @@ const TURNED: Readonly<Partial<Record<PctGridMove, PctGridMove>>> = {
 };
 
 /**
+ * How many of a row's columns each cell takes, given how many each asks for: a cell spans the
+ * columns after it up to its ask, and each column it covers takes none, `0`. A span never
+ * reaches a pinned column, which stands where its offset says: a pinned cell takes its own
+ * column alone, and a span stops before the first pinned column after it. An ask is read down
+ * to a whole number, and below one, or not a number, is one.
+ *
+ * @example
+ * pctCellSpans([2, 1, 3, 1, 1], [false, false, false, false, true]);
+ * // [2, 0, 2, 0, 1]
+ *
+ * @since next
+ */
+export function pctCellSpans(
+  asks: readonly number[],
+  pinned: readonly boolean[],
+): readonly number[] {
+  const spans = asks.map(() => 1);
+  for (let c = 0; c < asks.length; c++) {
+    if (spans[c] === 0 || pinned[c]) continue;
+    let span = 1;
+    while (span + 1 <= asks[c] && c + span < asks.length && !pinned[c + span]) {
+      spans[c + span] = 0;
+      span++;
+    }
+    spans[c] = span;
+  }
+  return spans;
+}
+
+/**
  * The cell of a line that covers a column: the last that starts at it or before, so a
  * column past the line's last cell is that cell's. -1 for a line of no cells.
  *

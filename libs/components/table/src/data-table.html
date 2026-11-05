@@ -533,10 +533,13 @@
           @if (row.pinned === null) { {{ row.index + 1 }} }
         </td>
         } @for (cell of row.cells; track cell.column.id) {
+        <!-- A cell another spans over is not drawn: the one before it takes its column. -->
+        @if (row.spans?.[$index] !== 0) {
         <td
           pctCell
+          [attr.colspan]="(row.spans?.[$index] ?? 1) > 1 ? row.spans?.[$index] : null"
           [class.pct-data-table__first]="$first"
-          [attr.id]="(selection() || order() || menu()) && $index === row.nameAt ? row.nameId : null"
+          [attr.id]="(selection() || order() || menu()) && $index === row.nameAt && !($first && tree()) ? row.nameId : null"
           [numeric]="cell.numeric"
           [attr.data-pct-tone]="cell.tone"
           [attr.title]="cell.title"
@@ -571,6 +574,11 @@
           </button>
           } @else {
           <span class="pct-data-table__leaf" aria-hidden="true"></span>
+          }
+          <!-- The row's name, without its button's: the cell would name a row's control
+               "Collapse Kitchen". -->
+          @if ((selection() || order() || menu()) && row.nameAt === 0) {
+          <span hidden [id]="row.nameId">{{ cell.text }}</span>
           } } @if (editorOf(row.id, cell.column.id); as editor) {
           <ng-container
             [ngTemplateOutlet]="editor"
@@ -616,7 +624,7 @@
           >
           } @else { {{ cell.text }} }
         </td>
-        } @if (menu(); as menu) {
+        } } @if (menu(); as menu) {
         <!-- The column of the rows' menus: a row's button is the menu's to draw. -->
         <td
           pctCell

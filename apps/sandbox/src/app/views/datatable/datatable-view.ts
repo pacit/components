@@ -367,6 +367,33 @@ const HOME: readonly Place[] = [
   ]),
 ];
 
+/** A room's last reading, or none when its sensor is not fitted. */
+interface Reading {
+  readonly id: string;
+  readonly room: string;
+  readonly temperature: number | null;
+  readonly humidity: number | null;
+  readonly note: string;
+}
+
+const READINGS: readonly Reading[] = [
+  {
+    id: 'kitchen',
+    room: 'Kitchen',
+    temperature: 21.5,
+    humidity: 48,
+    note: 'Fine',
+  },
+  {
+    id: 'hall',
+    room: 'Hall',
+    temperature: null,
+    humidity: null,
+    note: 'No sensor fitted',
+  },
+  { id: 'bath', room: 'Bathroom', temperature: 23, humidity: 71, note: 'Damp' },
+];
+
 @Component({
   selector: 'sbx-datatable-view',
   imports: [
@@ -465,6 +492,29 @@ export class DatatableView {
   protected readonly home = signal<readonly Place[]>(HOME);
   protected readonly openPlaces = signal<readonly PctRowId[]>(['ground']);
   protected readonly treeFilter = signal('');
+  protected readonly readings = READINGS;
+  protected readonly byReadingId = (reading: Reading) => reading.id;
+  /** A room with no sensor says so once, over the readings it does not have. */
+  protected readonly readingColumns = pctColumnsOf<Reading>().of([
+    pctColumnsOf<Reading>().key('room', { header: 'Room' }),
+    pctColumnsOf<Reading>().key('note', {
+      header: 'State',
+      colSpan: (reading) => (reading.temperature === null ? 3 : 1),
+    }),
+    pctColumnsOf<Reading>().key('temperature', {
+      header: 'Temperature',
+      kind: { number: { unit: '°C', fractionDigits: 1 } },
+    }),
+    pctColumnsOf<Reading>().key('humidity', {
+      header: 'Humidity',
+      kind: { number: { unit: '%' } },
+    }),
+  ]);
+  protected readonly pickedPlaces = signal<readonly PctRowId[]>([]);
+  protected readonly pickedPlacesOpen: readonly PctRowId[] = [
+    'ground',
+    'kitchen',
+  ];
   protected readonly placesOf = (place: Place) => place.places;
   protected readonly byPlaceId = (place: Place) => place.id;
 

@@ -8,7 +8,7 @@ import {
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PctDataTable } from './data-table';
 import { PctTableDetails } from './data-table-details';
-import { PctTableGrid } from './data-table-grid';
+import { PctTableGrid, type PctTableGridCell } from './data-table-grid';
 import { PctTableGroups } from './data-table-groups';
 import { PctDetailsTemplate } from './data-table-slots';
 import { PctTableWindow } from './data-table-window';
@@ -64,6 +64,7 @@ function registersOf(count: number): readonly Register[] {
       <pct-data-table
         pctTableWindow
         [pctTableGrid]="columns()"
+        [(focused)]="focused"
         caption="Registers"
         [rows]="rows()"
         [columns]="columns()"
@@ -95,6 +96,9 @@ class WindowHost {
   readonly sticky = signal(true);
   readonly grouped = signal(false);
   readonly grid = signal(false);
+  readonly focused = signal<PctTableGridCell<'name' | 'room' | 'value'> | null>(
+    null,
+  );
   readonly limit = signal(5000);
   readonly open = signal<readonly PctRowId[]>([]);
   readonly byId = (register: Register) => register.id;
@@ -1077,6 +1081,11 @@ describe('PctTableWindow — a grid in a window', () => {
     const foot = table(fixture).tFoot?.rows[0];
     expect(document.activeElement).toBe(foot?.cells[foot.cells.length - 1]);
     keydown(document.activeElement as Element, 'ArrowUp');
+    // The stop's row is named before the window draws it: by its id, in the column kept.
+    expect(fixture.componentInstance.focused()).toEqual({
+      row: 1000,
+      column: 'value',
+    });
     await fixture.whenStable();
     frameOf(fixture).dispatchEvent(new Event('scroll'));
     await settle(fixture);

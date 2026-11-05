@@ -2065,6 +2065,107 @@ test.describe('PctTableTree — the home as a tree', () => {
   });
 });
 
+test.describe('A column that spans — a cell over its neighbours', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const table = (page: Page) => page.getByTestId('table-col-span');
+  const row = (page: Page, room: string) =>
+    table(page).locator('tbody tr').filter({ hasText: room });
+  /** The text of the cell with the focus, its spaces as one kind. */
+  const focused = (page: Page) =>
+    page.evaluate(() =>
+      document.activeElement
+        ?.closest('td, th')
+        ?.textContent?.trim()
+        .replace(/\s/g, ' '),
+    );
+
+  test('draws one cell over the columns a row asks for, which the engine reads as one', async ({
+    page,
+  }) => {
+    await expect(row(page, 'Hall').locator('td')).toHaveCount(2);
+    await expect(row(page, 'Kitchen').locator('td')).toHaveCount(4);
+    const over = row(page, 'Hall').locator('td').nth(1);
+    await expect(over).toHaveAttribute('colspan', '3');
+    await expect(
+      table(page).getByRole('gridcell', { name: 'No sensor fitted' }),
+    ).toHaveCount(1);
+    // The engine's own table: the cell stands in the State column and covers the two after it.
+    expect(
+      await over.evaluate((cell: HTMLTableCellElement) => [
+        cell.cellIndex,
+        cell.colSpan,
+      ]),
+    ).toEqual([1, 3]);
+  });
+
+  test('the arrows step over the cell as one, and come back to the column they left', async ({
+    page,
+  }) => {
+    await row(page, 'Kitchen').locator('td').nth(2).click();
+    expect(await focused(page)).toBe('21.5 °C');
+    await page.keyboard.press('ArrowDown');
+    expect(await focused(page)).toBe('No sensor fitted');
+    await page.keyboard.press('ArrowDown');
+    expect(await focused(page)).toBe('23.0 °C');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowLeft');
+    expect(await focused(page)).toBe('Hall');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    expect(await focused(page)).toBe('No sensor fitted');
+  });
+});
+
+test.describe('PctTableSelection cascading in a tree — the home picked as one', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const table = (page: Page) => page.getByTestId('table-tree-picks');
+  const box = (page: Page, name: string) =>
+    table(page).getByRole('checkbox', { name: `Select ${name}`, exact: true });
+  const state = (page: Page) => page.getByTestId('tree-picks-state');
+
+  test('a device half picks its room and floor, a room picks its devices, and a floor all it holds', async ({
+    page,
+  }) => {
+    await box(page, 'Kettle').check();
+    await expect(state(page)).toHaveText('Picked: kettle.');
+    // The engine's own mixed state: what each reader hears as half checked.
+    await expect(box(page, 'Kitchen')).toBeChecked({ indeterminate: true });
+    await expect(box(page, 'Ground floor')).toBeChecked({
+      indeterminate: true,
+    });
+    await expect(box(page, 'Upstairs')).toBeChecked({ checked: false });
+    await box(page, 'Kitchen').click();
+    await expect(state(page)).toHaveText(
+      'Picked: kettle kitchen fridge lamp-k.',
+    );
+    await expect(box(page, 'Kitchen')).toBeChecked();
+    await expect(box(page, 'Lamp')).toBeChecked();
+    await expect(box(page, 'Ground floor')).toBeChecked({
+      indeterminate: true,
+    });
+    await box(page, 'Ground floor').click();
+    await expect(state(page)).toHaveText(
+      'Picked: kettle kitchen fridge lamp-k ground hall sensor garage.',
+    );
+    await expect(box(page, 'Ground floor')).toBeChecked();
+    // Dropping one device drops its room and its floor, and leaves them mixed.
+    await box(page, 'Fridge').uncheck();
+    await expect(state(page)).toHaveText(
+      'Picked: kettle lamp-k hall sensor garage.',
+    );
+    await expect(box(page, 'Kitchen')).toBeChecked({ indeterminate: true });
+    await expect(box(page, 'Ground floor')).toBeChecked({
+      indeterminate: true,
+    });
+  });
+});
+
 test.describe('Header groups — the rules under grouped headers', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/datatable');

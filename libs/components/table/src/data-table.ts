@@ -53,6 +53,7 @@ import {
 import { pctAggregate } from './model/aggregate';
 import type { PctAnyColumnFilter } from './model/filters';
 import { pctFit } from './model/fit';
+import { pctCellSpans } from './model/grid';
 import type {
   pctTree,
   pctTreeAbove,
@@ -159,6 +160,8 @@ export interface PctTableFeature {
     readonly cell: Signal<TemplateRef<unknown>>;
     readonly below: Signal<TemplateRef<unknown>>;
     readonly picked: Signal<ReadonlySet<PctRowId>>;
+    /** The branches some of whose rows below are picked and some not: their checkbox is mixed. */
+    readonly mixed: Signal<ReadonlySet<PctRowId>>;
     readonly describedBy: Signal<string | null>;
     /** The name of the column's header, when its own content would name it wrongly. */
     readonly name: Signal<string | null>;
@@ -442,8 +445,15 @@ interface Row<T> {
   readonly nameId: string;
   /** Which of the cells shown is that one: the first with no template or check mark, or the first. */
   readonly nameAt: number;
+  /**
+   * How many columns each cell shown takes, `0` for one a cell before it covers; `null` while
+   * no column spans.
+   */
+  readonly spans: readonly number[] | null;
   /** The row is picked. */
   readonly selected: boolean;
+  /** Some of the rows below the row are picked and some not: a cascading selection's branch. */
+  readonly mixed: boolean;
   /** The edge the row is pinned to; `null` for a row of the data. */
   readonly pinned: 'top' | 'bottom' | null;
   /** The number a reader is told the row stands at, in a window or on a page; else `null`. */
@@ -833,6 +843,11 @@ export class PctDataTable<
   /** The ids picked, to look up. */
   private readonly picked = computed(
     () => this.selection()?.picked() ?? new Set<PctRowId>(),
+  );
+
+  /** The branches half picked, to look up. */
+  private readonly mixed = computed(
+    () => this.selection()?.mixed() ?? new Set<PctRowId>(),
   );
 
   /**
@@ -1475,6 +1490,29 @@ export class PctDataTable<
   }
 
   /**
+   * The ids of a row's children the filter kept, in their order: what a cascading selection
+   * picks below a branch. Empty for a leaf, for an id the tree does not hold, and without a tree.
+   *
+   * @since next
+   */
+  childIds(id: PctRowId): readonly PctRowId[] {
+    return this.treeChildren()?.get(id) ?? [];
+  }
+
+  /** Each row of the tree to the ids of its children the filter kept; `null` without a tree. */
+  private readonly treeChildren = computed(() => {
+    const tree = this.tree();
+    if (!tree) return null;
+    const rowId = this.rowId();
+    return new Map(
+      tree.rows.map((row) => [
+        rowId(row),
+        (tree.children(row) ?? []).map((child) => rowId(child)),
+      ]),
+    );
+  });
+
+  /**
    * The ids of every row of the tree with children the filter kept, in the tree's order: what
    * the tree directive's `expandAll` opens. Empty without a tree.
    *
@@ -1926,7 +1964,11 @@ export class PctDataTable<
     const hiddenColumns = hiddenAt.map(
       (c) => columns[c],
     ) as unknown as Row<T>['hiddenColumns'];
+    // A column that spans asks each row; the pinned ones are where no span reaches.
+    const spanning = shownAt.some((c) => columns[c].colSpan !== undefined);
+    const pinned = this.leadSticks().cells.map((stick) => stick !== null);
     const picked = this.picked();
+    const mixed = this.mixed();
     type RowLine = Extract<PctTableLine<T>, { kind: 'row' }>;
     return (
       line: RowLine,
@@ -1955,6 +1997,12 @@ export class PctDataTable<
         };
       });
       const shown = shownAt.map((c) => all[c]);
+      const spans = spanning
+        ? pctCellSpans(
+            shownAt.map((c) => columns[c].colSpan?.(line.row) ?? 1),
+            pinned,
+          )
+        : null;
       return {
         kind: 'row',
         key: where.key,
@@ -1975,11 +2023,17 @@ export class PctDataTable<
         open: where.open,
         detailsId: `${this.uid}-details-${number}`,
         nameId: `${this.uid}-name-${number}`,
+        // A cell another covers is not drawn, and names nothing.
         nameAt: Math.max(
           0,
-          shown.findIndex((cell) => cell.slot === null && cell.yes === null),
+          shown.findIndex(
+            (cell, c) =>
+              cell.slot === null && cell.yes === null && spans?.[c] !== 0,
+          ),
         ),
+        spans,
         selected: picked.has(line.key),
+        mixed: mixed.has(line.key),
         pinned: where.pinned,
         at: where.at,
       };

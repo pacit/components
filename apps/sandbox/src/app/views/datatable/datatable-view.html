@@ -839,6 +839,48 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="A tree picked as one"
+  summary="With cascade, a branch's checkbox picks every place inside it, and a branch is picked once all its places are: a room half picked has a mixed checkbox, and so has its floor."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-tree-picks"
+>
+  <pct-data-table
+    data-testid="table-tree-picks"
+    caption="Places to switch off"
+    locale="en"
+    [pctTableTree]="treeColumns"
+    [children]="placesOf"
+    [expanded]="pickedPlacesOpen"
+    pctTableSelection
+    cascade
+    [(value)]="pickedPlaces"
+    [rows]="home()"
+    [columns]="treeColumns"
+    [rowId]="byPlaceId"
+  />
+  <p data-testid="tree-picks-state">
+    Picked: {{ pickedPlaces().join(' ') || 'none' }}.
+  </p>
+</sbx-demo>
+
+<sbx-demo
+  heading="A cell over its neighbours"
+  summary="A column's colSpan asks each row how many columns its cell takes: a room with no sensor says so once, over the readings it does not have, and the grid's arrows step over the cell as one."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-col-span"
+>
+  <pct-data-table
+    data-testid="table-col-span"
+    caption="Readings by room"
+    locale="en"
+    [pctTableGrid]="readingColumns"
+    [rows]="readings"
+    [columns]="readingColumns"
+    [rowId]="byReadingId"
+  />
+</sbx-demo>
+
+<sbx-demo
   heading="Groups of headers"
   summary="A column's group puts a header over the adjacent columns that share it, a row per level. The groups' rows stick with the header, and a column's menu moves and pins its group whole."
   [reqs]="['req-a11y-built-in']"
