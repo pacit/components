@@ -295,9 +295,7 @@ export class PctTableRowOrderParts {
         }
         // `@for` moved the row's element, which let the focus go.
         const handles = Array.from(
-          this.host().querySelectorAll<HTMLElement>(
-            '[data-pct-part="handle"]',
-          ),
+          this.host().querySelectorAll<HTMLElement>('[data-pct-part="handle"]'),
         );
         handles
           .find((handle) => handle.dataset['pctRow'] === String(id))
