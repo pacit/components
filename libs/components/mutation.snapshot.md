@@ -212,7 +212,7 @@ libs/components/table/src/data-table-details.ts 100.00 5(0) 0 0 0 1
 libs/components/table/src/data-table-editing.ts 82.54 818(2) 160 3 10 6
 libs/components/table/src/data-table-export.ts 94.55 104(0) 6 0 0 0
 libs/components/table/src/data-table-filters.ts 97.32 218(0) 3 0 3 5
-libs/components/table/src/data-table-grid.ts 79.14 861(3) 203 4 20 2
+libs/components/table/src/data-table-grid.ts 79.16 862(3) 203 4 20 2
 libs/components/table/src/data-table-groups.ts 100.00 9(0) 0 0 0 3
 libs/components/table/src/data-table-page.ts 100.00 3(0) 0 0 0 2
 libs/components/table/src/data-table-pinned-rows.ts 100.00 5(0) 0 0 0 0
@@ -230,7 +230,7 @@ libs/components/table/src/model/csv.ts 97.94 381(13) 8 0 0 0
 libs/components/table/src/model/filters.ts 99.58 236(0) 1 0 0 0
 libs/components/table/src/model/fit.ts 100.00 22(2) 0 0 0 0
 libs/components/table/src/model/formula.ts 91.67 11(0) 1 0 0 0
-libs/components/table/src/model/grid.ts 98.99 98(0) 1 0 0 0
+libs/components/table/src/model/grid.ts 99.22 127(6) 1 0 0 0
 libs/components/table/src/model/layout.ts 96.70 264(2) 9 0 0 0
 libs/components/table/src/model/lines.ts 100.00 97(0) 0 0 0 0
 libs/components/table/src/model/order.ts 100.00 89(0) 0 0 0 0
@@ -254,5 +254,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.58 22020/24309
+TOTAL 90.60 22050/24339
 ```

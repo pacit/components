@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   type PctGridCellSpan,
+  pctCellSpans,
   pctGridCellAt,
   pctGridKey,
   type PctGridMap,
@@ -235,5 +236,42 @@ describe('pctGridMove', () => {
       line: 0,
       column: 0,
     });
+  });
+});
+
+describe('pctCellSpans', () => {
+  const free = [false, false, false, false, false];
+
+  it('gives each cell its own column while none asks for more', () => {
+    expect(pctCellSpans([1, 1, 1], [false, false, false])).toEqual([1, 1, 1]);
+    expect(pctCellSpans([], [])).toEqual([]);
+  });
+
+  it('spans the columns after a cell, and gives the ones it covers none', () => {
+    expect(pctCellSpans([2, 1, 3, 1, 1], free)).toEqual([2, 0, 3, 0, 0]);
+    // An ask past the last column stops there.
+    expect(pctCellSpans([1, 9], [false, false])).toEqual([1, 1]);
+    expect(pctCellSpans([9, 1, 1], [false, false, false])).toEqual([3, 0, 0]);
+  });
+
+  it('reads no ask of a cell another covers', () => {
+    expect(pctCellSpans([2, 3, 1, 1], [false, false, false, false])).toEqual([
+      2, 0, 1, 1,
+    ]);
+  });
+
+  it('stops before a pinned column, and spans no pinned cell', () => {
+    expect(
+      pctCellSpans([2, 1, 3, 1, 1], [false, false, false, false, true]),
+    ).toEqual([2, 0, 2, 0, 1]);
+    expect(pctCellSpans([3, 2, 1], [true, false, false])).toEqual([1, 2, 0]);
+    expect(pctCellSpans([2, 1], [false, true])).toEqual([1, 1]);
+  });
+
+  it('reads an ask down to a whole number, and one below one, or none, as one', () => {
+    expect(pctCellSpans([2.9, 1, 1], [false, false, false])).toEqual([2, 0, 1]);
+    expect(pctCellSpans([0, -2, Number.NaN], [false, false, false])).toEqual([
+      1, 1, 1,
+    ]);
   });
 });
