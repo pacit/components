@@ -17,6 +17,7 @@ import {
   LOCALE_ID,
   model,
   signal,
+  reflectComponentType,
   untracked,
   viewChild,
   type Signal,
@@ -389,6 +390,38 @@ const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4];
  */
 const SHARE_WIDTH = 160;
 
+/** The inputs a cell's component may declare: what the table sets, and nothing else. */
+const CELL_INPUTS = /* @__PURE__ */ new Set([
+  'value',
+  'row',
+  'column',
+  'index',
+]);
+
+/** The inputs each cell component declares of those, read off its class once. */
+const cellInputs = /* @__PURE__ */ new WeakMap<object, readonly string[]>();
+
+/**
+ * The inputs of `CELL_INPUTS` a component declares: a component handed one it does not
+ * declare throws, so the table sets only these.
+ */
+function cellInputsOf(component: Type<unknown>): readonly string[] {
+  let names = cellInputs.get(component);
+  if (names === undefined) {
+    names = (reflectComponentType(component)?.inputs ?? [])
+      .map((input) => input.templateName)
+      .filter((name) => CELL_INPUTS.has(name));
+    cellInputs.set(component, names);
+  }
+  return names;
+}
+
+/** A cell drawn by its column's component, with the inputs it is set. */
+interface DrawnCell {
+  readonly component: Type<unknown>;
+  readonly inputs: Readonly<Record<string, unknown>>;
+}
+
 /** A cell of a row line, written once per render rather than once per binding. */
 interface Cell<T> {
   readonly column: PctAnyColumn<T>;
@@ -397,6 +430,8 @@ interface Cell<T> {
   readonly numeric: boolean;
   readonly yes: boolean | null;
   readonly slot: TemplateRef<unknown> | null;
+  /** The column's component, when no template draws the cell. */
+  readonly drawn: DrawnCell | null;
   /** The text cut where the quick filter's words stand, or `null` when there is no question to mark. */
   readonly parts: readonly PctTextPart[] | null;
   readonly tone: PctTone | null;
@@ -1936,11 +1971,16 @@ export class PctDataTable<
       const slot = templates.get(column.id) ?? null;
       const boolean = column.kind === 'boolean';
       const filter = column.filter;
+      // A template for the column draws in place of its component.
+      const component =
+        slot === null ? ((column.component as Type<unknown>) ?? null) : null;
       return {
         column,
         numeric: pctColumnNumeric(column),
         boolean,
         slot,
+        component,
+        takes: component === null ? [] : cellInputsOf(component),
         // A word is marked only in the text it was found in: a column the quick filter reads
         // by its text, and a column's own text filter in that column. A template or a check
         // mark draws in its place, and the template reads which first.
@@ -1977,25 +2017,47 @@ export class PctDataTable<
       const number = this.lineIdOf(where.key);
       const values = cache(line.row);
       const texts = written(line.row);
-      const all = cells.map(({ column, numeric, boolean, slot, marks }, c) => {
-        const value = values[c];
-        const text = texts[c];
-        const yes = boolean && typeof value === 'boolean' ? value : null;
-        const parts = marks ? pctMatchParts(text, marks) : null;
-        const tooltip = column.tooltip;
-        return {
-          column,
-          value,
-          text,
-          numeric,
-          yes,
-          slot,
-          parts,
-          tone: column.tone?.(value, line.row) ?? null,
-          title: typeof tooltip === 'function' ? tooltip(line.row) : null,
-          clip: tooltip === true && slot === null && yes === null,
-        };
-      });
+      const all = cells.map(
+        ({ column, numeric, boolean, slot, component, takes, marks }, c) => {
+          const value = values[c];
+          const text = texts[c];
+          const yes =
+            boolean && component === null && typeof value === 'boolean'
+              ? value
+              : null;
+          const parts = marks ? pctMatchParts(text, marks) : null;
+          const tooltip = column.tooltip;
+          let drawn: DrawnCell | null = null;
+          if (component !== null) {
+            const offered: Readonly<Record<string, unknown>> = {
+              value,
+              row: line.row,
+              column,
+              index: line.index,
+            };
+            const inputs: Record<string, unknown> = {};
+            for (const name of takes) inputs[name] = offered[name];
+            drawn = { component, inputs };
+          }
+          return {
+            column,
+            value,
+            text,
+            numeric,
+            yes,
+            slot,
+            drawn,
+            parts,
+            tone: column.tone?.(value, line.row) ?? null,
+            title: typeof tooltip === 'function' ? tooltip(line.row) : null,
+            clip:
+              tooltip === true &&
+              slot === null &&
+              drawn === null &&
+              yes === null,
+          };
+        },
+      );
       const shown = shownAt.map((c) => all[c]);
       const spans = spanning
         ? pctCellSpans(
@@ -2028,7 +2090,10 @@ export class PctDataTable<
           0,
           shown.findIndex(
             (cell, c) =>
-              cell.slot === null && cell.yes === null && spans?.[c] !== 0,
+              cell.slot === null &&
+              cell.drawn === null &&
+              cell.yes === null &&
+              spans?.[c] !== 0,
           ),
         ),
         spans,

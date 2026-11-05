@@ -55,6 +55,7 @@ import {
   pctTableXlsx,
 } from '@pacit/components/table';
 import { SbxDemo } from '../../ui/demo';
+import { SbxHumidityCell } from './humidity-cell';
 
 interface Rule {
   readonly id: number;
@@ -508,6 +509,14 @@ export class DatatableView {
     pctColumnsOf<Reading>().key('humidity', {
       header: 'Humidity',
       kind: { number: { unit: '%' } },
+    }),
+  ]);
+  /** The humidity drawn by the column's own component, not by a template. */
+  protected readonly drawnColumns = pctColumnsOf<Reading>().of([
+    pctColumnsOf<Reading>().key('room', { header: 'Room' }),
+    pctColumnsOf<Reading>().key('humidity', {
+      header: 'Humidity',
+      component: SbxHumidityCell,
     }),
   ]);
   protected readonly pickedPlaces = signal<readonly PctRowId[]>([]);

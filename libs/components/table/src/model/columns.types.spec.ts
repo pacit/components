@@ -1,3 +1,4 @@
+import type { InputSignal } from '@angular/core';
 import {
   type PctAnyColumn,
   type PctColumn,
@@ -59,6 +60,30 @@ const columns = col.of([
     kind: { instant: { relative: true } },
   }),
 ]);
+
+// Cell components as the compiler sees them: their inputs, and nothing to run.
+declare class EnergyCell {
+  readonly value: InputSignal<number | null>;
+  readonly row: InputSignal<Register>;
+}
+declare class WideCell {
+  readonly value: InputSignal<number | string | null | undefined>;
+  readonly tone: InputSignal<string>;
+}
+declare class BareCell {}
+declare class IndexCell {
+  readonly index: InputSignal<number>;
+  readonly column: InputSignal<PctColumn<Register, number> | undefined>;
+}
+declare class NumberCell {
+  readonly value: InputSignal<number>;
+}
+declare class OtherRowCell {
+  readonly row: InputSignal<{ readonly title: string }>;
+}
+declare class TextIndexCell {
+  readonly index: InputSignal<string>;
+}
 
 // Never called: the body is for the compiler.
 export function typeCases(): void {
@@ -156,6 +181,28 @@ export function typeCases(): void {
     // @ts-expect-error — the tooltip's row is the table's row.
     tooltip: (row: { title: string }) => row.title,
   });
+
+  // A column's component is held to what the table sets: each input it declares of `value`,
+  // `row`, `column` and `index` takes the column's type, and the others are its own.
+  col.key('energy', { header: 'Energy', component: EnergyCell });
+  col.key('energy', { header: 'Energy', component: WideCell });
+  col.key('name', { header: 'Name', component: BareCell });
+  col.value('next', (r) => r.nextAt, { header: 'Next', component: IndexCell });
+  // @ts-expect-error — a value that may be `null` is not a number.
+  col.key('energy', { header: 'Energy', component: NumberCell });
+  // An accessor's value is known after the rest of the call: its column is refused where it
+  // joins the list.
+  col.of([
+    // @ts-expect-error — nor is an accessor's that may be.
+    col.value('e', (r) => r.energy, { header: 'E', component: NumberCell }),
+  ]);
+  col.of([
+    col.value('e', (r) => r.energy, { header: 'E', component: EnergyCell }),
+  ]);
+  // @ts-expect-error — the row the table sets is a register.
+  col.key('name', { header: 'Name', component: OtherRowCell });
+  // @ts-expect-error — the index is a number.
+  col.key('name', { header: 'Name', component: TextIndexCell });
 
   // The engine's view takes any typed list.
   const view: readonly PctAnyColumn<Register>[] = columns;

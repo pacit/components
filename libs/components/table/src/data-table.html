@@ -594,6 +594,11 @@
                     index: row.index,
                   }"
           />
+          } @else if (cell.drawn; as drawn) {
+          <ng-container
+            [ngComponentOutlet]="drawn.component"
+            [ngComponentOutletInputs]="drawn.inputs"
+          />
           } @else if (cell.yes !== null) { @if (cell.yes) {
           <pct-icon name="check" class="pct-data-table__yes">
             <svg
@@ -664,6 +669,11 @@
                     column: cell.column,
                     index: row.index,
                   }"
+                />
+                } @else if (cell.drawn; as drawn) {
+                <ng-container
+                  [ngComponentOutlet]="drawn.component"
+                  [ngComponentOutletInputs]="drawn.inputs"
                 />
                 } @else { {{ cell.text }} }
               </dd>
