@@ -53,6 +53,55 @@ function adding(
   return [...value, ...[...ids].filter((id) => !had.has(id))];
 }
 
+/** A tree as a cascade reads it: each branch's children the filter kept, and each row's parent. */
+interface Family {
+  readonly children: ReadonlyMap<PctRowId, readonly PctRowId[]>;
+  readonly parents: ReadonlyMap<PctRowId, PctRowId>;
+}
+
+const NONE: ReadonlySet<PctRowId> = /* @__PURE__ */ new Set();
+
+/**
+ * A cascading selection with `ids` added or taken out: each with every row below it, and then
+ * the rows above each row turned, nearest first, each picked when all its children are and
+ * dropped when one is not. Kept in a set while it turns, so a branch of thousands of rows
+ * costs a pass over them, and the list keeps the ids it held in their order.
+ */
+function cascading(
+  value: readonly PctRowId[],
+  ids: ReadonlySet<PctRowId>,
+  on: boolean,
+  family: Family,
+): readonly PctRowId[] {
+  const picked = new Set(value);
+  const turned = new Set<PctRowId>();
+  const turn = (id: PctRowId, to: boolean): void => {
+    if (to) picked.add(id);
+    else picked.delete(id);
+  };
+  const down = (id: PctRowId): void => {
+    turned.add(id);
+    turn(id, on);
+    for (const child of family.children.get(id) ?? []) down(child);
+  };
+  ids.forEach(down);
+  // A row above is turned after the row below it on each way up, so the last time it is
+  // turned its children stand as they end.
+  for (const id of turned)
+    for (
+      let at = family.parents.get(id);
+      at !== undefined;
+      at = family.parents.get(at)
+    )
+      turn(
+        at,
+        (family.children.get(at) as readonly PctRowId[]).every((child) =>
+          picked.has(child),
+        ),
+      );
+  return [...new Set([...value, ...picked])].filter((id) => picked.has(id));
+}
+
 /**
  * Where the directive and the parts the table makes for it meet: the parts hand themselves in,
  * and the directive hands over the line, which it reads off its own `[formField]`. Kept by
@@ -63,6 +112,12 @@ interface Link {
   readonly parts: WritableSignal<PctTableSelectionParts | null>;
   readonly line: () => Line | null;
   readonly picked: () => ReadonlySet<PctRowId>;
+  /** The selection with ids added or taken out, down and up the tree when it cascades. */
+  readonly turn: (
+    value: readonly PctRowId[],
+    ids: ReadonlySet<PctRowId>,
+    on: boolean,
+  ) => readonly PctRowId[];
 }
 
 const LINKS = /* @__PURE__ */ new WeakMap<PctTableSelection, Link>();
@@ -125,6 +180,16 @@ export class PctTableSelection implements FormValueControl<
    * @since 0.3.0
    */
   readonly disabled = input(false, { transform: booleanAttribute });
+
+  /**
+   * In a tree, a press on a branch picks or drops every row below it the filter kept, and a
+   * branch is picked once all its children are and dropped once one is not; a branch some of
+   * whose rows below are picked and some not has a mixed checkbox. Off by default, so a press
+   * picks the one row; nothing cascades in `single` mode, nor without `pctTableTree`.
+   *
+   * @since next
+   */
+  readonly cascade = input(false, { transform: booleanAttribute });
 
   /**
    * Holds the selection: the controls stay focusable and a press changes nothing.
@@ -246,11 +311,54 @@ export class PctTableSelection implements FormValueControl<
     return new Set(this.mode() === 'single' ? value.slice(0, 1) : value);
   });
 
+  /** The tree the selection cascades down and up, while it cascades: `null` otherwise. */
+  private readonly family = computed((): Family | null => {
+    // A single selection never asks: a press there replaces the one row picked.
+    if (!this.cascade()) return null;
+    const children = new Map(
+      this.table.branchIds().map((id) => [id, this.table.childIds(id)]),
+    );
+    const parents = new Map<PctRowId, PctRowId>();
+    for (const [id, list] of children)
+      for (const child of list) parents.set(child, id);
+    return { children, parents };
+  });
+
+  /**
+   * The branches half picked: some of the rows below each picked and some not, as the rows
+   * below say, whatever the list says of the branch itself.
+   */
+  private readonly mixed = computed((): ReadonlySet<PctRowId> => {
+    const family = this.family();
+    if (!family) return NONE;
+    const picked = this.picked();
+    const mixed = new Set<PctRowId>();
+    // Whether every row below a row is picked, `true`, none, `false`, or some, `null`: the
+    // row itself for a leaf.
+    const holds = (id: PctRowId): boolean | null => {
+      const children = family.children.get(id);
+      if (!children) return picked.has(id);
+      const own = new Set(children.map(holds));
+      const state = own.size > 1 ? null : [...own][0];
+      if (state === null) mixed.add(id);
+      return state;
+    };
+    // Each branch asked, its own branches again: a pass for each level, and no bookkeeping.
+    for (const id of family.children.keys()) holds(id);
+    return mixed;
+  });
+
   constructor() {
     LINKS.set(this, {
       parts: this.parts,
       line: this.line,
       picked: this.picked,
+      turn: (value, ids, on) => {
+        const family = this.family();
+        return family
+          ? cascading(value, ids, on, family)
+          : adding(value, ids, on);
+      },
     });
     const parts = this.parts;
     const texts = inject(PCT_TEXTS);
@@ -263,6 +371,7 @@ export class PctTableSelection implements FormValueControl<
         cell: computed(() => (parts() as PctTableSelectionParts).cell()),
         below: computed(() => (parts() as PctTableSelectionParts).below()),
         picked: this.picked,
+        mixed: this.mixed,
         describedBy: computed(() => this.line()?.id ?? null),
         // The column's header is named by its word, not by the checkbox over every row: a
         // reader says the header with each row's checkbox. One pick shows the word itself.
@@ -489,7 +598,7 @@ export class PctTableSelectionParts {
     const range = new Set(
       from < 0 ? [id] : drawn.slice(Math.min(from, to), Math.max(from, to) + 1),
     );
-    selection.value.update((value) => adding(value, range, on));
+    selection.value.update((value) => this.link.turn(value, range, on));
   }
 
   /**
