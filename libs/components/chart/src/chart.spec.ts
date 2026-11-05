@@ -4212,3 +4212,534 @@ describe('PctChart, turned', () => {
     expect(cursor.style.inlineSize).toBe('');
   });
 });
+
+/** The picture's box, read off the clip that holds it. */
+const pictureOf = (fixture: ComponentFixture<unknown>) => {
+  const rect = query(fixture, 'clipPath rect')!;
+  const [left, top, width, height] = ['x', 'y', 'width', 'height'].map((name) =>
+    Number(rect.getAttribute(name)),
+  );
+  return { left, top, right: left + width, bottom: top + height };
+};
+
+describe('PctChart, its brush', () => {
+  beforeEach(() => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.tagName === 'PCT-CHART' ? 600 : 0;
+      },
+    );
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.tagName === 'PCT-CHART' ? 300 : 0;
+      },
+    );
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  @Component({
+    imports: [PctChart, PctLine],
+    template: `<pct-chart
+      ariaLabel="Brushed"
+      timeZone="UTC"
+      locale="en-US"
+      [brush]="brush()"
+      [zoom]="zoom()"
+      [orientation]="orientation()"
+      [(selected)]="selected"
+      [(window)]="window"
+    >
+      <pct-line [data]="rows" x="at" y="value" name="Supply air" />
+    </pct-chart>`,
+  })
+  class Brushed {
+    readonly rows = temperature;
+    readonly brush = signal(true);
+    readonly zoom = signal<'x' | 'none'>('x');
+    readonly orientation = signal<'vertical' | 'horizontal'>('vertical');
+    readonly selected = signal<{ from: number; to: number } | null>(null);
+    readonly window = signal<{ from: number; to: number } | null>(null);
+  }
+
+  const layerOf = (fixture: ComponentFixture<unknown>) =>
+    query(fixture, '.overlay') as HTMLElement;
+  const at = (fixture: ComponentFixture<unknown>, x: number) =>
+    chartOf(fixture).xScale()!.map(x);
+  const handle = (fixture: ComponentFixture<unknown>, edge: string) =>
+    query(
+      fixture,
+      `input[data-pct-part="handle"][data-pct-edge="${edge}"]`,
+    ) as HTMLInputElement;
+  const grip = (fixture: ComponentFixture<unknown>, edge: string) =>
+    query(
+      fixture,
+      `[data-pct-part="grip"][data-pct-edge="${edge}"]`,
+    ) as HTMLElement;
+  const selectedOf = (fixture: ComponentFixture<Brushed>) =>
+    fixture.componentInstance.selected();
+  const drag = async (
+    fixture: ComponentFixture<unknown>,
+    from: number,
+    to: number,
+    kind = 'mouse',
+  ) => {
+    const layer = layerOf(fixture);
+    layer.dispatchEvent(pointer('pointerdown', { x: from, kind }));
+    layer.dispatchEvent(pointer('pointermove', { x: to, kind }));
+    layer.dispatchEvent(pointer('pointerup', { x: to, kind }));
+    await settle(fixture);
+  };
+  const tap = async (
+    fixture: ComponentFixture<unknown>,
+    x: number,
+    time?: number,
+  ) => {
+    const layer = layerOf(fixture);
+    layer.dispatchEvent(pointer('pointerdown', { x, kind: 'touch', at: time }));
+    layer.dispatchEvent(
+      pointer('pointerup', {
+        x,
+        kind: 'touch',
+        at: time === undefined ? undefined : time + 10,
+      }),
+    );
+    await settle(fixture);
+  };
+  const keyOn = async (
+    fixture: ComponentFixture<unknown>,
+    edge: string,
+    key: string,
+  ) => {
+    const event = new KeyboardEvent('keydown', {
+      key,
+      bubbles: true,
+      cancelable: true,
+    });
+    handle(fixture, edge).dispatchEvent(event);
+    await settle(fixture);
+    return event;
+  };
+  const select = async (
+    fixture: ComponentFixture<Brushed>,
+    from: number,
+    to: number,
+  ) => {
+    fixture.componentInstance.selected.set({ from, to });
+    await settle(fixture);
+  };
+
+  it('stands two ranges and two grips at the ends of the window, and none without a brush', async () => {
+    const fixture = await render(Brushed);
+    const from = handle(fixture, 'from');
+    const to = handle(fixture, 'to');
+    expect(from.type).toBe('range');
+    expect(from.getAttribute('step')).toBe('any');
+    expect(from.getAttribute('dir')).toBe('ltr');
+    expect(from.getAttribute('aria-label')).toBe('Start of the selection');
+    expect(to.getAttribute('aria-label')).toBe('End of the selection');
+    // after the cursor's range, beside the picture and outside the figure
+    const cursor = query(fixture, 'input[data-pct-part="range"]')!;
+    expect(
+      cursor.compareDocumentPosition(from) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(from.closest('figure')).toBeNull();
+    expect(from.min).toBe('0');
+    expect(Number(from.max)).toBe(24 * H);
+    expect(Number(from.value)).toBe(0);
+    expect(Number(to.value)).toBe(24 * H);
+    expect(from.getAttribute('aria-valuetext')).toContain('12:00');
+    expect(to.getAttribute('aria-valuetext')).not.toBe(
+      from.getAttribute('aria-valuetext'),
+    );
+    const keys = from.getAttribute('aria-describedby')!;
+    expect(to.getAttribute('aria-describedby')).toBe(keys);
+    expect(query(fixture, `#${keys}`)?.textContent).toBe(
+      'Arrow keys move this edge by a hundredth of the view, Page Up and Page Down by a tenth, Home and End to the ends of the view; Enter shows the selection; Escape clears it.',
+    );
+    expect(query(fixture, `#${keys}`)?.hasAttribute('hidden')).toBe(true);
+    const { left, right, top, bottom } = pictureOf(fixture);
+    expect(grip(fixture, 'from').style.transform).toBe(
+      `translate(${left}px, ${top}px)`,
+    );
+    expect(grip(fixture, 'to').style.transform).toBe(
+      `translate(${right}px, ${top}px)`,
+    );
+    expect(grip(fixture, 'to').style.blockSize).toBe(`${bottom - top}px`);
+    expect(grip(fixture, 'to').style.inlineSize).toBe('');
+    expect(grip(fixture, 'to').classList.contains('across')).toBe(false);
+    expect(grip(fixture, 'to').hasAttribute('data-pct-picked')).toBe(false);
+    expect(grip(fixture, 'to').classList.contains('focused')).toBe(false);
+    fixture.componentInstance.brush.set(false);
+    await settle(fixture);
+    expect(all(fixture, '[data-pct-part="handle"]')).toHaveLength(0);
+    expect(all(fixture, '[data-pct-part="grip"]')).toHaveLength(0);
+    expect(query(fixture, `#${keys}`)).toBeNull();
+  });
+
+  it('reads `brush` off by default', async () => {
+    @Component({
+      imports: [PctChart, PctLine],
+      template: `<pct-chart ariaLabel="Plain" timeZone="UTC">
+        <pct-line [data]="rows" x="at" y="value" name="Supply air" />
+      </pct-chart>`,
+    })
+    class Plain {
+      readonly rows = temperature;
+    }
+    const fixture = await render(Plain);
+    expect(chartOf(fixture).brush()).toBe(false);
+    expect(all(fixture, '[data-pct-part="handle"]')).toHaveLength(0);
+  });
+
+  it('keeps the drag on a still chart with a brush', async () => {
+    const fixture = await render(Brushed);
+    fixture.componentInstance.zoom.set('none');
+    await settle(fixture);
+    expect(layerOf(fixture).classList.contains('still')).toBe(false);
+    fixture.componentInstance.brush.set(false);
+    await settle(fixture);
+    expect(layerOf(fixture).classList.contains('still')).toBe(true);
+    fixture.componentInstance.zoom.set('x');
+    await settle(fixture);
+    expect(layerOf(fixture).classList.contains('still')).toBe(false);
+  });
+
+  it('draws a selection with a drag across the plot, either way, and leaves the window', async () => {
+    const fixture = await render(Brushed);
+    await drag(fixture, at(fixture, T0 + 6 * H), at(fixture, T0 + 12 * H));
+    expect(selectedOf(fixture)!.from).toBeCloseTo(T0 + 6 * H, -3);
+    expect(selectedOf(fixture)!.to).toBeCloseTo(T0 + 12 * H, -3);
+    expect(fixture.componentInstance.window()).toBeNull();
+    await drag(fixture, at(fixture, T0 + 4 * H), at(fixture, T0 + 1 * H));
+    expect(selectedOf(fixture)!.from).toBeCloseTo(T0 + 1 * H, -3);
+    expect(selectedOf(fixture)!.to).toBeCloseTo(T0 + 4 * H, -3);
+    // the grips follow, and the ranges read the edges
+    const { top } = pictureOf(fixture);
+    expect(grip(fixture, 'from').style.transform).toBe(
+      `translate(${at(fixture, selectedOf(fixture)!.from)}px, ${top}px)`,
+    );
+    expect(Number(handle(fixture, 'to').value)).toBeCloseTo(4 * H, -3);
+  });
+
+  it('draws from a grip at the end of the window, with no selection yet, as that edge', async () => {
+    const fixture = await render(Brushed);
+    const { left } = pictureOf(fixture);
+    await drag(fixture, left + 4, at(fixture, T0 + 6 * H));
+    expect(selectedOf(fixture)!.from).toBeCloseTo(T0 + 6 * H, -3);
+    expect(selectedOf(fixture)!.to).toBe(T0 + 24 * H);
+  });
+
+  it('stops a drag past the plot at its end', async () => {
+    const fixture = await render(Brushed);
+    const { right } = pictureOf(fixture);
+    await drag(fixture, at(fixture, T0 + 18 * H), right + 80);
+    expect(selectedOf(fixture)!.to).toBe(T0 + 24 * H);
+  });
+
+  it('takes a travel short of the slop as a tap, and one at it as a drag', async () => {
+    const fixture = await render(Brushed);
+    const x = at(fixture, T0 + 6 * H);
+    await drag(fixture, x, x + 7);
+    expect(selectedOf(fixture)).toBeNull();
+    expect(chartOf(fixture).cursor()).not.toBeNull();
+    await drag(fixture, x, x + 8);
+    expect(selectedOf(fixture)).not.toBeNull();
+  });
+
+  it('moves the selection whole from inside it, and stops it at the end of the window', async () => {
+    const fixture = await render(Brushed);
+    await select(fixture, T0 + 6 * H, T0 + 10 * H);
+    await drag(fixture, at(fixture, T0 + 8 * H), at(fixture, T0 + 12 * H));
+    expect(selectedOf(fixture)!.from).toBeCloseTo(T0 + 10 * H, -3);
+    expect(selectedOf(fixture)!.to).toBeCloseTo(T0 + 14 * H, -3);
+    await drag(fixture, at(fixture, T0 + 12 * H), at(fixture, T0 + 30 * H));
+    expect(selectedOf(fixture)!.to).toBe(T0 + 24 * H);
+    expect(selectedOf(fixture)!.from).toBeCloseTo(T0 + 20 * H, -3);
+  });
+
+  it('moves one edge from it, and no closer to the other than two minutes', async () => {
+    const fixture = await render(Brushed);
+    await select(fixture, T0 + 6 * H, T0 + 10 * H);
+    await drag(fixture, at(fixture, T0 + 10 * H) + 4, at(fixture, T0 + 14 * H));
+    expect(selectedOf(fixture)!.from).toBe(T0 + 6 * H);
+    expect(selectedOf(fixture)!.to).toBeCloseTo(T0 + 14 * H, -3);
+    await drag(fixture, at(fixture, T0 + 6 * H) - 4, at(fixture, T0 + 20 * H));
+    expect(selectedOf(fixture)!.from).toBeCloseTo(
+      selectedOf(fixture)!.to - 120_000,
+      -1,
+    );
+  });
+
+  it('lets the selection go on a tap outside it, which is the cursor’s tap too', async () => {
+    const fixture = await render(Brushed);
+    await select(fixture, T0 + 6 * H, T0 + 10 * H);
+    await tap(fixture, at(fixture, T0 + 8 * H));
+    expect(selectedOf(fixture)).toEqual({ from: T0 + 6 * H, to: T0 + 10 * H });
+    await tap(fixture, at(fixture, T0 + 18 * H));
+    expect(selectedOf(fixture)).toBeNull();
+    expect(chartOf(fixture).cursor()).toBeCloseTo(T0 + 18 * H, -3);
+  });
+
+  it('picks an edge with a tap on its grip and puts it down with the next tap', async () => {
+    const fixture = await render(Brushed);
+    await select(fixture, T0 + 6 * H, T0 + 10 * H);
+    await tap(fixture, at(fixture, T0 + 10 * H));
+    expect(grip(fixture, 'to').hasAttribute('data-pct-picked')).toBe(true);
+    expect(grip(fixture, 'from').hasAttribute('data-pct-picked')).toBe(false);
+    await tap(fixture, at(fixture, T0 + 16 * H));
+    expect(grip(fixture, 'to').hasAttribute('data-pct-picked')).toBe(false);
+    expect(selectedOf(fixture)!.from).toBe(T0 + 6 * H);
+    expect(selectedOf(fixture)!.to).toBeCloseTo(T0 + 16 * H, -3);
+    // a tap on the picked grip itself, a few pixels off it, puts it back down where it was
+    await tap(fixture, at(fixture, T0 + 6 * H));
+    expect(grip(fixture, 'from').hasAttribute('data-pct-picked')).toBe(true);
+    const before = selectedOf(fixture);
+    await tap(fixture, at(fixture, T0 + 6 * H) + 6);
+    expect(grip(fixture, 'from').hasAttribute('data-pct-picked')).toBe(false);
+    expect(selectedOf(fixture)).toEqual(before);
+    // a drag lets the pick go
+    await tap(fixture, at(fixture, T0 + 6 * H));
+    await drag(fixture, at(fixture, T0 + 1 * H), at(fixture, T0 + 3 * H));
+    expect(all(fixture, '[data-pct-picked]')).toHaveLength(0);
+  });
+
+  it('zooms to the selection on a double tap inside it, and goes home on one outside', async () => {
+    const fixture = await render(Brushed);
+    await select(fixture, T0 + 6 * H, T0 + 10 * H);
+    const inside = at(fixture, T0 + 8 * H);
+    await tap(fixture, inside, 10_000);
+    await tap(fixture, inside + 24, 10_300);
+    expect(fixture.componentInstance.window()).toEqual({
+      from: T0 + 6 * H,
+      to: T0 + 10 * H,
+    });
+    expect(selectedOf(fixture)).toBeNull();
+    const x = at(fixture, T0 + 8 * H);
+    await tap(fixture, x, 20_000);
+    await tap(fixture, x, 20_300);
+    expect(fixture.componentInstance.window()).toBeNull();
+  });
+
+  it('takes two taps apart in time or place as two taps', async () => {
+    const fixture = await render(Brushed);
+    await select(fixture, T0 + 6 * H, T0 + 10 * H);
+    const inside = at(fixture, T0 + 8 * H);
+    await tap(fixture, inside, 10_000);
+    await tap(fixture, inside, 10_301);
+    expect(selectedOf(fixture)).not.toBeNull();
+    await tap(fixture, inside, 20_000);
+    await tap(fixture, inside + 25, 20_100);
+    expect(selectedOf(fixture)).not.toBeNull();
+    expect(fixture.componentInstance.window()).toBeNull();
+  });
+
+  it('keeps the window and the selection on a double tap on a chart that does not zoom', async () => {
+    const fixture = await render(Brushed);
+    fixture.componentInstance.window.set({ from: T0, to: T0 + 12 * H });
+    fixture.componentInstance.zoom.set('none');
+    await settle(fixture);
+    const x = at(fixture, T0 + 8 * H);
+    await tap(fixture, x, 10_000);
+    await tap(fixture, x, 10_100);
+    expect(fixture.componentInstance.window()).toEqual({
+      from: T0,
+      to: T0 + 12 * H,
+    });
+    await select(fixture, T0 + 2 * H, T0 + 6 * H);
+    const inside = at(fixture, T0 + 4 * H);
+    await tap(fixture, inside, 20_000);
+    await tap(fixture, inside, 20_100);
+    expect(selectedOf(fixture)).toEqual({ from: T0 + 2 * H, to: T0 + 6 * H });
+    expect(fixture.componentInstance.window()).toEqual({
+      from: T0,
+      to: T0 + 12 * H,
+    });
+  });
+
+  it('brushes with one pointer: a second one, a right button and a cancelled press draw nothing', async () => {
+    const fixture = await render(Brushed);
+    const layer = layerOf(fixture);
+    const x = at(fixture, T0 + 6 * H);
+    layer.dispatchEvent(pointer('pointerdown', { x, kind: 'touch', id: 1 }));
+    layer.dispatchEvent(
+      pointer('pointerdown', { x: x + 50, kind: 'touch', id: 2 }),
+    );
+    layer.dispatchEvent(
+      pointer('pointermove', { x: x + 200, kind: 'touch', id: 2 }),
+    );
+    await settle(fixture);
+    expect(selectedOf(fixture)).toBeNull();
+    // nor is the second finger the scene's: the window stays
+    expect(fixture.componentInstance.window()).toBeNull();
+    layer.dispatchEvent(
+      pointer('pointermove', { x: x + 100, kind: 'touch', id: 1 }),
+    );
+    layer.dispatchEvent(
+      pointer('pointercancel', { x: x + 100, kind: 'touch', id: 1 }),
+    );
+    await settle(fixture);
+    const drawn = selectedOf(fixture);
+    expect(drawn).not.toBeNull();
+    layer.dispatchEvent(
+      pointer('pointermove', { x: x + 150, kind: 'touch', id: 1 }),
+    );
+    layer.dispatchEvent(
+      pointer('pointerup', { x: x + 150, kind: 'touch', id: 1 }),
+    );
+    await settle(fixture);
+    expect(selectedOf(fixture)).toEqual(drawn);
+    fixture.componentInstance.selected.set(null);
+    layer.dispatchEvent(pointer('pointerdown', { x, button: 2 }));
+    layer.dispatchEvent(pointer('pointermove', { x: x + 100, button: 2 }));
+    layer.dispatchEvent(pointer('pointerup', { x: x + 100, button: 2 }));
+    await settle(fixture);
+    expect(selectedOf(fixture)).toBeNull();
+  });
+
+  it('leaves a press off the plot to the scene', async () => {
+    const fixture = await render(Brushed);
+    const { left } = pictureOf(fixture);
+    await drag(fixture, left - 20, at(fixture, T0 + 6 * H));
+    expect(selectedOf(fixture)).toBeNull();
+  });
+
+  it('moves an edge by the keys of its range', async () => {
+    const fixture = await render(Brushed);
+    await select(fixture, T0 + 6 * H, T0 + 12 * H);
+    const step = (24 * H) / 100;
+    expect((await keyOn(fixture, 'from', 'ArrowRight')).defaultPrevented).toBe(
+      true,
+    );
+    expect(selectedOf(fixture)).toEqual({
+      from: T0 + 6 * H + step,
+      to: T0 + 12 * H,
+    });
+    await keyOn(fixture, 'from', 'ArrowLeft');
+    expect(selectedOf(fixture)!.from).toBeCloseTo(T0 + 6 * H, -1);
+    await keyOn(fixture, 'to', 'ArrowUp');
+    expect(selectedOf(fixture)!.to).toBe(T0 + 12 * H + step);
+    await keyOn(fixture, 'to', 'ArrowDown');
+    expect(selectedOf(fixture)!.to).toBeCloseTo(T0 + 12 * H, -1);
+    await keyOn(fixture, 'to', 'PageUp');
+    expect(selectedOf(fixture)!.to).toBeCloseTo(T0 + 12 * H + 10 * step, -1);
+    await keyOn(fixture, 'to', 'PageDown');
+    expect(selectedOf(fixture)!.to).toBeCloseTo(T0 + 12 * H, -1);
+    await keyOn(fixture, 'from', 'Home');
+    expect(selectedOf(fixture)!.from).toBe(T0);
+    await keyOn(fixture, 'to', 'End');
+    expect(selectedOf(fixture)!.to).toBe(T0 + 24 * H);
+    await keyOn(fixture, 'from', 'End');
+    expect(selectedOf(fixture)).toEqual({
+      from: T0 + 24 * H - 120_000,
+      to: T0 + 24 * H,
+    });
+    expect((await keyOn(fixture, 'from', 'a')).defaultPrevented).toBe(false);
+  });
+
+  it('shows the selection on Enter, and lets it go on Escape', async () => {
+    const fixture = await render(Brushed);
+    await select(fixture, T0 + 6 * H, T0 + 12 * H);
+    fixture.componentInstance.zoom.set('none');
+    await settle(fixture);
+    expect((await keyOn(fixture, 'to', 'Enter')).defaultPrevented).toBe(false);
+    expect(fixture.componentInstance.window()).toBeNull();
+    fixture.componentInstance.zoom.set('x');
+    await settle(fixture);
+    expect((await keyOn(fixture, 'to', 'Enter')).defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.window()).toEqual({
+      from: T0 + 6 * H,
+      to: T0 + 12 * H,
+    });
+    expect(selectedOf(fixture)).toBeNull();
+    // with no selection Enter has nothing to show and Escape passes on
+    expect((await keyOn(fixture, 'to', 'Enter')).defaultPrevented).toBe(false);
+    expect((await keyOn(fixture, 'to', 'Escape')).defaultPrevented).toBe(false);
+    await select(fixture, T0 + 7 * H, T0 + 8 * H);
+    expect((await keyOn(fixture, 'from', 'Escape')).defaultPrevented).toBe(
+      true,
+    );
+    expect(selectedOf(fixture)).toBeNull();
+  });
+
+  it('zooms to the selection from the outside, and does nothing with none', async () => {
+    const fixture = await render(Brushed);
+    fixture.componentInstance.window.set({ from: T0, to: T0 + 12 * H });
+    await settle(fixture);
+    chartOf(fixture).zoomToSelection();
+    await settle(fixture);
+    expect(fixture.componentInstance.window()).toEqual({
+      from: T0,
+      to: T0 + 12 * H,
+    });
+    fixture.componentInstance.window.set(null);
+    await select(fixture, T0 + 6 * H, T0 + 12 * H);
+    chartOf(fixture).zoomToSelection();
+    await settle(fixture);
+    expect(fixture.componentInstance.window()).toEqual({
+      from: T0 + 6 * H,
+      to: T0 + 12 * H,
+    });
+  });
+
+  it('puts an edge where its range is set without a key', async () => {
+    const fixture = await render(Brushed);
+    await select(fixture, T0 + 6 * H, T0 + 12 * H);
+    const input = handle(fixture, 'to');
+    input.value = String(18 * H);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await settle(fixture);
+    expect(selectedOf(fixture)).toEqual({ from: T0 + 6 * H, to: T0 + 18 * H });
+  });
+
+  it('holds the edges of a selection past the window inside it', async () => {
+    const fixture = await render(Brushed);
+    fixture.componentInstance.window.set({ from: T0 + 6 * H, to: T0 + 12 * H });
+    await select(fixture, T0, T0 + 8 * H);
+    expect(Number(handle(fixture, 'from').value)).toBe(0);
+    expect(Number(handle(fixture, 'to').value)).toBe(2 * H);
+    await select(fixture, T0 + 14 * H, T0 + 20 * H);
+    expect(Number(handle(fixture, 'from').value)).toBe(6 * H);
+    expect(Number(handle(fixture, 'to').value)).toBe(6 * H);
+  });
+
+  it('draws the grip of the range with the focus', async () => {
+    const fixture = await render(Brushed);
+    handle(fixture, 'to').dispatchEvent(new FocusEvent('focus'));
+    await settle(fixture);
+    expect(grip(fixture, 'to').classList.contains('focused')).toBe(true);
+    expect(grip(fixture, 'from').classList.contains('focused')).toBe(false);
+    handle(fixture, 'to').dispatchEvent(new FocusEvent('blur'));
+    await settle(fixture);
+    expect(grip(fixture, 'to').classList.contains('focused')).toBe(false);
+  });
+
+  it('lays the grips across a turned chart and brushes along its height', async () => {
+    const fixture = await render(Brushed);
+    fixture.componentInstance.orientation.set('horizontal');
+    await settle(fixture);
+    const { left, right, top } = pictureOf(fixture);
+    const g = grip(fixture, 'from');
+    expect(g.classList.contains('across')).toBe(true);
+    expect(g.style.inlineSize).toBe(`${right - left}px`);
+    expect(g.style.blockSize).toBe('');
+    expect(g.style.transform).toBe(
+      `translate(${left}px, ${at(fixture, T0)}px)`,
+    );
+    expect(top).toBeLessThanOrEqual(at(fixture, T0));
+    const layer = layerOf(fixture);
+    const y = (t: number) => at(fixture, t);
+    layer.dispatchEvent(
+      pointer('pointerdown', { x: left + 40, y: y(T0 + 6 * H) }),
+    );
+    layer.dispatchEvent(
+      pointer('pointermove', { x: left + 40, y: y(T0 + 12 * H) }),
+    );
+    layer.dispatchEvent(
+      pointer('pointerup', { x: left + 40, y: y(T0 + 12 * H) }),
+    );
+    await settle(fixture);
+    expect(selectedOf(fixture)!.from).toBeCloseTo(T0 + 6 * H, -3);
+    expect(selectedOf(fixture)!.to).toBeCloseTo(T0 + 12 * H, -3);
+  });
+});

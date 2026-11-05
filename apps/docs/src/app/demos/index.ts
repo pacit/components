@@ -178,6 +178,10 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       load: () => import('./chart.sync.demo').then((m) => m.ChartSyncDemo),
     },
     {
+      key: 'brush',
+      load: () => import('./chart.brush.demo').then((m) => m.ChartBrushDemo),
+    },
+    {
       key: 'legend',
       load: () => import('./chart.legend.demo').then((m) => m.ChartLegendDemo),
     },

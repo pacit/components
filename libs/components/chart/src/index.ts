@@ -19,6 +19,7 @@ export * from './ramp';
 export * from './range';
 export * from './reference';
 export * from './model/arc';
+export * from './model/brush';
 export * from './model/color';
 export * from './model/columns';
 export * from './model/cursor';

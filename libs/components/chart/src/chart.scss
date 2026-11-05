@@ -101,7 +101,7 @@
   white-space: nowrap;
 }
 
-.range:focus-visible + .figure .picture {
+.range:focus-visible ~ .figure .picture {
   outline: 2px solid var(--pct-focus-ring);
   outline-offset: 2px;
 }
@@ -148,6 +148,44 @@
     var(--pct-chart-selection-bg) var(--pct-chart-selection-alpha),
     transparent
   );
+}
+
+// A brush's grip: a line across the picture at its edge and a knob on it, which a tap picks
+// and the next tap puts down; the knob is ringed while its range has the focus or it is picked.
+[data-pct-part='grip'] {
+  inline-size: 2px;
+  translate: -50% 0;
+  background: var(--pct-chart-handle-border);
+}
+
+[data-pct-part='grip'].across {
+  inline-size: auto;
+  block-size: 2px;
+  translate: 0 -50%;
+}
+
+[data-pct-part='grip']::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: var(--pct-chart-handle-width);
+  block-size: calc(var(--pct-chart-handle-width) * 2);
+  translate: -50% -50%;
+  border: 2px solid var(--pct-chart-handle-border);
+  border-radius: var(--pct-chart-handle-width);
+  background: var(--pct-chart-handle-bg);
+}
+
+[data-pct-part='grip'].across::after {
+  inline-size: calc(var(--pct-chart-handle-width) * 2);
+  block-size: var(--pct-chart-handle-width);
+}
+
+[data-pct-part='grip'].focused::after,
+[data-pct-part='grip'][data-pct-picked]::after {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
 }
 
 // The marker is the mark's own drawing of its series, stamped here and centred on the point.
@@ -213,7 +251,21 @@
     fill: CanvasText;
   }
 
-  .range:focus-visible + .figure .picture {
+  [data-pct-part='range']:focus-visible ~ .figure .picture {
+    outline-color: Highlight;
+  }
+
+  [data-pct-part='grip'] {
+    background: CanvasText;
+  }
+
+  [data-pct-part='grip']::after {
+    border-color: CanvasText;
+    background: Canvas;
+  }
+
+  [data-pct-part='grip'].focused::after,
+  [data-pct-part='grip'][data-pct-picked]::after {
     outline-color: Highlight;
   }
 
