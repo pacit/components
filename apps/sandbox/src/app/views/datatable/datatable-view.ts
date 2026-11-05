@@ -27,6 +27,9 @@ import {
   PctTableDetails,
   PctTableGroups,
   PctTableTree,
+  PctTablePinnedRows,
+  PctTableRowOrder,
+  type PctRowMove,
   PctTablePage,
   type PctTableAnswer,
   type PctTableCellRange,
@@ -375,6 +378,8 @@ const HOME: readonly Place[] = [
     PctDetailsTemplate,
     PctTableGroups,
     PctTableTree,
+    PctTablePinnedRows,
+    PctTableRowOrder,
     PctTableSelection,
     PctTableWindow,
     PctTablePage,
@@ -481,6 +486,52 @@ export class DatatableView {
   protected readonly now = NOW;
 
   protected readonly rules = signal<readonly Rule[]>(RULES);
+
+  /** The rules in the order they run: the application's list, moved as the table asks. */
+  protected readonly orderColumns = col.of([
+    col.key('name', { header: 'Name' }),
+    col.key('room', { header: 'Room' }),
+    col.key('energy', {
+      header: 'Used',
+      kind: { number: { unit: 'kWh', fractionDigits: 1 } },
+    }),
+  ]);
+  protected readonly orderedRules = signal<readonly Rule[]>(RULES.slice(0, 8));
+  protected readonly orderSort = signal<readonly PctTableSort<'name'>[]>([]);
+  /** A sum of the rules, pinned above them. */
+  protected readonly orderTotal = computed<readonly Rule[]>(() => [
+    {
+      ...RULES[0],
+      id: -1,
+      name: 'All rules',
+      room: '',
+      energy: this.orderedRules().reduce(
+        (sum, rule) => sum + (rule.energy ?? 0),
+        0,
+      ),
+    },
+  ]);
+  protected readonly orderText = computed(() =>
+    JSON.stringify(this.orderedRules().map((rule) => rule.id)),
+  );
+  protected moveRule(move: PctRowMove): void {
+    const rules = this.orderedRules().filter((rule) => rule.id !== move.id);
+    const moving = this.orderedRules().find((rule) => rule.id === move.id);
+    if (moving === undefined) return;
+    const at =
+      move.before === null
+        ? rules.length
+        : rules.findIndex((rule) => rule.id === move.before);
+    rules.splice(at < 0 ? rules.length : at, 0, moving);
+    this.orderedRules.set(rules);
+  }
+  protected sortOrdered(): void {
+    this.orderSort.set(
+      this.orderSort().length > 0
+        ? []
+        : [{ key: 'name', direction: 'ascending' }],
+    );
+  }
 
   /**
    * The rules filtered column by column: the name by its words, the room by the rooms the

@@ -6,7 +6,7 @@ import { visit } from './support/dom';
  * lowest, highest and last value, which only a browser computes from the references — and a
  * drawing stretched to its box with a line that keeps its width and dots that stay round,
  * which only a layout engine can measure
- * ([0116](../../../docs/decisions/0116-a-sparkline-is-a-picture-with-no-scene.md)).
+ * ([0117](../../../docs/decisions/0117-a-sparkline-is-a-picture-with-no-scene.md)).
  */
 test.describe('PctSparkline — one series drawn small', () => {
   test.beforeEach(async ({ page }) => {

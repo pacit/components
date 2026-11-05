@@ -146,6 +146,8 @@
     "libs/components/table/src/data-table-selection.ts",
     "libs/components/table/src/data-table-slots.ts",
     "libs/components/table/src/data-table-tree.ts",
+    "libs/components/table/src/data-table-pinned-rows.ts",
+    "libs/components/table/src/data-table-row-order.ts",
     "libs/components/table/src/data-table-window.ts",
     "libs/components/table/src/data-table.ts",
     "libs/components/table/src/model/aggregate.ts",

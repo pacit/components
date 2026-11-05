@@ -1042,7 +1042,7 @@ test.describe('The pages', () => {
     // (0097); 785 since a cell open in an editor took its outline (0108); 805 since the card took its surface, its edges, its type
     // and its states (0109); 834 since the frame's bar, navigation and description list took
     // theirs (0110); 880 since the heatmap's ramp took its steps and their text colours (0113);
-    // 891 with the pie's and the gauge's (0115); 897 with the sparkline's (0116).
+    // 891 with the pie's and the gauge's (0115); 897 with the sparkline's (0117).
     await expect(count).toHaveText('897 of 897');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,

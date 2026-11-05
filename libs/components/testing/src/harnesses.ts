@@ -1278,6 +1278,7 @@ export class PctDataTableHarness extends PctHarness<
   | 'error'
   | 'filter'
   | 'group'
+  | 'handle'
   | 'hint'
   | 'hole'
   | 'mark'
@@ -1299,6 +1300,7 @@ export class PctDataTableHarness extends PctHarness<
     'error',
     'filter',
     'group',
+    'handle',
     'hint',
     'hole',
     'mark',

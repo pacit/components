@@ -269,6 +269,7 @@ from what the browser really gets.
 ./table PctTableHeader icon
 ./table PctTableHeader toggle
 ./table PctTableRemoteParts retry
+./table PctTableRowOrderParts handle
 ./table PctTableSelectionParts error
 ./table PctTableSelectionParts hint
 ./table PctTableSelectionParts select

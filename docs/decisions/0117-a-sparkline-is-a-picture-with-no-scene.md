@@ -1,4 +1,4 @@
-# 0116 — A sparkline is a picture with no scene: one series, one box, the words beside it
+# 0117 — A sparkline is a picture with no scene: one series, one box, the words beside it
 
 **Status:** accepted
 **Implements:** [`req-api-templates`](../requirements/api.md#req-api-templates),

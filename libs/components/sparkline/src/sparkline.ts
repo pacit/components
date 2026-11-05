@@ -47,7 +47,7 @@ const two = (n: number) => Math.round(n * 100) / 100;
 /**
  * A sparkline: one series drawn small, for a table's cell or a card — a line, bars or a band of
  * on and off, with no axes, no cursor and no legend
- * ([0116](../../../../docs/decisions/0116-a-sparkline-is-a-picture-with-no-scene.md)).
+ * ([0117](../../../../docs/decisions/0117-a-sparkline-is-a-picture-with-no-scene.md)).
  *
  * **A picture, named and described.** The host is an image — the `img` role, there being no
  * APG pattern for a picture — named by the consumer (`ariaLabel` or `ariaLabelledby`: what is

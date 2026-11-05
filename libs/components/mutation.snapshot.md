@@ -212,7 +212,9 @@ libs/components/table/src/data-table-filters.ts 97.32 218(0) 3 0 3 5
 libs/components/table/src/data-table-grid.ts 78.87 836(3) 200 4 20 2
 libs/components/table/src/data-table-groups.ts 100.00 9(0) 0 0 0 3
 libs/components/table/src/data-table-page.ts 100.00 3(0) 0 0 0 2
+libs/components/table/src/data-table-pinned-rows.ts 100.00 5(0) 0 0 0 0
 libs/components/table/src/data-table-remote.ts 98.65 146(12) 1 1 0 4
+libs/components/table/src/data-table-row-order.ts 94.68 178(0) 8 2 0 1
 libs/components/table/src/data-table-selection.ts 99.46 185(0) 0 1 0 5
 libs/components/table/src/data-table-slots.ts 100.00 12(0) 0 0 0 6
 libs/components/table/src/data-table-window.ts 94.12 208(0) 13 0 0 0
@@ -248,5 +250,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.41 20872/23086
+TOTAL 90.38 20840/23059
 ```

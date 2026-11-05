@@ -653,6 +653,13 @@ export class PctTableGrid<T, M extends Record<string, unknown>> {
     for (const row of Array.from(table.rows)) {
       if (row.getAttribute('aria-hidden') === 'true') continue;
       const body = row.parentElement?.tagName === 'TBODY';
+      // A pinned row stands outside the grid: its controls keep their own place in the Tab's
+      // order, and the arrows pass it over.
+      if (
+        body &&
+        (row.parentElement as HTMLElement).dataset['pctPinned'] !== undefined
+      )
+        continue;
       const line = Number(row.dataset['pctIndex']);
       const data = body && !row.hasAttribute('data-pct-part');
       if (data && picks)

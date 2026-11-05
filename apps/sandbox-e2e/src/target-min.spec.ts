@@ -218,6 +218,18 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-table-toggle-target-min',
   },
   {
+    name: 'data table handle',
+    applies:
+      'libs/components/table/src/data-table-row-order.scss .pct-data-table__handle',
+    route: '/datatable',
+    selector:
+      '[data-testid="table-ordered"] tbody:not([data-pct-pinned]) tr:first-child [data-pct-part="handle"]',
+    axis: 'both',
+    zero: ['--pct-table-font-size'],
+    ceiling: 24,
+    floor: '--pct-table-toggle-target-min',
+  },
+  {
     name: 'data table pick',
     applies:
       'libs/components/table/src/data-table-selection.scss .pct-data-table__target',

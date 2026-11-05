@@ -10,7 +10,7 @@
 the words the picture holds. Named in the class JSDoc.
 
 A chart in a word's space
-([0116](../decisions/0116-a-sparkline-is-a-picture-with-no-scene.md)): no axes, no cursor, no
+([0117](../decisions/0117-a-sparkline-is-a-picture-with-no-scene.md)): no axes, no cursor, no
 legend and no table, because the values stand in the row beside it. It is an entrypoint of its
 own and imports nothing of `@pacit/components/chart`, so a table of a hundred rows pays for a
 few kilobytes and not for a scene.
@@ -117,7 +117,7 @@ Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
 
 ## Decisions this component implements
 
-[0116](../decisions/0116-a-sparkline-is-a-picture-with-no-scene.md) (the main one — a picture
+[0117](../decisions/0117-a-sparkline-is-a-picture-with-no-scene.md) (the main one — a picture
 with no scene, one series, the words beside it),
 [0102](../decisions/0102-a-series-colour-is-a-place-in-the-palette-and-a-second-channel.md)
 (why a sparkline takes no place in the palette: it is one series, and its colour is the

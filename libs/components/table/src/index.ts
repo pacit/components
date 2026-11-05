@@ -13,6 +13,8 @@ export * from './data-table-columns';
 export * from './data-table-grid';
 export * from './data-table-editing';
 export * from './data-table-export';
+export * from './data-table-pinned-rows';
+export * from './data-table-row-order';
 export * from './column-chooser';
 export * from './model/aggregate';
 export * from './model/columns';
