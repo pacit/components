@@ -49,6 +49,7 @@ const KEYS: Readonly<Record<string, string>> = {
   End: 'end',
   Home: 'home',
   'Shift+Tab': 'back',
+  Space: 'space',
 };
 
 /** What counts as a stop of the Tab key. `summary` is focusable with no attribute saying so. */

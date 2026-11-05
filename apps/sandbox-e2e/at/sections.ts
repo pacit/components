@@ -59,8 +59,9 @@ export const SECTIONS: Readonly<Record<string, readonly Section[]>> = {
       block: 'demo-tree-picks',
       what: "a branch's mixed checkbox",
       // The kettle, a device of the kitchen: picked, it leaves its room half picked above it.
+      // Space and not `activate`, which is Enter on two readers, and Enter does not check a box.
       on: 'tr[data-pct-index="2"] input[type="checkbox"]',
-      keys: ['activate', 'Shift+Tab', 'Shift+Tab'],
+      keys: ['Space', 'Shift+Tab', 'Shift+Tab'],
       owner:
         'datatable.spec.ts › a device half picks its room and floor, a room picks its devices, and a floor all it holds',
     },
