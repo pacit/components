@@ -8,7 +8,7 @@ import { PctDataTable } from './data-table';
  * pinned row is not among `rows` — a sum, a row being added, a row kept in sight are what
  * goes here — and it is drawn where it is pinned and nowhere else: not among the matches, the
  * exports or the stops of the grid
- * ([0115](../../../../docs/decisions/0115-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
+ * ([0116](../../../../docs/decisions/0116-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
  *
  * @example
  * <pct-data-table pctTablePinnedRows [pinnedTop]="[total()]" [rows]="rules()" [columns]="columns" [rowId]="byId" />

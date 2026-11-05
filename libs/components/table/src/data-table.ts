@@ -743,7 +743,7 @@ export class PctDataTable<
    * transform on the row that ends where it stands. Each render measures the rows drawn, so
    * a table that redraws on every scroll pays a measurement for it; the motion is the
    * transition token's, twice over, so a user who asked for less motion sees none
-   * ([0115](../../../../docs/decisions/0115-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
+   * ([0116](../../../../docs/decisions/0116-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
    *
    * @since next
    */

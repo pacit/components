@@ -68,6 +68,24 @@ export const PCT_SERIES_MARKERS: readonly string[] = [
 ];
 
 /**
+ * The hatch of each palette place, as a path in a tile of eight: a diagonal, the other
+ * diagonal, a horizontal, a vertical, a cross, a grid, dots and two horizontals — what tells
+ * the slices of a pie apart where the colours are gone, under forced colours (0115).
+ *
+ * @since next
+ */
+export const PCT_SERIES_HATCHES: readonly string[] = [
+  'M0 8L8 0M-2 2L2-2M6 10L10 6',
+  'M0 0L8 8M-2 6L2 10M6-2L10 2',
+  'M0 4H8',
+  'M4 0V8',
+  'M0 0L8 8M8 0L0 8',
+  'M0 4H8M4 0V8',
+  'M3.5 4H4.5',
+  'M0 2H8M0 6H8',
+];
+
+/**
  * A series as a mark declares it.
  *
  * @since 0.3.0

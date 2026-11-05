@@ -305,6 +305,14 @@ export interface PctTexts {
   readonly chartLater: string;
   /** Chart: the button that returns the window to its default. */
   readonly chartZoomReset: string;
+  /** Pie: the header of the share column of its table, and the name of the share in its tooltip. */
+  readonly chartShare: string;
+  /** Pie: the header of the value column of its table. */
+  readonly chartValue: string;
+  /** Pie: the name of the slice the smallest values fold into. */
+  readonly chartOthers: string;
+  /** Pie: the keys of its cursor, one sentence, read as the range's description. */
+  readonly chartPieKeys: string;
   /** Data table: beside a table with no rows at all. */
   readonly tableEmpty: string;
   /**
@@ -515,6 +523,11 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartEarlier: 'Earlier',
   chartLater: 'Later',
   chartZoomReset: 'Back to the default view',
+  chartShare: 'Share',
+  chartValue: 'Value',
+  chartOthers: 'Others',
+  chartPieKeys:
+    'Arrow keys move from slice to slice, Home and End to the first and last; Enter selects the slice under the cursor; Escape clears the cursor.',
   tableEmpty: 'No rows',
   tableNoMatches: 'No matches',
   tableLoading: 'Loading…',

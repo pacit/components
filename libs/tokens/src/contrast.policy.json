@@ -3130,6 +3130,97 @@
       "severity": "warn"
     },
     {
+      "name": "UI: chart — a gauge's value arc on surface",
+      "fg": "pct.chart.gauge-fg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a gauge band of the success tone on surface",
+      "fg": "pct.chart.gauge-bg-success",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a gauge band of the warning tone on surface",
+      "fg": "pct.chart.gauge-bg-warning",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a gauge band of the danger tone on surface",
+      "fg": "pct.chart.gauge-bg-danger",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a gauge band of the info tone on surface",
+      "fg": "pct.chart.gauge-bg-info",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a gauge's value arc on surface-100",
+      "fg": "pct.chart.gauge-fg",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a gauge band of the success tone on surface-100",
+      "fg": "pct.chart.gauge-bg-success",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a gauge band of the warning tone on surface-100",
+      "fg": "pct.chart.gauge-bg-warning",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a gauge band of the danger tone on surface-100",
+      "fg": "pct.chart.gauge-bg-danger",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a gauge band of the info tone on surface-100",
+      "fg": "pct.chart.gauge-bg-info",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a pie's leader line on surface",
+      "fg": "pct.chart.axis-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: chart — the gap between a pie's slices on surface",
+      "fg": "pct.chart.pie-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: chart — a gauge's track on surface",
+      "fg": "pct.chart.gauge-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "name": "UI: chart — the edge of the tooltip",
       "fg": "pct.chart.tooltip-border",
       "bg": "pct.surface",

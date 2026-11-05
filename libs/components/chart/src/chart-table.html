@@ -4,7 +4,35 @@
     <caption pctCaption>
       {{ captionText() }}
     </caption>
-    }
+    } @if (pie(); as pie) {
+    <!-- A pie's rows: a slice each, its value in the unit and its share of the total shown. -->
+    <thead>
+      <tr>
+        <th pctHeader scope="col">{{ texts().chartLegend }}</th>
+        <th pctHeader scope="col" numeric>
+          {{ texts().chartValue }}@if (pie.unit()) { ({{ pie.unit() }})}
+        </th>
+        <th pctHeader scope="col" numeric>{{ texts().chartShare }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (slice of slices(); track slice.id) {
+      <tr>
+        <th pctHeader scope="row">{{ slice.name }}</th>
+        <td pctCell numeric>{{ slice.value }}</td>
+        <td pctCell numeric>{{ slice.share }}</td>
+      </tr>
+      }
+    </tbody>
+    @if (total(); as total) {
+    <tfoot>
+      <tr>
+        <th pctHeader scope="row">{{ texts().chartSum }}</th>
+        <td pctCell numeric>{{ total }}</td>
+        <td pctCell></td>
+      </tr>
+    </tfoot>
+    } } @else {
     <thead>
       <tr>
         <th pctHeader scope="col">{{ positionHeader() }}</th>
@@ -40,6 +68,6 @@
         }
       </tr>
     </tfoot>
-    }
+    } }
   </table>
 </pct-table-frame>

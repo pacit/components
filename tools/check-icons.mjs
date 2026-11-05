@@ -85,6 +85,8 @@ const DATA_DRAWINGS = new Set([
   `${PROJECT}/chart/src/box.html`,
   `${PROJECT}/chart/src/heat.html`,
   `${PROJECT}/chart/src/ramp.html`,
+  `${PROJECT}/chart/src/pie.html`,
+  `${PROJECT}/chart/src/gauge.html`,
 ]);
 const PART = 'data-pct-part';
 

@@ -1,0 +1,92 @@
+// A gauge's box: its width from the container, its height from the consumer or the arc's own
+// shape; the meter fills it and the drawing is measured into it.
+:host {
+  display: block;
+  position: relative;
+  inline-size: 100%;
+  aspect-ratio: 4 / 3;
+  font-size: var(--pct-chart-font-size);
+}
+
+.meter {
+  position: absolute;
+  inset: 0;
+}
+
+.layer {
+  /* pct-exception direction: the arc runs from its minimum on the left to its maximum on the
+     right in every direction of the page, as a clock does. */
+  direction: ltr;
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+[data-pct-part='track'] {
+  fill: var(--pct-chart-gauge-bg);
+}
+
+// The value's arc in the tone of the band it falls in, which the host carries, and `gauge-fg`
+// outside any band; the needle in `gauge-fg` always.
+[data-pct-part='fill'] {
+  fill: var(--_pct-gauge-fill, var(--pct-chart-gauge-fg));
+}
+
+[data-pct-part='needle'],
+.hub {
+  fill: var(--pct-chart-gauge-fg);
+}
+
+// The bands on the rim, each in its tone's colour; the word under the value is the second channel.
+@each $tone in success, warning, danger, info {
+  :host([data-pct-tone='#{$tone}']) {
+    --_pct-gauge-fill: var(--pct-chart-gauge-bg-#{$tone});
+  }
+
+  [data-pct-part='band'][data-pct-tone='#{$tone}'] {
+    fill: var(--pct-chart-gauge-bg-#{$tone});
+  }
+}
+
+[data-pct-part='value'] {
+  fill: var(--pct-chart-label-fg);
+  font-size: var(--pct-chart-gauge-font-size);
+  font-weight: var(--pct-chart-label-font-weight-selected);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-pct-part='state'],
+[data-pct-part='label'] {
+  fill: var(--pct-chart-axis-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+// With the colours gone the track is an edge, the value a filled arc or a needle in the text's
+// colour, and the bands edges on the rim, told apart by the word under the value.
+@media (forced-colors: active) {
+  [data-pct-part='track'] {
+    fill: Canvas;
+    stroke: CanvasText;
+    stroke-width: 1px;
+  }
+
+  [data-pct-part='fill'],
+  [data-pct-part='needle'],
+  .hub {
+    fill: CanvasText;
+  }
+
+  [data-pct-part='band'][data-pct-tone] {
+    fill: Canvas;
+    stroke: CanvasText;
+    stroke-width: 1px;
+  }
+
+  [data-pct-part='value'],
+  [data-pct-part='state'],
+  [data-pct-part='label'] {
+    fill: CanvasText;
+  }
+}

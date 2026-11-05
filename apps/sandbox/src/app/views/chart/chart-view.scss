@@ -29,3 +29,14 @@
   display: grid;
   gap: var(--pct-space-2);
 }
+
+.sbx-pie {
+  max-inline-size: 400px;
+}
+
+.sbx-gauges {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pct-space-4);
+  max-inline-size: 900px;
+}

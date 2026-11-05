@@ -391,6 +391,61 @@
         "$type": "dimension",
         "$value": "12px",
         "$description": "The bar of a colour ramp in the legend of a heatmap."
+      },
+      "pie-gap": {
+        "$type": "dimension",
+        "$value": "2px",
+        "$description": "The gap between the slices of a pie: a stroke of `pie-border` around each, so no angle is spent on it."
+      },
+      "pie-border": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "The colour of the gap between the slices of a pie: the surface it stands on."
+      },
+      "pie-size-selected": {
+        "$type": "dimension",
+        "$value": "8px",
+        "$description": "How far a selected slice of a pie stands out of the circle."
+      },
+      "gauge-width": {
+        "$type": "dimension",
+        "$value": "14px",
+        "$description": "The width of a gauge's track, and of the arc that fills it to the value."
+      },
+      "gauge-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "The value written in the middle of a gauge."
+      },
+      "gauge-bg": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "A gauge's track, under the value's arc."
+      },
+      "gauge-fg": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "A gauge's value: the needle at it, or the arc from the minimum to it while no band holds it."
+      },
+      "gauge-bg-success": {
+        "$type": "color",
+        "$value": "{pct.success}",
+        "$description": "A band of a gauge's range in the success tone, on the rim, and the value's arc while it falls in the band."
+      },
+      "gauge-bg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "A band of a gauge's range in the warning tone, on the rim, and the value's arc while it falls in the band."
+      },
+      "gauge-bg-danger": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "A band of a gauge's range in the danger tone, on the rim, and the value's arc while it falls in the band."
+      },
+      "gauge-bg-info": {
+        "$type": "color",
+        "$value": "{pct.info}",
+        "$description": "A band of a gauge's range in the info tone, on the rim, and the value's arc while it falls in the band."
       }
     }
   }

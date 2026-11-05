@@ -312,7 +312,7 @@ place in the list: the handles stay disabled, and the table says so once in deve
 stands — after a move, a sort or a filter — by a transform on the row, for twice the
 transition token; a user who asked for less motion sees none. Each render measures the rows
 drawn, so a table that redraws on every scroll pays a measurement for it
-([0115](../decisions/0115-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
+([0116](../decisions/0116-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
 
 ## The table as a grid
 
@@ -560,7 +560,7 @@ application calls, a workbook with no library),
 grid alone),
 [0114](../decisions/0114-a-header-group-is-a-block-of-adjacent-columns-moved-and-pinned-whole.md)
 (a header group: a block of adjacent columns, moved and pinned whole, HTML's semantics),
-[0115](../decisions/0115-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)
+[0116](../decisions/0116-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)
 (pinned rows outside the lines, a move the application's, a slide by a transform on the row),
 [0096](../decisions/0096-a-table-is-the-consumers-markup-or-the-librarys-rows.md) (the first
 layer it renders), [0037](../decisions/0037-loading-is-a-fact-about-the-list.md) (loading is a

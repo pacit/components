@@ -1,4 +1,4 @@
-# 0115 — Pinned rows stand outside the lines, and a move of a row is the application's
+# 0116 — Pinned rows stand outside the lines, and a move of a row is the application's
 
 **Status:** accepted
 **Implements:** [`req-api-platform`](../requirements/api.md#req-api-platform),

@@ -47,7 +47,7 @@ const LINKS = /* @__PURE__ */ new WeakMap<PctTableRowOrder, Link>();
  * it goes in front of, `null` for the end — and the application moves the row in `rows`,
  * where the order is kept. Once the row stands at its new place, its handle has the focus
  * again and a reader hears the row's new number
- * ([0115](../../../../docs/decisions/0115-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
+ * ([0116](../../../../docs/decisions/0116-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
  *
  * The rows stand in the order the application gave them: under a sort the order is the
  * sort's, and in a tree or in groups a place is not a place in the list, so the handles stay

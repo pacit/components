@@ -480,6 +480,66 @@ export class PctChartRampHarness extends PctHarness<'item' | 'ramp' | 'label'> {
   static override readonly parts = ['item', 'ramp', 'label'] as const;
 }
 
+/**
+ * `pct-pie` — `PctPie`: a scene of its own, so its parts stand in its own box.
+ *
+ * @since next
+ */
+export class PctPieHarness extends PctHarness<
+  | 'data'
+  | 'label'
+  | 'leader'
+  | 'message'
+  | 'plot'
+  | 'range'
+  | 'slice'
+  | 'swatch'
+  | 'tooltip'
+> {
+  static override hostSelector = 'pct-pie';
+  static override readonly parts = [
+    'data',
+    'label',
+    'leader',
+    'message',
+    'plot',
+    'range',
+    'slice',
+    'swatch',
+    'tooltip',
+  ] as const;
+}
+
+/**
+ * `pct-gauge` — `PctGauge`.
+ *
+ * @since next
+ */
+export class PctGaugeHarness extends PctHarness<
+  | 'band'
+  | 'data'
+  | 'fill'
+  | 'label'
+  | 'meter'
+  | 'needle'
+  | 'state'
+  | 'track'
+  | 'value'
+> {
+  static override hostSelector = 'pct-gauge';
+  static override readonly parts = [
+    'band',
+    'data',
+    'fill',
+    'label',
+    'meter',
+    'needle',
+    'state',
+    'track',
+    'value',
+  ] as const;
+}
+
 // ── @pacit/components/checkbox ──────────────────────────────────────────────────
 
 /**
