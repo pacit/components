@@ -90,6 +90,30 @@ description and `readings()` read the rows, never a step on the way.
 | P3  | Node, one series of 60 000, decimation across 860 px, scan / pyramid         | pyramid built 2.5 ms; 600 in window 0.15 / 0.08 ms, 16 000 0.80 / 0.78, 60 000 2.50 / 1.47; extent at 16 000 0.41 / 0.007 ms           |
 | P4  | `KeyframeEffect(null)` progress at 600 of 1000 ms under `steps(2, end)`      | 0.5 in chromium 153, firefox 155 and webkit 26.6: the progress read is the eased one                                                   |
 
+## Amended 2026-11-05: the pyramid grows with its columns
+
+A live series shown whole was dear mostly for its pyramid, built again on every tick over
+60 000 readings: 1.09 s of a five-second profile (P6). `pctPyramidGrower` keeps the pyramid it
+built last, and when the next columns are those columns with readings dropped from the front
+and added at the back of the same buffer — as `pctColumnsReader` hands them out — it builds
+only the runs over the readings added. Its runs count from the start of the buffer, not of the
+columns, so a reading dropped moves an offset and not the runs. A run cut by either end of the
+columns is split down to its readings, as one cut by the window's edge always was, so neither
+the readings dropped nor the room past the end is read through a run. Lines and areas build
+their pyramids with it; the columns of another buffer, and readings put before the start, are
+built whole.
+
+What is left of a whole window live (P6): the decimation of 60 000 readings to the pixel
+(0.83 s of five), the description's facts (0.41 s — a least-squares line through every reading
+in the window, which running sums would keep only by losing the digits a slope of instants
+needs), the identity check of the rows kept (0.23 s) and the consumer's own copy (0.18 s). A
+decimation that redraws only the last column is still not built.
+
+| #   | What                                                         | Read                                                                                                                                                    |
+| --- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P5  | P1 again on this desk, before → after the grower, p50 render | whole window: chromium 49.5 → 37 ms, firefox 50 → 33, webkit 66 → 38; frames over 50 ms 75 → 4, 373 → 115, 547 → 481; 10 min window unchanged (9–13 ms) |
+| P6  | Chromium CPU profile, 5 s, whole window, after the grower    | pyramid 1.09 s → 0.05 s; decimation 0.83 s, facts 0.41 s, identity check 0.23 s, the consumer's copy 0.18 s                                             |
+
 ## Amended 2026-11-05: points, ranges, the pie and the gauge ease
 
 The first cut eased lines, areas and bars and left the rest drawn at once. The same rule
