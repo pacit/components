@@ -171,6 +171,16 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/drawer/drawer-view').then((m) => m.DrawerView),
   },
   {
+    path: 'probe-cells',
+    title: 'Probe cells',
+    summary: 'A probe.',
+    group: 'components',
+    load: () =>
+      import('./views/probe-cells/probe-cells-view').then(
+        (m) => m.ProbeCellsView,
+      ),
+  },
+  {
     path: 'accordion',
     title: 'Accordion',
     summary:
