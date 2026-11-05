@@ -18,7 +18,7 @@ person has made it.
 
 - Orca version 50.3, AT-SPI2 version: 2.60.4
 - Firefox 155.0 (the Playwright build), drawn on gnome-shell 50.1 headless, virtual monitor 1280x900, its own Wayland socket (wayland-at) — the browser's connection to it read off ss(8); speech synthesised into a null device
-- 665 steps over 48 views, at most 12 stops of a view's own
+- 685 steps over 50 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -30,15 +30,15 @@ for, and the row beneath it is what leaving sounds like. A block deeper in a vie
 cap reaches is a heading of its own, `/view#block`: `enter` puts focus on its first stop,
 the keys a person presses there follow under their names, then Tab stops while focus stays
 inside it. `(silence)` is a stop the reader said nothing
-at — 5 of 665 here. 16 view(s) hit the cap, and each says so.
+at — 6 of 685 here. 16 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2781
-phrases, and 2778 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2867
+phrases, and 2864 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
 
-**Every view spoke.** No view of the 48 went unread, so nothing below is
+**Every view spoke.** No view of the 50 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
 16 view(s) have more stops than the 12 taken, and each says so where it bit.
 
@@ -143,7 +143,7 @@ Tab moved nothing — focus had left the page.
 ### `/number`
 
 ```
-arrive  a "Number"                                           navigation · Sandbox views · List with 39 items · Number · link. · Browse mode
+arrive  a "Number"                                           navigation · Sandbox views · List with 39 items · Number · visited link. · Browse mode
 enter   input                                                Price · spin button · 1 499,90. · The arrows change the value by 0.5. · Focus mode
 tab 1   button[field-suffix-item] "Clear the price"          Clear the price · button. · Browse mode
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -297,7 +297,7 @@ Tab moved nothing — focus had left the page.
 ### `/switch`
 
 ```
-arrive  a "Switch"                                           navigation · Sandbox views · List with 39 items · Switch · visited link. · Browse mode
+arrive  a "Switch"                                           navigation · Sandbox views · List with 39 items · Switch · link. · Browse mode
 enter   input[control]                                       Backups · switch not pressed. · Runs every night at 03:00.
 tab 1   —                                                    Theme · panel · light · selected radio button. · alert. · Backups have to stay on
 ```
@@ -403,7 +403,7 @@ tab 1   button "Count up"                                    Count up · button.
 tab 2   button "File"                                        File · collapsed button. · opens menu · Focus mode
 tab 3   button "Language"                                    Language · collapsed button. · opens menu
 tab 4   button "Language"                                    Menu · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Actions"                                     main content · Actions · collapsed button. · opens menu · Focus mode
+reach   button "Actions"                                     main content · A list of commands on a panel, walked by the keyboard and chosen from. Focus really moves · Browse mode · Actions · collapsed button. · opens menu · Focus mode
 open    button[item] "Rename"                                leaving main content. · Actions · menu · Rename.
 close   button "Actions"                                     main content · Actions · collapsed button. · opens menu · collapsed
 ```
@@ -583,7 +583,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/progress`
 
 ```
-arrive  a "Progress"                                         leaving list. · leaving navigation. · leaving main content. · navigation · Sandbox views · List with 39 items · Progress · link.
+arrive  a "Progress"                                         leaving list. · leaving navigation. · leaving main content. · navigation · Sandbox views · List with 39 items · Progress · visited link.
 enter   button "−10"                                         −10 · button.
 tab 1   button "+10"                                         +10 · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -613,7 +613,7 @@ Tab moved nothing — focus had left the page.
 ### `/sparkline`
 
 ```
-arrive  a "Sparkline"                                        navigation · Sandbox views · List with 39 items · Sparkline · link. · Browse mode
+arrive  a "Sparkline"                                        navigation · Sandbox views · List with 39 items · Sparkline · visited link. · Browse mode
 enter   button "Next hour"                                   Next hour · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -626,7 +626,7 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  a "Skeleton"                                         navigation · Sandbox views · List with 39 items · Skeleton · visited link. · Browse mode
+arrive  a "Skeleton"                                         navigation · Sandbox views · List with 39 items · Skeleton · link. · Browse mode
 enter   button "The content arrives"                         The content arrives · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -893,8 +893,8 @@ the section: `ArrowRight`, `ArrowDown`, `End` in `demo-grid`, to read the grid (
 ### `/datatable#demo-row-menu`
 
 ```
-enter   button[actions]                                      leaving panel. · table with 9 rows 8 columns · Actions column header. · row 2. · column 8 · Actions Supply fan · collapsed button. · opens menu. · Focus mode
-act     button[item] "Duplicate"                             leaving main content. · menu · Duplicate.
+enter   button[actions]                                      table with 9 rows 8 columns · Actions column header. · row 2. · column 8 · Actions Supply fan · collapsed button. · opens menu. · Focus mode
+act     button[item] "Duplicate"                             leaving table. · leaving main content. · menu · Duplicate.
 down    button[item] "Remove"                                Remove.
 escape  button[actions]                                      main content · table with 9 rows 8 columns · Actions column header. · row 2. · column 8 · Actions Supply fan · collapsed button. · opens menu. · collapsed
 tab 1   input[select]                                        Select column header. · row 3. · column 1 · Select Heater · check box not checked. · Browse mode
@@ -915,10 +915,44 @@ the section: `activate`, `ArrowDown`, `Escape` in `demo-row-menu`, to read a row
 
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
+### `/datatable#demo-tree-picks`
+
+```
+enter   input[select]                                        leaving table. · table with 9 rows 4 columns · Select column header. · row 4. · column 1 · Select Kettle · check box not checked. · Browse mode
+space   input[select]                                        (silence)
+back    button[disclosure] "Collapse"                        table with 9 rows 4 columns · Name column header. · row 3. · column 2 · Collapse · expanded button. · Focus mode
+back    input[select]                                        Select column header. · column 1 · Select Kitchen · check box partially checked. · Browse mode
+tab 1   button[disclosure] "Collapse"                        Name column header. · column 2 · Collapse · expanded button. · Focus mode
+tab 2   input[select]                                        Select column header. · row 4. · column 1 · Select Kettle · check box checked. · Browse mode
+tab 3   input[select]                                        row 5. · Select Fridge · check box not checked.
+tab 4   input[select]                                        row 6. · Select Lamp · check box not checked.
+tab 5   input[select]                                        row 7. · Select Hall · check box not checked.
+tab 6   button[disclosure] "Expand"                          Name column header. · column 2 · Expand · collapsed button. · Focus mode
+tab 7   input[select]                                        Select column header. · row 8. · column 1 · Select Garage · check box not checked. · Browse mode
+tab 8   input[select]                                        row 9. · Select Upstairs · check box not checked.
+tab 9   button[disclosure] "Expand"                          Name column header. · column 2 · Expand · collapsed button. · Focus mode
+tab 10  input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
+```
+
+the section: `Space`, `Shift+Tab`, `Shift+Tab` in `demo-tree-picks`, to read a branch's mixed checkbox (the keys belong to `datatable.spec.ts › a device half picks its room and floor, a room picks its devices, and a floor all it holds`).
+
+### `/datatable#demo-col-span`
+
+```
+enter   td "Kitchen"                                         table with 4 rows 4 columns · Kitchen · Fine · 21.5 °C · 48 % · Focus mode
+right   td "Fine"                                            State column header Fine · column 2
+right   td "21.5 °C"                                         Temperature column header 21.5 °C · column 3
+down    td "No sensor fitted"                                State column header No sensor fitted · row 3 column 2
+down    td "23.0 °C"                                         Temperature column header 23.0 °C · row 4 column 3
+tab 1   input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
+```
+
+the section: `ArrowRight`, `ArrowRight`, `ArrowDown`, `ArrowDown` in `demo-col-span`, to read a cell over its neighbours (the keys belong to `datatable.spec.ts › the arrows step over the cell as one, and come back to the column they left`).
+
 ### `/hero`
 
 ```
-arrive  a "Hero"                                             leaving table. · leaving main content. · navigation · Sandbox views · List with 39 items · Hero · link. · Browse mode
+arrive  a "Hero"                                             leaving panel. · leaving main content. · navigation · Sandbox views · List with 39 items · Hero · link.
 enter   a "Under attention"                                  Under attention The rim is drawn and hidden, so the reveal is an opacity. · visited link.
 tab 1   a "Read the case"                                    Read the case · visited link.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -936,7 +970,7 @@ Tab moved nothing — focus had left the page.
 ### `/stepper`
 
 ```
-arrive  a "Stepper"                                          navigation · Sandbox views · List with 39 items · Stepper · visited link. · Browse mode
+arrive  a "Stepper"                                          navigation · Sandbox views · List with 39 items · Stepper · link. · Browse mode
 enter   button "Back"                                        Back · button.
 tab 1   button "Next"                                        Next · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -950,7 +984,7 @@ Tab moved nothing — focus had left the page.
 ### `/tree`
 
 ```
-arrive  a "Tree"                                             navigation · Sandbox views · List with 39 items · Tree · visited link. · Browse mode
+arrive  a "Tree"                                             navigation · Sandbox views · List with 39 items · Tree · link. · Browse mode
 enter   pct-tree-item "README.md"                            README.md. · tree level 1 · Focus mode
 tab 1   pct-tree-item "README.md"                            Tree · @pacit/components · page tab. · JUGGLER <window>.
 ```
@@ -960,7 +994,7 @@ Tab moved nothing — focus had left the page.
 ### `/layout`
 
 ```
-arrive  a "Layout"                                           navigation · Sandbox views · List with 39 items · Layout · visited link. · Browse mode
+arrive  a "Layout"                                           navigation · Sandbox views · List with 39 items · Layout · link. · Browse mode
 enter   input[control]                                       Theme · panel · light · selected radio button.
 tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
