@@ -1,4 +1,4 @@
-# 0118 — A brush is the selection drawn by a drag and moved by two ranges
+# 0119 — A brush is the selection drawn by a drag and moved by two ranges
 
 **Status:** accepted
 **Implements:** [`req-api-templates`](../requirements/api.md#req-api-templates),

@@ -1276,6 +1276,7 @@ const NOT_THE_LABEL =
  * @since 0.3.0
  */
 export class PctDataTableHarness extends PctHarness<
+  | 'actions'
   | 'details'
   | 'disclosure'
   | 'editor'
@@ -1298,6 +1299,7 @@ export class PctDataTableHarness extends PctHarness<
 > {
   static override hostSelector = 'pct-data-table';
   static override readonly parts = [
+    'actions',
     'details',
     'disclosure',
     'editor',

@@ -585,7 +585,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * at its edges, each a stop that moves its edge. A drag inside the selection moves it whole
    * and a drag on an edge moves that edge; a tap on an edge and then one on the plot puts the
    * edge there; a double tap inside zooms to it, as Enter on an edge does
-   * ([0118](../../../../docs/decisions/0118-a-brush-is-the-selection-drawn-by-a-drag-and-moved-by-two-ranges.md)).
+   * ([0119](../../../../docs/decisions/0119-a-brush-is-the-selection-drawn-by-a-drag-and-moved-by-two-ranges.md)).
    * Bound with `[(selected)]` to another chart's window, a low chart with a brush is that
    * chart's navigator.
    *

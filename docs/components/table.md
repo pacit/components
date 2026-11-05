@@ -77,6 +77,7 @@ element in the tab order on its own.
 | `group`       | the data table's heading of a group of rows                                  |
 | `disclosure`  | the data table's button that opens a row's details                           |
 | `handle`      | the data table's button that moves a row — see the data table's card         |
+| `actions`     | the data table's button that opens a row's menu — see the data table's card  |
 | `mark`        | the data table's word the quick filter found                                 |
 | `message`     | the data table's sentence beside an empty table — see the data table's card  |
 | `place`       | the data table's place of a sort key after the first                         |

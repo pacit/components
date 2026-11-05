@@ -2,7 +2,7 @@
  * The brush: a stretch of the horizontal axis drawn by a drag and moved by its edges — the
  * arithmetic behind `pct-chart`'s `brush`, held in the window the chart shows and never
  * narrower than its narrowest span
- * ([0118](../../../../../docs/decisions/0118-a-brush-is-the-selection-drawn-by-a-drag-and-moved-by-two-ranges.md)).
+ * ([0119](../../../../../docs/decisions/0119-a-brush-is-the-selection-drawn-by-a-drag-and-moved-by-two-ranges.md)).
  */
 import type { PctWindow } from './window';
 

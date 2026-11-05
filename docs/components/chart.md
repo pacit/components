@@ -137,7 +137,7 @@ charts inside it, and gives their plots the same edges, so a series over a band 
 up whatever their axes.
 
 **A brush and a navigator.** `brush` turns a drag across the plot into `selected` instead of a
-pan ([0118](../decisions/0118-a-brush-is-the-selection-drawn-by-a-drag-and-moved-by-two-ranges.md)):
+pan ([0119](../decisions/0119-a-brush-is-the-selection-drawn-by-a-drag-and-moved-by-two-ranges.md)):
 a drag inside the selection moves it whole, one on an edge moves that edge, and a tap outside
 lets it go. Each edge has a grip on the plot and a range beside the picture — two more stops,
 read like the cursor's, their arrows a hundredth of the window and their page keys a tenth.

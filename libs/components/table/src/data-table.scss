@@ -530,3 +530,36 @@ tfoot > tr > * {
 tfoot > tr > th {
   text-align: start;
 }
+
+/* Where a print of a window past its limit stopped: said on paper, not on the screen. */
+.pct-data-table__cut {
+  display: none;
+}
+
+/* On paper the table is as long as its rows: no height of its own, no scroll, nothing stuck
+   to an edge that paper does not have. The header repeats on every page, as a table's does,
+   and a row is not cut between two. */
+@media print {
+  :host {
+    display: block;
+    block-size: auto !important;
+    max-block-size: none !important;
+  }
+
+  pct-table-frame {
+    overflow: visible;
+  }
+
+  th,
+  td {
+    position: static !important;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+
+  .pct-data-table__cut {
+    display: block;
+  }
+}

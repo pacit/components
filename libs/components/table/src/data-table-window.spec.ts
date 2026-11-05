@@ -53,6 +53,7 @@ function registersOf(count: number): readonly Register[] {
         pctTableWindow
         [pctTableGroups]="columns()"
         [groupBy]="['room']"
+        [printLimit]="limit()"
         caption="Registers"
         [stickyHeader]="sticky()"
         [rows]="rows()"
@@ -94,6 +95,7 @@ class WindowHost {
   readonly sticky = signal(true);
   readonly grouped = signal(false);
   readonly grid = signal(false);
+  readonly limit = signal(5000);
   readonly open = signal<readonly PctRowId[]>([]);
   readonly byId = (register: Register) => register.id;
 }
@@ -356,6 +358,63 @@ function range(start: number, end: number): number[] {
 }
 
 describe('PctTableWindow', () => {
+  it('draws every line for a print, at once, and the window again after it', async () => {
+    const fixture = await render((host) => host.rows.set(registersOf(100)));
+    const element = table(fixture);
+    window.dispatchEvent(new Event('beforeprint'));
+    // Drawn before the page is laid out for paper: no render after the event.
+    expect(drawn(fixture)).toEqual(range(0, 100));
+    expect(element.style.getPropertyValue('--_lead')).toBe('0px');
+    expect(element.style.getPropertyValue('--_tail')).toBe('0px');
+    // Five thousand lines by default: a hundred print whole, and nothing is said.
+    expect(
+      element.parentElement?.querySelector('.pct-data-table__cut'),
+    ).toBeNull();
+    // A print's rows are the paper's: what they report is not read.
+    heightOf = () => 80;
+    measure();
+    window.dispatchEvent(new Event('afterprint'));
+    await fixture.whenStable();
+    expect(drawn(fixture)).toEqual(range(0, 17));
+    expect(element.style.getPropertyValue('--_tail')).toBe(
+      `${(100 - 17) * 40}px`,
+    );
+  });
+
+  it('stops a print at its limit and says so under the table', async () => {
+    const fixture = await render((host) => {
+      host.rows.set(registersOf(100));
+      host.grouped.set(true);
+      host.limit.set(10);
+    });
+    window.dispatchEvent(new Event('beforeprint'));
+    // The lines are the rows and the groups' headings; the sentence counts the rows.
+    expect(drawn(fixture)).toEqual(range(0, 10));
+    const cut = () =>
+      frameOf(fixture).querySelector(':scope > .pct-data-table__cut');
+    expect(cut()?.textContent?.trim()).toBe('The first 9 of 100 rows printed');
+    window.dispatchEvent(new Event('afterprint'));
+    await fixture.whenStable();
+    expect(cut()).toBeNull();
+    // A limit as high as the lines prints them all, and says nothing.
+    fixture.componentInstance.limit.set(102);
+    window.dispatchEvent(new Event('beforeprint'));
+    expect(drawn(fixture)).toHaveLength(102);
+    expect(cut()).toBeNull();
+    window.dispatchEvent(new Event('afterprint'));
+  });
+
+  it('lets the print go with the table', async () => {
+    const fixture = await render();
+    const removed = vi.spyOn(window, 'removeEventListener');
+    fixture.destroy();
+    expect(removed.mock.calls.map(([type]) => type)).toEqual(
+      expect.arrayContaining(['beforeprint', 'afterprint']),
+    );
+    window.dispatchEvent(new Event('beforeprint'));
+    window.dispatchEvent(new Event('afterprint'));
+  });
+
   it('draws the lines the view shows and eight more below, and the space of the rest', async () => {
     const fixture = await render();
     // A view of 400 px less the header's 40: nine lines of 40 px, and the overscan.

@@ -600,7 +600,7 @@
 
 <sbx-demo
   heading="A hundred thousand registers"
-  summary="A window draws the rows its frame shows and the space of the rest: the scrollbar is the whole list's, a reader is told which row of how many it is at, and the columns keep the widths of the first frame. A million rows lie past the engines' tallest box, so their space is scaled, and the table leaves their order and their filter to a server — the demo turns both off for them."
+  summary="A window draws the rows its frame shows and the space of the rest: the scrollbar is the whole list's, a reader is told which row of how many it is at, and the columns keep the widths of the first frame. A million rows lie past the engines' tallest box, so their space is scaled, and the table leaves their order and their filter to a server — the demo turns both off for them. A print draws every row up to the thousand the demo sets, and says where it stopped past them."
   [reqs]="['req-a11y-built-in', 'req-api-platform']"
   data-testid="demo-registers"
 >
@@ -628,6 +628,15 @@
     >
       Show the last register
     </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="registers-print"
+      (click)="printPage()"
+    >
+      Print
+    </button>
     <span class="muted" data-testid="registers-view"
       >Rows {{ registersTable.visible().start + 1 }} to {{
       registersTable.visible().end }} of {{ count().toLocaleString('en')
@@ -646,6 +655,7 @@
     caption="Registers"
     locale="en"
     pctTableWindow
+    printLimit="1000"
     [rows]="registers()"
     [columns]="registerColumns"
     [rowId]="registerId"
@@ -883,4 +893,55 @@
     (reorder)="moveRule($event)"
   />
   <p data-testid="order-state"><code>{{ orderText() }}</code></p>
+</sbx-demo>
+
+<sbx-demo
+  heading="A row's menu and a status bar"
+  summary="Each row has a button of actions at its end, and the application's menu opens from it, from a press of the secondary button on the row, or from the context menu key and Shift+F10 in it. A command that removes the row hands the focus to the next row's button. The line under the table counts the rules shown, those picked and their energy, from what the table already says."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-row-menu"
+>
+  <pct-field label="Filter rules" class="datatable__filter">
+    <input
+      pctText
+      type="search"
+      data-testid="menu-filter"
+      [value]="menuQuestion()"
+      (input)="menuQuestion.set($any($event.target).value)"
+    />
+  </pct-field>
+  <pct-data-table
+    #menuTable="pctDataTable"
+    #rowMenu="pctTableRowMenu"
+    data-testid="table-menu"
+    caption="Rules with actions"
+    locale="en"
+    [pctTableRowMenu]="ruleActions"
+    pctTableSelection
+    [(value)]="menuPicked"
+    [rows]="menuRules()"
+    [columns]="columns"
+    [rowId]="byId"
+    [filter]="menuQuestion()"
+  />
+  <p class="muted" data-testid="menu-status">
+    {{ menuTable.matchedRows().length }} of {{ menuRules().length }} rules shown
+    · {{ menuPicked().length }} picked · {{ pickedEnergy() }} kWh picked
+  </p>
+  <pct-menu #ruleActions>
+    <button
+      pctMenuItem
+      data-testid="menu-duplicate"
+      (click)="duplicateRule(rowMenu.id())"
+    >
+      Duplicate
+    </button>
+    <button
+      pctMenuItem
+      data-testid="menu-remove"
+      (click)="removeRule(rowMenu.id())"
+    >
+      Remove
+    </button>
+  </pct-menu>
 </sbx-demo>

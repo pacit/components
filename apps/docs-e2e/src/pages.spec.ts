@@ -1043,7 +1043,7 @@ test.describe('The pages', () => {
     // and its states (0109); 834 since the frame's bar, navigation and description list took
     // theirs (0110); 880 since the heatmap's ramp took its steps and their text colours (0113);
     // 891 with the pie's and the gauge's (0115); 897 with the sparkline's (0117); 900 with the
-    // brush's handle (0118).
+    // brush's handle (0119).
     await expect(count).toHaveText('900 of 900');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
