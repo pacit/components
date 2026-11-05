@@ -398,7 +398,7 @@ export interface PctTexts {
   readonly tableSelectAll: string;
   /**
    * Data table: the word a row's checkbox is named by, before the text of the row's first
-   * cell — `Select Kitchen lamp`.
+   * cell — `Select Kitchen lamp` — and the name of the column's header.
    */
   readonly tableSelectRow: string;
   /** Data table: what a block of rows a remote source failed to deliver says in their place. */

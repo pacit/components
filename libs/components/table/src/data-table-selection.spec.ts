@@ -170,6 +170,10 @@ describe('PctTableSelection — the rows picked', () => {
     expect(rows()[0].cells[0].contains(lamp)).toBe(true);
     expect(lamp.parentElement?.tagName).toBe('LABEL');
     expect(all()?.getAttribute('aria-label')).toBe('Select all rows');
+    // The column is named by its word, not by the checkbox over it: a reader says the header
+    // with every row's checkbox, and "Select all rows" beside one row is not what it is.
+    const header = all()?.closest('th') as HTMLElement;
+    expect(header.getAttribute('aria-label')).toBe('Select');
   });
 
   it('picks and drops a row, and marks it on its line', async () => {
@@ -263,6 +267,12 @@ describe('PctTableSelection — the rows picked', () => {
     host.off.set(false);
     host.mode.set('single');
     await settle(fixture);
+    // One pick: the header shows its word, and is named by it.
+    expect(
+      table()
+        .querySelector('th.pct-data-table__pick')
+        ?.hasAttribute('aria-label'),
+    ).toBe(false);
     await pressBeside(picks()[3]);
     expect(host.value()).toEqual([4]);
     expect(picks()[3].checked).toBe(true);

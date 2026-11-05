@@ -29,7 +29,10 @@ export default defineConfig({
   // parallel, nothing headless — rather than from this file remembering them.
   ...screenReaderConfig,
   testDir: './at',
-  timeout: 30 * 60 * 1000,
+  // A ceiling for a reader that stopped answering, not a budget for a slow one: NVDA's walk of
+  // forty-five views and the data table's three sections ran past thirty minutes at the
+  // forty-third view (2026-11-05), and the job's own limit is ninety.
+  timeout: 60 * 60 * 1000,
   retries: 0,
   reporter: [['list']],
   use: { ...screenReaderConfig.use, baseURL },
