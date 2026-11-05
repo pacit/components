@@ -20,7 +20,9 @@ import {
   pctPointsIn,
   pctPointsOf,
   pctThinPoints,
+  type PctPointSet,
 } from './model/points';
+import { pctTween, pctTweenable } from './model/tween';
 import type { PctDomain } from './model/scale';
 import type { PctWindow } from './model/window';
 import {
@@ -32,6 +34,7 @@ import {
   type PctSeriesSpec,
   type PctSwatchContext,
 } from './scene';
+import { pctEased, type PctWay } from './tween';
 
 /** One point as drawn: where its centre stands in the layer, how wide it is, which point it is. */
 interface PctDrawnPoint {
@@ -54,6 +57,23 @@ const LEAST = 2;
 const REACH = 2;
 /** The marker shapes are drawn in a box of twelve: the radius they are drawn at. */
 const SHAPE = 6;
+
+/**
+ * A point set's way when a recount eases: the points stay where they stand along `x`, their
+ * values and sizes move — a size that is a gap on either side is the one it goes to, at once.
+ */
+const POINTS: PctWay<PctPointSet> = {
+  tweenable: pctTweenable,
+  tween: (from, to, progress) => ({
+    ...pctTween(from, to, progress),
+    sizes: pctTween(
+      { xs: to.xs, ys: from.sizes, length: to.length },
+      { xs: to.xs, ys: to.sizes, length: to.length },
+      progress,
+    ).ys,
+    rows: to.rows,
+  }),
+};
 
 /**
  * A series of points on a chart — a scatter, or bubbles when `size` is read: each row a mark
@@ -198,7 +218,13 @@ export class PctPoints<T> extends PctMark {
   private readonly points = computed(() =>
     pctPointsOf(this.data(), this.x(), this.y(), this.size()),
   );
-  private readonly largest = computed(() => pctLargestSize(this.points()));
+  /** The points as drawn: on their way to new values and sizes while a recount eases (0121). */
+  private readonly drawnPoints = pctEased(
+    this.points,
+    this.scene.animate,
+    POINTS,
+  );
+  private readonly largest = computed(() => pctLargestSize(this.drawnPoints()));
 
   /** @since 0.3.0 */
   override readonly series = computed<readonly PctSeriesSpec[]>(() => [
@@ -258,7 +284,7 @@ export class PctPoints<T> extends PctMark {
     const window = this.scene.shown();
     const scales = this.scales();
     if (this.hidden() || !window || !scales) return none;
-    const points = this.points();
+    const points = this.drawnPoints();
     const [start, end] = pctPointsIn(points, window);
     const horizontal = this.scene.orientation() === 'horizontal';
     const sized = this.sized();
@@ -306,7 +332,7 @@ export class PctPoints<T> extends PctMark {
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     if (id !== this.key()) return null;
-    const points = this.points();
+    const points = this.drawnPoints();
     const [start, end] = pctPointsIn(points, window);
     let lo = Infinity;
     let hi = -Infinity;
@@ -324,8 +350,8 @@ export class PctPoints<T> extends PctMark {
    */
   override valueAt(id: string, x: number): number | null {
     if (id !== this.key()) return null;
-    const at = pctPointAt(this.points(), x);
-    return at < 0 ? null : this.points().ys[at];
+    const at = pctPointAt(this.drawnPoints(), x);
+    return at < 0 ? null : this.drawnPoints().ys[at];
   }
 
   /**

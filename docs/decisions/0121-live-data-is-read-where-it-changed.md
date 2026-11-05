@@ -89,3 +89,27 @@ description and `readings()` read the rows, never a step on the way.
 | P2  | Chromium CPU profile, 5 s, 10 min window                                     | before: columns 1.30 s + accessor 0.47 s, pyramid 0.95 s, the consumer's copy 0.14 s; after: identity check 0.25 s, copy 0.20 s        |
 | P3  | Node, one series of 60 000, decimation across 860 px, scan / pyramid         | pyramid built 2.5 ms; 600 in window 0.15 / 0.08 ms, 16 000 0.80 / 0.78, 60 000 2.50 / 1.47; extent at 16 000 0.41 / 0.007 ms           |
 | P4  | `KeyframeEffect(null)` progress at 600 of 1000 ms under `steps(2, end)`      | 0.5 in chromium 153, firefox 155 and webkit 26.6: the progress read is the eased one                                                   |
+
+## Amended 2026-11-05: points, ranges, the pie and the gauge ease
+
+The first cut eased lines, areas and bars and left the rest drawn at once. The same rule
+reaches four more: a change that keeps the shape eases, one that changes it is drawn at once.
+
+- **Points and bubbles** ease each point's position and a bubble's size while the points are
+  the same in number and place along the axis; added or dropped, they are drawn at once.
+- **Ranges and candles** ease the low, the high, the open and the close together, and a band
+  that loses or gains its candles' ends is drawn at once.
+- **The pie** eases the values of its slices while the same slices stand in the same order,
+  and the turn is cut afresh from the eased values each frame; a slice added, dropped, folded
+  into the rest or hidden by the legend is drawn at once. `animate` on `pct-pie`, off by
+  default: it is a scene of its own, with no `pct-chart` to carry it.
+- **The gauge** eases its fill or its needle from one value to the next, and a value that
+  comes or goes is drawn at once. `animate` on `pct-gauge`, off by default, for the same
+  reason.
+
+What is read stays the truth here as well: the table, the description, `readings()`, a
+slice's share (`shareOf`) and the meter's `aria-valuenow` and words are the new values from
+the first frame. One easing serves them all (`pctEased`, inside the entrypoint): the drawn
+value is the last one drawn, and a change it can ease is run on the token's curve as the
+lines' is. A compared period's bars, the boxes and the heatmap still draw every change at
+once — none of them has had a consumer ask.
