@@ -532,8 +532,9 @@ the data stand in).
 - **The monotone curve agrees with its reading on linear axes.** On a logarithmic axis the
   drawn curve bends in the logarithm and the reading is the data's.
 - **A live series shown whole stays dear.** With all 60 000 readings of eight series in the
-  window, a reading each a tenth of a second still costs 50 to 66 ms a tick: the decimation of
-  the whole series to the pixel, not the reading. Readings gathered and added once a second cost
+  window, a reading each a tenth of a second still costs 33 to 38 ms a tick — 50 to 66 before
+  the pyramid grew with its columns: the decimation of the whole series to the pixel and the
+  description's line through it, not the reading. Readings gathered and added once a second cost
   a tenth of it.
 - **`animate` moves lines, areas and bars.** A compared period's bars, ranges, points, boxes,
   the heatmap, the pie and the gauge draw every change at once.

@@ -115,7 +115,7 @@ libs/components/chart/src/model/brush.ts 95.77 68(0) 3 0 0 0
 libs/components/chart/src/model/color.ts 94.50 103(1) 6 0 0 0
 libs/components/chart/src/model/columns.ts 94.41 135(1) 8 0 0 0
 libs/components/chart/src/model/cursor.ts 95.60 87(3) 4 0 0 0
-libs/components/chart/src/model/decimate.ts 90.61 280(74) 29 0 0 0
+libs/components/chart/src/model/decimate.ts 92.51 321(72) 26 0 0 0
 libs/components/chart/src/model/describe.ts 98.77 80(1) 1 0 0 0
 libs/components/chart/src/model/duration.ts 96.61 57(0) 2 0 0 0
 libs/components/chart/src/model/extent.ts 90.32 84(0) 9 0 0 0
@@ -256,5 +256,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.62 22309/24617
+TOTAL 90.65 22350/24655
 ```
