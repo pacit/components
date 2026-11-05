@@ -735,6 +735,10 @@ describe('PctBars', () => {
     await settle(fixture);
     expect(chart.selected()).toBeNull();
     expect(range.getAttribute('aria-valuetext')).toBe(reading);
+    // a selection that starts where the band does and ends elsewhere is not the band
+    chart.selected.set({ from: MARCH + 3 * D, to: MARCH + 5 * D });
+    await settle(fixture);
+    expect(range.getAttribute('aria-valuetext')).toBe(reading);
   });
 
   it("stands on a band axis by category, with a line through the bands' middles", async () => {

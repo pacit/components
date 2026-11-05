@@ -139,7 +139,7 @@ libs/components/chart/src/model/value-at.ts 98.91 91(4) 1 0 0 0
 libs/components/chart/src/model/window.ts 97.22 35(0) 1 0 0 0
 libs/components/chart/src/note.ts 93.85 61(0) 3 0 1 0
 libs/components/chart/src/now.ts 100.00 43(0) 0 0 0 0
-libs/components/chart/src/pie.ts 90.57 394(0) 38 1 2 4
+libs/components/chart/src/pie.ts 90.89 399(0) 38 0 2 4
 libs/components/chart/src/points.ts 83.05 147(2) 27 1 2 2
 libs/components/chart/src/ramp.ts 90.00 9(0) 1 0 0 0
 libs/components/chart/src/range.ts 85.31 209(2) 34 0 2 1
@@ -164,7 +164,7 @@ libs/components/core/src/placement.ts 98.46 64(0) 1 0 0 0
 libs/components/core/src/quantity.ts 100.00 26(0) 0 0 0 0
 libs/components/core/src/regions.ts 100.00 3(0) 0 0 0 0
 libs/components/core/src/template.ts 93.33 14(0) 1 0 0 0
-libs/components/core/src/texts.ts 100.00 107(0) 0 0 0 0
+libs/components/core/src/texts.ts 100.00 145(0) 0 0 0 0
 libs/components/core/src/warnings.ts 97.06 33(0) 1 0 0 0
 libs/components/date/src/calendar.ts 75.98 136(0) 41 0 2 5
 libs/components/date/src/date.ts 80.15 218(0) 54 0 0 8
@@ -256,5 +256,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.62 22309/24617
+TOTAL 90.64 22352/24659
 ```
