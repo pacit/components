@@ -264,8 +264,8 @@ export class PctDescriptionHarness extends PctHarness<
 // ── @pacit/components/chart ─────────────────────────────────────────────────────
 
 /**
- * `pct-chart` — `PctChart`: the plot, its two layers, the grid, the value axes' units and the
- * message of an empty chart.
+ * `pct-chart` — `PctChart`: the plot, its two layers, the grid, the value axes' units, the
+ * message of an empty chart, and a brush's ranges and grips.
  *
  * @since 0.3.0
  */
@@ -274,6 +274,8 @@ export class PctChartHarness extends PctHarness<
   | 'cursor'
   | 'data'
   | 'grid'
+  | 'grip'
+  | 'handle'
   | 'marker'
   | 'message'
   | 'plot'
@@ -288,6 +290,8 @@ export class PctChartHarness extends PctHarness<
     'cursor',
     'data',
     'grid',
+    'grip',
+    'handle',
     'marker',
     'message',
     'plot',

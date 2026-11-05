@@ -197,6 +197,21 @@
         "$value": "16%",
         "$description": "How much of the selection colour fills the band."
       },
+      "handle-width": {
+        "$type": "dimension",
+        "$value": "10px",
+        "$description": "Width of the knob on a brush's edge, which is twice as tall: a drawing over a target the whole plot gives, so it stays off the density axis."
+      },
+      "handle-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "The knob on a brush's edge."
+      },
+      "handle-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "A brush's edge across the plot and the ring of its knob."
+      },
       "bar-radius": {
         "$type": "dimension",
         "$value": "{pct.radius.md}",

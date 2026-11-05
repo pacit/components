@@ -2864,6 +2864,27 @@
       "severity": "error"
     },
     {
+      "name": "UI: chart — a brush's edge on surface",
+      "fg": "pct.chart.handle-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — a brush's edge on surface-100",
+      "fg": "pct.chart.handle-border",
+      "bg": "pct.surface-100",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chart — the ring of a brush's knob",
+      "fg": "pct.chart.handle-border",
+      "bg": "pct.chart.handle-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
       "name": "UI: chart — the selected band, before the mix",
       "fg": "pct.chart.selection-bg",
       "bg": "pct.surface",

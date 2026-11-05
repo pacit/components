@@ -32,6 +32,7 @@
     "libs/components/chart/src/line.ts",
     "libs/components/chart/src/measure.ts",
     "libs/components/chart/src/model/arc.ts",
+    "libs/components/chart/src/model/brush.ts",
     "libs/components/chart/src/model/color.ts",
     "libs/components/chart/src/model/columns.ts",
     "libs/components/chart/src/model/cursor.ts",

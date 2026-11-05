@@ -24,7 +24,30 @@
   (keydown)="onKey($event)"
   (input)="onInput($event)"
 />
-}
+} @if (measured() && !loading()) { @for (handle of handles(); track handle.edge)
+{
+<!--
+  A brush's edges (0119): a range each, hidden like the cursor's and read the same way — from 0
+  to the window's span, its value the edge's distance from the window's start, written in the
+  render effect. Its focus is drawn on the edge's grip, which the pointer takes.
+-->
+<input
+  #handleInput
+  class="range"
+  type="range"
+  step="any"
+  dir="ltr"
+  data-pct-part="handle"
+  [attr.data-pct-edge]="handle.edge"
+  [attr.aria-label]="handle.label"
+  [attr.aria-valuetext]="handle.text"
+  [attr.aria-describedby]="ids.brushKeys"
+  (keydown)="onHandleKey($event, handle.edge)"
+  (input)="onHandleInput($event, handle.edge)"
+  (focus)="focusedEdge.set(handle.edge)"
+  (blur)="focusedEdge.set(null)"
+/>
+} }
 <figure class="figure">
   <div
     class="picture"
@@ -176,7 +199,7 @@
       (pointerup)="onPointerUp($event)"
       (pointercancel)="onPointerCancel($event)"
       (wheel)="onWheel($event)"
-      [class.still]="zoom() === 'none'"
+      [class.still]="zoom() === 'none' && !brush()"
     >
       @if (selectionView(); as selection) {
       <div
@@ -187,6 +210,18 @@
         "
         [style.inline-size.px]="selection.width"
         [style.block-size.px]="selection.height"
+      ></div>
+      } @for (grip of gripView(); track grip.edge) {
+      <div
+        class="grip"
+        data-pct-part="grip"
+        [attr.data-pct-edge]="grip.edge"
+        [attr.data-pct-picked]="picked() === grip.edge ? '' : null"
+        [class.across]="horizontal()"
+        [class.focused]="focusedEdge() === grip.edge"
+        [style.transform]="'translate(' + grip.x + 'px, ' + grip.y + 'px)'"
+        [style.inline-size.px]="horizontal() ? grip.length : null"
+        [style.block-size.px]="horizontal() ? null : grip.length"
       ></div>
       } @if (cursorView(); as view) {
       <div
@@ -275,6 +310,9 @@
   } @if (range()) {
   <!-- The keys of the cursor, which its range reads as its description. -->
   <p hidden [id]="ids.keys">{{ texts().chartKeys }}</p>
+  } @if (brush()) {
+  <!-- The keys of the brush's edges, which both ranges read as their description. -->
+  <p hidden [id]="ids.brushKeys">{{ texts().chartBrushKeys }}</p>
   }
   <ng-content select="figcaption" />
 </figure>

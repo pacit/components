@@ -40,3 +40,8 @@
   gap: var(--pct-space-4);
   max-inline-size: 900px;
 }
+
+// A navigator: low, a strip of the whole day under the chart it moves.
+.sbx-navigator {
+  block-size: 96px;
+}

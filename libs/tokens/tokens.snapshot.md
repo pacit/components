@@ -151,6 +151,9 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chart-gauge-font-size dimension component public
 --pct-chart-gauge-width dimension component public
 --pct-chart-grid-border color component public
+--pct-chart-handle-bg color component public
+--pct-chart-handle-border color component public
+--pct-chart-handle-width dimension component public
 --pct-chart-heat-bg-1 color component public
 --pct-chart-heat-bg-2 color component public
 --pct-chart-heat-bg-3 color component public
