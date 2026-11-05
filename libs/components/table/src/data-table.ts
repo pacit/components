@@ -160,6 +160,8 @@ export interface PctTableFeature {
     readonly below: Signal<TemplateRef<unknown>>;
     readonly picked: Signal<ReadonlySet<PctRowId>>;
     readonly describedBy: Signal<string | null>;
+    /** The name of the column's header, when its own content would name it wrongly. */
+    readonly name: Signal<string | null>;
   };
   /**
    * The window: the lines drawn, `[start, end)`, never a row without its details nor details

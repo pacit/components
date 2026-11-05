@@ -253,6 +253,7 @@ export class PctTableSelection implements FormValueControl<
       picked: this.picked,
     });
     const parts = this.parts;
+    const texts = inject(PCT_TEXTS);
     this.table.contribute({
       selection: {
         parts: PctTableSelectionParts,
@@ -263,6 +264,11 @@ export class PctTableSelection implements FormValueControl<
         below: computed(() => (parts() as PctTableSelectionParts).below()),
         picked: this.picked,
         describedBy: computed(() => this.line()?.id ?? null),
+        // The column's header is named by its word, not by the checkbox over every row: a
+        // reader says the header with each row's checkbox. One pick shows the word itself.
+        name: computed(() =>
+          this.mode() === 'multiple' ? texts().tableSelectRow : null,
+        ),
       },
     });
     // A press on the table, which the parts tell apart: one beside a row's control is theirs.

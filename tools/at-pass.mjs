@@ -261,7 +261,10 @@ the sandbox's own navigation to the view — the document is loaded once, before
 stops from there until focus leaves \`main\`. A view with something to OPEN ends on three more:
 \`reach\` puts focus on the control that opens it, \`open\` presses the key, and \`close\` presses
 Escape — the row every card asking "what does a reader announce when this appears" was waiting
-for, and the row beneath it is what leaving sounds like. \`(silence)\` is a stop the reader said nothing
+for, and the row beneath it is what leaving sounds like. A block deeper in a view than the
+cap reaches is a heading of its own, \`/view#block\`: \`enter\` puts focus on its first stop,
+the keys a person presses there follow under their names, then Tab stops while focus stays
+inside it. \`(silence)\` is a stop the reader said nothing
 at — ${silent} of ${steps.length} here. ${capped.length} view(s) hit the cap, and each says so.${
     logged > kept
       ? `

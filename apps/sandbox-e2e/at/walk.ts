@@ -2,6 +2,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { Locator, Page } from '@playwright/test';
 import { SBX_ROUTES } from '../src/support/views';
+import { SECTIONS } from './sections';
 import { ACTS } from './acts';
 
 /**
@@ -36,6 +37,18 @@ const DWELL_TAB = 1800;
  * budget.
  */
 const SCAFFOLD = 'sbx-controls';
+
+/** A section's keys as its rows are labelled: short, as the record's column is. */
+const KEYS: Readonly<Record<string, string>> = {
+  activate: 'act',
+  ArrowRight: 'right',
+  ArrowLeft: 'left',
+  ArrowDown: 'down',
+  ArrowUp: 'up',
+  Escape: 'escape',
+  End: 'end',
+  Home: 'home',
+};
 
 /** What counts as a stop of the Tab key. `summary` is focusable with no attribute saying so. */
 const FOCUSABLE =
@@ -346,6 +359,63 @@ export async function walk(
           `the act: \`${act.key}\` on \`${act.on}\`, to open ${act.what} ` +
           `(the gesture belongs to \`${act.owner}\`)`;
         await step(route, 'close', tab, () => reader.press('Escape'));
+      }
+    }
+
+    // The blocks the walk from the top never reaches (`at/sections.ts`), each under a heading
+    // of its own: entered at its first stop, its keys pressed, its Tab stops read while the
+    // focus stays inside it.
+    for (const section of SECTIONS[route] ?? []) {
+      const where = `${route}#${section.block}`;
+      const block = `[data-testid="${section.block}"]`;
+      let found = true;
+      await step(where, 'enter', tab, async () => {
+        // The window's focus first, as for an act: the walk may have Tabbed out of the page.
+        await page
+          .locator('main h2')
+          .first()
+          .click({ timeout: 5_000 })
+          .catch(() => undefined);
+        await page
+          .locator(`${block} ${section.on}`)
+          .first()
+          .focus({ timeout: 5_000 })
+          .catch(() => {
+            found = false;
+          });
+      });
+      if (!found) {
+        steps[steps.length - 1].note =
+          `the section found no \`${section.on}\` in \`${section.block}\`, so ${section.what} is unread here`;
+        continue;
+      }
+      steps[steps.length - 1].note =
+        `the section: ${section.keys.map((key) => `\`${key}\``).join(', ')} in ` +
+        `\`${section.block}\`, to read ${section.what} (the keys belong to \`${section.owner}\`)`;
+      for (const key of section.keys)
+        await step(where, KEYS[key] ?? key, tab, () =>
+          key === 'activate'
+            ? reader.activate
+              ? reader.activate()
+              : reader.press('Enter')
+            : reader.press(key),
+        );
+      let stops = 0;
+      while (stops < CAP) {
+        stops += 1;
+        const at = await step(where, `tab ${stops}`, tab, () =>
+          reader.press('Tab'),
+        );
+        const inside = await page
+          .evaluate(
+            (selector) => !!document.activeElement?.closest(selector),
+            block,
+          )
+          .catch(() => false);
+        if (!at?.moved || !inside) break;
+        if (stops === CAP)
+          steps[steps.length - 1].note =
+            `the cap bit: ${CAP} stops of this view's own, and it has more`;
       }
     }
 
