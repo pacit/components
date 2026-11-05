@@ -37,6 +37,7 @@
       type="checkbox"
       data-pct-part="select"
       [checked]="row.selected"
+      [indeterminate]="row.mixed"
       [disabled]="selection.disabled()"
       [value]="row.id"
       [attr.aria-labelledby]="wordId + ' ' + row.nameId"

@@ -2065,6 +2065,53 @@ test.describe('PctTableTree — the home as a tree', () => {
   });
 });
 
+test.describe('PctTableSelection cascading in a tree — the home picked as one', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const table = (page: Page) => page.getByTestId('table-tree-picks');
+  const box = (page: Page, name: string) =>
+    table(page).getByRole('checkbox', { name: `Select ${name}`, exact: true });
+  const state = (page: Page) => page.getByTestId('tree-picks-state');
+
+  test('a device half picks its room and floor, a room picks its devices, and a floor all it holds', async ({
+    page,
+  }) => {
+    await box(page, 'Kettle').check();
+    await expect(state(page)).toHaveText('Picked: kettle.');
+    // The engine's own mixed state: what each reader hears as half checked.
+    await expect(box(page, 'Kitchen')).toBeChecked({ indeterminate: true });
+    await expect(box(page, 'Ground floor')).toBeChecked({
+      indeterminate: true,
+    });
+    await expect(box(page, 'Upstairs')).toBeChecked({ checked: false });
+    await box(page, 'Kitchen').click();
+    await expect(state(page)).toHaveText(
+      'Picked: kettle kitchen fridge lamp-k.',
+    );
+    await expect(box(page, 'Kitchen')).toBeChecked();
+    await expect(box(page, 'Lamp')).toBeChecked();
+    await expect(box(page, 'Ground floor')).toBeChecked({
+      indeterminate: true,
+    });
+    await box(page, 'Ground floor').click();
+    await expect(state(page)).toHaveText(
+      'Picked: kettle kitchen fridge lamp-k ground hall sensor garage.',
+    );
+    await expect(box(page, 'Ground floor')).toBeChecked();
+    // Dropping one device drops its room and its floor, and leaves them mixed.
+    await box(page, 'Fridge').uncheck();
+    await expect(state(page)).toHaveText(
+      'Picked: kettle lamp-k hall sensor garage.',
+    );
+    await expect(box(page, 'Kitchen')).toBeChecked({ indeterminate: true });
+    await expect(box(page, 'Ground floor')).toBeChecked({
+      indeterminate: true,
+    });
+  });
+});
+
 test.describe('Header groups — the rules under grouped headers', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/datatable');

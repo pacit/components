@@ -12,6 +12,7 @@ import { PctDataTable } from './data-table';
 import { PctTableGrid, type PctTableDataCell } from './data-table-grid';
 import { PctTableEditing } from './data-table-editing';
 import { PctTableGroups } from './data-table-groups';
+import { PctTableSelection } from './data-table-selection';
 import { PctTableTree } from './data-table-tree';
 import { pctColumnsOf, type PctRowId } from './model/columns';
 import type { PctTableSort } from './table';
@@ -186,6 +187,62 @@ class EditHost {
   readonly rows = HOME;
   readonly expanded = signal<readonly PctRowId[]>([]);
   readonly editing = signal<PctTableDataCell<'name' | 'power'> | null>(null);
+}
+
+@Component({
+  imports: [PctDataTable, PctTableTree, PctTableSelection],
+  template: `
+    <pct-data-table
+      [pctTableTree]="columns"
+      [children]="kidsOf"
+      [expanded]="open"
+      pctTableSelection
+      [(value)]="value"
+      [cascade]="cascade()"
+      [mode]="mode()"
+      [rows]="rows"
+      [columns]="columns"
+      [rowId]="byId"
+      [filter]="filter()"
+      caption="Home"
+    />
+  `,
+})
+class PickHost {
+  readonly columns = columns;
+  readonly byId = byId;
+  readonly kidsOf = kidsOf;
+  readonly rows = HOME;
+  readonly open = ['ground', 'kitchen', 'hall', 'up'];
+  readonly value = signal<readonly PctRowId[]>([]);
+  readonly cascade = signal(true);
+  readonly mode = signal<'single' | 'multiple'>('multiple');
+  readonly filter = signal('');
+}
+
+@Component({
+  imports: [PctDataTable, PctTableTree, PctTableSelection],
+  template: `
+    <pct-data-table
+      [pctTableTree]="columns"
+      [children]="kidsOf"
+      [expanded]="open"
+      pctTableSelection
+      [(value)]="value"
+      [rows]="rows"
+      [columns]="columns"
+      [rowId]="byId"
+      caption="Home"
+    />
+  `,
+})
+class UnboundPickHost {
+  readonly columns = columns;
+  readonly byId = byId;
+  readonly kidsOf = kidsOf;
+  readonly rows = HOME;
+  readonly open = ['ground', 'kitchen'];
+  readonly value = signal<readonly PctRowId[]>([]);
 }
 
 let errors: unknown[] = [];
@@ -649,5 +706,179 @@ describe('PctTableTree with the grid — a treegrid', () => {
     expect(
       rows()[0].querySelector('[data-pct-part="editor"] input'),
     ).not.toBeNull();
+  });
+});
+
+describe('PctTableSelection cascading in a tree', () => {
+  /** A row's checkbox or radio, by the name its first cell shows. */
+  const pick = (name: string) =>
+    rows()
+      .find((row) => row.textContent?.includes(name))
+      ?.querySelector<HTMLInputElement>(
+        '[data-pct-part="select"]',
+      ) as HTMLInputElement;
+  const tap = async (
+    fixture: ComponentFixture<unknown>,
+    name: string,
+    shiftKey = false,
+  ) => {
+    pick(name).dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true, shiftKey }),
+    );
+    await settle(fixture);
+  };
+  const mixed = () =>
+    rows()
+      .filter(
+        (row) =>
+          (row.querySelector('[data-pct-part="select"]') as HTMLInputElement)
+            .indeterminate,
+      )
+      // The row's name, as its checkbox is named: the cell also holds it out of the paint.
+      .map((row) => row.querySelector('[hidden]')?.textContent?.trim());
+
+  it('names a branch’s checkbox by the row’s text, not by its button’s', async () => {
+    await render(PickHost);
+    const named = (name: string) =>
+      (pick(name).getAttribute('aria-labelledby') as string)
+        .split(' ')
+        .map((id) => document.getElementById(id)?.textContent?.trim());
+    expect(named('Kitchen')).toEqual(['Select', 'Kitchen']);
+    expect(named('Kettle')).toEqual(['Select', 'Kettle']);
+    // The words stand in the first cell, out of the paint: the cell itself names nothing.
+    const first = rows()[1].querySelector(
+      'td.pct-data-table__first',
+    ) as HTMLElement;
+    expect(first.hasAttribute('id')).toBe(false);
+    expect((first.querySelector('[hidden]') as HTMLElement).id).toBe(
+      pick('Kitchen').getAttribute('aria-labelledby')?.split(' ')[1],
+    );
+  });
+
+  it('picks a branch with every row below it, and drops them all again', async () => {
+    const fixture = await render(PickHost);
+    await tap(fixture, 'Ground floor');
+    expect(fixture.componentInstance.value()).toEqual([
+      'ground',
+      'kitchen',
+      'kettle',
+      'lamp',
+      'hall',
+      'sensor',
+    ]);
+    expect(pick('Lamp').checked).toBe(true);
+    expect(pick('Upstairs').checked).toBe(false);
+    expect(mixed()).toEqual([]);
+    await tap(fixture, 'Ground floor');
+    expect(fixture.componentInstance.value()).toEqual([]);
+  });
+
+  it('picks a branch once all its children are, the rows above it too, and marks the half picked mixed', async () => {
+    const fixture = await render(PickHost);
+    await tap(fixture, 'Kettle');
+    expect(fixture.componentInstance.value()).toEqual(['kettle']);
+    expect(mixed()).toEqual(['Ground floor', 'Kitchen']);
+    await tap(fixture, 'Lamp');
+    expect(fixture.componentInstance.value()).toEqual([
+      'kettle',
+      'lamp',
+      'kitchen',
+    ]);
+    expect(pick('Kitchen').checked).toBe(true);
+    expect(mixed()).toEqual(['Ground floor']);
+    await tap(fixture, 'Sensor');
+    expect(fixture.componentInstance.value()).toEqual([
+      'kettle',
+      'lamp',
+      'kitchen',
+      'sensor',
+      'hall',
+      'ground',
+    ]);
+    expect(mixed()).toEqual([]);
+    // A branch of one child is picked with it.
+    await tap(fixture, 'Bedroom');
+    expect(fixture.componentInstance.value()).toContain('up');
+  });
+
+  it('drops a row, and with it every row above it, keeping the rest in their order', async () => {
+    const fixture = await render(PickHost);
+    fixture.componentInstance.value.set([
+      'up',
+      'ground',
+      'kitchen',
+      'kettle',
+      'lamp',
+      'hall',
+      'sensor',
+      'bed',
+    ]);
+    await settle(fixture);
+    await tap(fixture, 'Kettle');
+    expect(fixture.componentInstance.value()).toEqual([
+      'up',
+      'lamp',
+      'hall',
+      'sensor',
+      'bed',
+    ]);
+    expect(mixed()).toEqual(['Ground floor', 'Kitchen']);
+    expect(pick('Ground floor').checked).toBe(false);
+  });
+
+  it('cascades over the rows a press with Shift picks', async () => {
+    const fixture = await render(PickHost);
+    await tap(fixture, 'Kettle');
+    await tap(fixture, 'Hall', true);
+    expect(fixture.componentInstance.value()).toEqual([
+      'kettle',
+      'lamp',
+      'hall',
+      'sensor',
+      'kitchen',
+      'ground',
+    ]);
+  });
+
+  it('picks below a branch only the rows the filter kept, and says the rest once they show', async () => {
+    const fixture = await render(PickHost);
+    fixture.componentInstance.filter.set('Kettle');
+    await settle(fixture);
+    await tap(fixture, 'Ground floor');
+    expect(fixture.componentInstance.value()).toEqual([
+      'ground',
+      'kitchen',
+      'kettle',
+    ]);
+    fixture.componentInstance.filter.set('');
+    await settle(fixture);
+    // The list stands as it was written; the rows below say the branches are half picked.
+    expect(pick('Ground floor').checked).toBe(true);
+    expect(mixed()).toEqual(['Ground floor', 'Kitchen']);
+  });
+
+  it('does not cascade while the input is left unbound', async () => {
+    const fixture = await render(UnboundPickHost);
+    await tap(fixture, 'Kitchen');
+    expect(fixture.componentInstance.value()).toEqual(['kitchen']);
+    expect(pick('Kettle').checked).toBe(false);
+  });
+
+  it('picks the one row pressed while it does not cascade, and in single mode', async () => {
+    const fixture = await render(PickHost);
+    fixture.componentInstance.cascade.set(false);
+    await settle(fixture);
+    await tap(fixture, 'Kettle');
+    await tap(fixture, 'Kitchen');
+    expect(fixture.componentInstance.value()).toEqual(['kettle', 'kitchen']);
+    expect(mixed()).toEqual([]);
+    fixture.componentInstance.value.set([]);
+    fixture.componentInstance.cascade.set(true);
+    fixture.componentInstance.mode.set('single');
+    await settle(fixture);
+    await tap(fixture, 'Kitchen');
+    expect(fixture.componentInstance.value()).toEqual(['kitchen']);
+    await tap(fixture, 'Kettle');
+    expect(fixture.componentInstance.value()).toEqual(['kettle']);
   });
 });

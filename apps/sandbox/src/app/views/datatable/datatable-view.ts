@@ -465,6 +465,11 @@ export class DatatableView {
   protected readonly home = signal<readonly Place[]>(HOME);
   protected readonly openPlaces = signal<readonly PctRowId[]>(['ground']);
   protected readonly treeFilter = signal('');
+  protected readonly pickedPlaces = signal<readonly PctRowId[]>([]);
+  protected readonly pickedPlacesOpen: readonly PctRowId[] = [
+    'ground',
+    'kitchen',
+  ];
   protected readonly placesOf = (place: Place) => place.places;
   protected readonly byPlaceId = (place: Place) => place.id;
 
