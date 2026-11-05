@@ -2451,6 +2451,14 @@
       "severity": "error"
     },
     {
+      "$comment": "A row's handle drawn disabled — under a sort, in a tree, in groups, or on a pinned row — in the shared disabled text on the table's surface: warn, not error, as for every disabled control (SC 1.4.3 exempts inactive text).",
+      "name": "UI: table — a disabled handle of the rows' order",
+      "fg": "pct.text-disabled",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "$comment": "The header surface against the page. Warn, not error: the header row is told apart by its `<th>` and its weight as well, and the fill is one channel of three.",
       "name": "UI: table — the header surface against the page",
       "fg": "pct.table.heading-bg",

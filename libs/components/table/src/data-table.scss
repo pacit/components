@@ -28,19 +28,69 @@ table {
 
 /* A window's lines not drawn are rows of no element: its first body's ::before above the
    lines drawn and its last body's ::after below them, as tall as the lines they stand for, so
-   the scrollbar is the whole list's and `@for` steps around nothing (0098). */
-.pct-data-table__window > tbody:first-of-type::before,
-.pct-data-table__window > tbody:last-of-type::after {
+   the scrollbar is the whole list's and `@for` steps around nothing (0098). The first and the
+   last body of the data: a body of pinned rows stands outside the lines. */
+.pct-data-table__window > tbody:first-of-type:not([data-pct-pinned])::before,
+.pct-data-table__window > tbody[data-pct-pinned='top'] + tbody::before,
+.pct-data-table__window > tbody:last-of-type:not([data-pct-pinned])::after,
+.pct-data-table__window > tbody:has(+ tbody[data-pct-pinned='bottom'])::after {
   content: '';
   display: table-row;
 }
 
-.pct-data-table__window > tbody:first-of-type::before {
+.pct-data-table__window > tbody:first-of-type:not([data-pct-pinned])::before,
+.pct-data-table__window > tbody[data-pct-pinned='top'] + tbody::before {
   block-size: var(--_lead);
 }
 
-.pct-data-table__window > tbody:last-of-type::after {
+.pct-data-table__window > tbody:last-of-type:not([data-pct-pinned])::after,
+.pct-data-table__window > tbody:has(+ tbody[data-pct-pinned='bottom'])::after {
   block-size: var(--_tail);
+}
+
+/* A row pinned above the lines sticks under the header, each at the offset the table
+   measures; a row pinned below them sticks at the frame's end, above the rows pinned under
+   it — both while the header sticks. On the heading's surface, over the rows that scroll
+   under them, under the header. */
+:host([data-pct-sticky]) tbody[data-pct-pinned='top'] > tr > td {
+  position: sticky;
+  inset-block-start: var(--_top, 0px);
+}
+
+:host([data-pct-sticky]) tbody[data-pct-pinned='bottom'] > tr > td {
+  position: sticky;
+  inset-block-end: var(--_bottom, 0px);
+}
+
+tbody[data-pct-pinned] > tr > td {
+  z-index: calc(2 + var(--_lift, 0));
+  background-color: var(
+    --_tone,
+    var(--_hover, var(--_selected, var(--pct-table-heading-bg)))
+  );
+}
+
+tbody[data-pct-pinned='top'] > tr:last-child > td {
+  border-block-end: 1px solid var(--pct-table-heading-border);
+}
+
+tbody[data-pct-pinned='bottom'] > tr:first-child > td {
+  border-block-start: 1px solid var(--pct-table-heading-border);
+}
+
+/* A row being dragged, in the muted text on the pointer's tint, and the place it is over: a
+   line above the row or below it. */
+tr[data-pct-dragging] {
+  --_hover: var(--pct-table-bg-hover);
+  color: var(--pct-table-fg-muted);
+}
+
+tr[data-pct-drop='before'] > td {
+  box-shadow: inset 0 2px 0 0 var(--pct-table-heading-border);
+}
+
+tr[data-pct-drop='after'] > td {
+  box-shadow: inset 0 -2px 0 0 var(--pct-table-heading-border);
 }
 
 /* Each row of the header sticks below the rows above it, at the offset the table measures on
@@ -319,7 +369,8 @@ td[data-pct-changed] {
 
 /* The columns of picks and of disclosures: as narrow as their control's target. */
 .pct-data-table__pick,
-.pct-data-table__disclosure {
+.pct-data-table__disclosure,
+.pct-data-table__order {
   inline-size: 0;
   padding-block: 0;
   padding-inline: 0;

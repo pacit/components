@@ -848,3 +848,39 @@
   />
   <p data-testid="heads-state"><code>{{ headLayoutText() }}</code></p>
 </sbx-demo>
+
+<sbx-demo
+  heading="Pinned rows and the order of the rows"
+  summary="A sum pinned above the rows sticks under the header, outside the sort. A row's handle moves it with Alt and an arrow or by dragging; the application moves the row, and the rows slide to their places."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-row-order"
+>
+  <div class="datatable__widths" role="group" aria-label="The rows' order">
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="order-sort"
+      (click)="sortOrdered()"
+    >
+      Sort by name
+    </button>
+  </div>
+  <pct-data-table
+    data-testid="table-ordered"
+    class="datatable__laid"
+    caption="Rules in the order they run"
+    locale="en"
+    pctTablePinnedRows
+    pctTableRowOrder
+    animateRows
+    rowNumbers
+    [pinnedTop]="orderTotal()"
+    [rows]="orderedRules()"
+    [columns]="orderColumns"
+    [rowId]="byId"
+    [(sort)]="orderSort"
+    (reorder)="moveRule($event)"
+  />
+  <p data-testid="order-state"><code>{{ orderText() }}</code></p>
+</sbx-demo>

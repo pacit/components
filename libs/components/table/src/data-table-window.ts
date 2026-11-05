@@ -236,6 +236,10 @@ export class PctTableWindow {
       // Each render of other lines or other columns: the rows drawn are observed afresh, and an
       // observer reports each row it starts on, so every render is measured.
       this.current();
+      // Rows pinned above or below cover the view while the header sticks, so a change of
+      // either measures it again.
+      this.table.rowCount();
+      this.table.stickyHeader();
       const columns = this.table.columns().map((column) => column.id);
       const hidden = this.table.hiddenColumns();
       const element = this.frame();
@@ -428,11 +432,27 @@ export class PctTableWindow {
   private place(): void {
     const frame = this.frame();
     const table = this.tableOf(frame);
-    const covered = this.table.stickyHeader()
-      ? (table.tHead as HTMLElement).getBoundingClientRect().height
+    // The header covers the frame's top, and the rows pinned under it with it; the rows
+    // pinned below cover the frame's end. Both stick only with the header.
+    const sticky = this.table.stickyHeader();
+    const pinnedHeight = (edge: 'top' | 'bottom') =>
+      Array.from(
+        table.querySelectorAll(
+          `:scope > tbody[data-pct-pinned="${edge}"] > tr`,
+        ),
+      ).reduce((sum, row) => sum + row.getBoundingClientRect().height, 0);
+    const covered = sticky
+      ? (table.tHead as HTMLElement).getBoundingClientRect().height +
+        pinnedHeight('top')
       : 0;
+    const covering = sticky ? pinnedHeight('bottom') : 0;
+    // The first body of the lines: a body of pinned rows stands before it.
     const top =
-      (table.tBodies[0] as HTMLElement).getBoundingClientRect().top -
+      (
+        table.querySelector(
+          ':scope > tbody:not([data-pct-pinned])',
+        ) as HTMLElement
+      ).getBoundingClientRect().top -
       frame.getBoundingClientRect().top -
       frame.clientTop +
       frame.scrollTop;
@@ -440,7 +460,10 @@ export class PctTableWindow {
     if (frame.clientHeight > page && isDevMode()) this.warnOnNoHeight();
     this.geometry.set({
       offset: top - covered,
-      view: Math.max(0, Math.min(frame.clientHeight, page) - covered),
+      view: Math.max(
+        0,
+        Math.min(frame.clientHeight, page) - covered - covering,
+      ),
     });
   }
 

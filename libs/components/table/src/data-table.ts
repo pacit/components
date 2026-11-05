@@ -244,6 +244,36 @@ export interface PctTableFeature {
     readonly editor: Signal<TemplateRef<unknown>>;
     readonly open: Signal<(id: PctRowId, column: string) => boolean>;
   };
+  /**
+   * The pinned rows: those drawn above the rows and those below them, in bodies of their own,
+   * outside the sort, the filter and the window, with the rows' columns and slots. A pinned
+   * row is not among `rows`: the table draws it where it is pinned and nowhere else.
+   */
+  readonly pinned?: {
+    readonly top: Signal<readonly unknown[]>;
+    readonly bottom: Signal<readonly unknown[]>;
+  };
+  /**
+   * The order of the rows: the parts, the header of the column of handles, and a row's handle,
+   * given the row and whether a move is open to it. A move is the application's to make: the
+   * table draws the rows as they are given.
+   */
+  readonly order?: {
+    readonly parts: Type<unknown>;
+    readonly head: Signal<TemplateRef<unknown>>;
+    readonly cell: Signal<TemplateRef<unknown>>;
+  };
+}
+
+/**
+ * A duration token's milliseconds: `150ms` or `0.15s`; `0` for a value that is neither, as
+ * a sheet that has no token.
+ */
+function pctMilliseconds(value: string): number {
+  const text = value.trim();
+  const number = Number.parseFloat(text);
+  if (!Number.isFinite(number)) return 0;
+  return text.endsWith('ms') ? number : number * 1000;
 }
 
 /** A column in the order the table draws it, with its place among the columns given. */
@@ -318,6 +348,8 @@ interface Section<T> {
   readonly key: string;
   readonly group: Heading | null;
   readonly rows: (Row<T> | Hole)[];
+  /** The edge the section's rows are pinned to; `null` for a body of the data. */
+  readonly pinned: 'top' | 'bottom' | null;
 }
 
 /** A row a remote source has not delivered: loading, or of a block that failed. */
@@ -402,6 +434,10 @@ interface Row<T> {
   readonly nameAt: number;
   /** The row is picked. */
   readonly selected: boolean;
+  /** The edge the row is pinned to; `null` for a row of the data. */
+  readonly pinned: 'top' | 'bottom' | null;
+  /** The number a reader is told the row stands at, in a window or on a page; else `null`. */
+  readonly at: number | null;
 }
 
 /**
@@ -701,6 +737,18 @@ export class PctDataTable<
    */
   readonly highlightChanges = input(false, { transform: booleanAttribute });
 
+  /**
+   * A row that changed its place flows to the new one rather than appearing there: a sort,
+   * a filter or a move of the application's slides the rows drawn before and after, by a
+   * transform on the row that ends where it stands. Each render measures the rows drawn, so
+   * a table that redraws on every scroll pays a measurement for it; the motion is the
+   * transition token's, twice over, so a user who asked for less motion sees none
+   * ([0116](../../../../docs/decisions/0116-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
+   *
+   * @since next
+   */
+  readonly animateRows = input(false, { transform: booleanAttribute });
+
   private readonly cellSlots = contentChildren(PctCellTemplate);
   // The table's own: a data table nested in a cell template brings templates of its own.
   protected readonly detailsSlot = contentChild(PctDetailsTemplate, {
@@ -744,6 +792,29 @@ export class PctDataTable<
   /** The selection directive's state, while there is one. */
   protected readonly selection = computed(
     () => this.contributed().selection ?? null,
+  );
+
+  /** The order of the rows, while `pctTableRowOrder` is on. */
+  protected readonly order = computed(() => this.contributed().order ?? null);
+
+  /** The rows pinned to each edge, while `pctTablePinnedRows` is on; else none. */
+  private readonly pinnedRows = computed(() => {
+    const pinned = this.contributed().pinned;
+    return {
+      top: (pinned?.top() ?? []) as readonly T[],
+      bottom: (pinned?.bottom() ?? []) as readonly T[],
+    };
+  });
+
+  /**
+   * A row may be moved: the rows stand in the order the application gave them. Under a sort
+   * the order is the sort's, in a tree and in groups a place is not a place in the list.
+   */
+  protected readonly reorderable = computed(
+    () =>
+      this.sort().length === 0 &&
+      this.tree() === null &&
+      this.grouping().length === 0,
   );
 
   /** The ids picked, to look up. */
@@ -877,6 +948,7 @@ export class PctDataTable<
   /** The cells before a row's data: its checkbox, its disclosure and its number. */
   private readonly lead = computed(
     () =>
+      (this.order() ? 1 : 0) +
       (this.selection() ? 1 : 0) +
       (this.disclosure() ? 1 : 0) +
       (this.rowNumbers() ? 1 : 0),
@@ -1299,7 +1371,12 @@ export class PctDataTable<
     for (let at = start; at < end; at++) {
       const heading = headings.get(at);
       if (heading !== undefined) {
-        current = { key: pctLineKey(lines[at]), group: heading, rows: [] };
+        current = {
+          key: pctLineKey(lines[at]),
+          group: heading,
+          rows: [],
+          pinned: null,
+        };
         sections.push(current);
         continue;
       }
@@ -1330,12 +1407,28 @@ export class PctDataTable<
           key: head < 0 ? 'rows' : pctLineKey(lines[head]),
           group: null,
           rows: [],
+          pinned: null,
         };
         sections.push(current);
       }
       current.rows.push(row);
     }
     return sections;
+  });
+
+  /**
+   * The bodies the table draws: the rows pinned above in one of their own, the sections of the
+   * data, the rows pinned below in one of their own. A pinned body is marked, so what reads
+   * the lines off the bodies passes it over.
+   */
+  protected readonly bodies = computed<readonly Section<T>[]>(() => {
+    const { top, bottom } = this.pinnedBody();
+    const sections = this.sections();
+    const edge = (rows: readonly Row<T>[], pinned: 'top' | 'bottom') =>
+      rows.length === 0
+        ? []
+        : [{ key: `pinned:${pinned}`, group: null, rows: [...rows], pinned }];
+    return [...edge(top, 'top'), ...sections, ...edge(bottom, 'bottom')];
   });
 
   /**
@@ -1391,6 +1484,60 @@ export class PctDataTable<
   }
 
   private warnedTwins = false;
+
+  /** Where each row drawn stood at the last render, by key, from the table's top. */
+  private rowTops: Map<string, number> | null = null;
+
+  /**
+   * Each row drawn that stood elsewhere at the last render slides from there to where it
+   * stands: the old place measured against the new, and a transform that ends at none. A row
+   * new to the view appears; a row gone from it is gone. The frame's scroll leaves the places
+   * alone, which are measured from the table's top.
+   */
+  private flowRows(): void {
+    const table = this.ownTable();
+    const origin = table.getBoundingClientRect().top;
+    const { start } = this.drawn();
+    const rows = this.lineRows();
+    const tops = new Map<string, number>();
+    const moves: { row: HTMLTableRowElement; by: number }[] = [];
+    for (const { key, line } of this.body()) {
+      const row = rows[line - start] as HTMLTableRowElement;
+      // A slide cut short: the row stands where it is, and the next starts from there.
+      for (const animation of row.getAnimations()) animation.cancel();
+      const top = row.getBoundingClientRect().top - origin;
+      tops.set(key, top);
+      const was = this.rowTops?.get(key);
+      if (was !== undefined && was !== top) moves.push({ row, by: was - top });
+    }
+    this.rowTops = tops;
+    if (moves.length === 0) return;
+    const style = getComputedStyle(table);
+    const duration =
+      pctMilliseconds(
+        style.getPropertyValue('--pct-motion-transition-duration'),
+      ) * 2;
+    const easing =
+      style.getPropertyValue('--pct-motion-transition-easing').trim() || 'ease';
+    for (const { row, by } of moves)
+      row.animate(
+        [{ transform: `translateY(${by}px)` }, { transform: 'none' }],
+        { duration, easing },
+      );
+  }
+
+  private warnedOrder = false;
+
+  /** The handles are drawn and none can move: said once, where the order was asked for. */
+  private warnOnOrder(): void {
+    if (!isDevMode() || this.warnedOrder) return;
+    this.warnedOrder = true;
+    console.warn(
+      `[pct-data-table] pctTableRowOrder moves no row under a sort, in a tree or in ` +
+        `groups: the rows stand in the order the application gave them, or the handles stay ` +
+        `disabled.`,
+    );
+  }
 
   /**
    * Two rows with one id are one row to `@for`, and that is a bug in the rows, said once: over
@@ -1613,25 +1760,47 @@ export class PctDataTable<
    * there are, the foot's row too. Written only in a window or on a page, where the rows drawn
    * are not all the rows there are (0098).
    */
-  protected readonly rowIndex = computed(() => {
-    const page = this.contributed().page;
-    const head = this.headRows() + 1;
-    if (page) {
-      const offset = page.offset();
-      return (line: number) => line + head + offset;
-    }
-    return this.window() ? (line: number) => line + head : () => null;
-  });
+  protected readonly rowIndex = computed(() => this.places().line);
 
-  protected readonly rowCount = computed(() => {
+  /**
+   * The numbers a reader is told, in a window or on a page: a line's, a row pinned above the
+   * lines', a row pinned below them, and how many rows of the body there are — the page's
+   * total with the lines on top of it, or the lines. All `null` where every row is drawn, so
+   * the DOM's order is the count.
+   */
+  private readonly places = computed(() => {
     const page = this.contributed().page;
     const lines = this.lines();
+    const { top, bottom } = this.pinnedRows();
     // A page's total counts rows: its details and headings are lines on top of them.
-    const rows = page
+    const body = page
       ? page.total() + lines.filter((line) => line.kind !== 'row').length
       : this.window()
         ? lines.length
         : null;
+    if (body === null) {
+      const none = () => null;
+      return { line: none, top: none, bottom: none, rows: null };
+    }
+    const head = this.headRows() + 1;
+    const offset = page ? page.offset() : 0;
+    return {
+      line: (line: number) => line + head + top.length + offset,
+      top: (at: number) => at + head,
+      bottom: (at: number) => at + head + top.length + body,
+      rows: body + top.length + bottom.length,
+    };
+  });
+
+  /**
+   * How many rows a reader is told the table has, `aria-rowcount`: the header's rows, the
+   * body's rows — every row of the page or the window, not only those drawn — the rows
+   * pinned above and below, and the foot of totals; `null` while a source has not said.
+   *
+   * @since next
+   */
+  readonly rowCount = computed(() => {
+    const rows = this.places().rows;
     return rows === null
       ? null
       : rows + this.headRows() + (this.totals() === null ? 0 : 1);
@@ -1639,6 +1808,57 @@ export class PctDataTable<
 
   /** The body: each row line drawn, with its cells written. */
   protected readonly body = computed<readonly Row<T>[]>(() => {
+    const write = this.writer();
+    const lines = this.lines();
+    const { start, end } = this.drawn();
+    const place = this.rowIndex();
+    const rows: Row<T>[] = [];
+    // The base draws rows and their details: groups and holes are lines that the features
+    // contributing them draw.
+    for (let at = start; at < end; at++) {
+      const line = lines[at];
+      if (line.kind !== 'row') continue;
+      rows.push(
+        write(line, {
+          key: pctLineKey(line),
+          line: at,
+          open: lines[at + 1]?.kind === 'details',
+          pinned: null,
+          at: place(at),
+        }),
+      );
+    }
+    return rows;
+  });
+
+  /** The rows pinned above the lines and below them, written as the body's rows are. */
+  private readonly pinnedBody = computed(() => {
+    const write = this.writer();
+    const id = this.rowId();
+    const { top, bottom } = this.pinnedRows();
+    const places = this.places();
+    const side = (rows: readonly T[], pinned: 'top' | 'bottom') =>
+      rows.map((row, index) =>
+        write(
+          { kind: 'row', key: id(row), row, index, level: 0, expanded: null },
+          {
+            key: `pinned:${pinned}:${JSON.stringify(id(row))}`,
+            line: -1,
+            open: false,
+            pinned,
+            at: places[pinned](index),
+          },
+        ),
+      );
+    return { top: side(top, 'top'), bottom: side(bottom, 'bottom') };
+  });
+
+  /**
+   * How a row line is written: its cells, from the caches of the values and the texts, the
+   * templates, the marks and the tones. One function for the body's rows and the pinned, so
+   * a pinned row is drawn as the rows are, slots and all.
+   */
+  private readonly writer = computed(() => {
     const cache = this.values();
     const written = this.written();
     const templates = this.cellTemplates();
@@ -1688,19 +1908,13 @@ export class PctDataTable<
     const hiddenColumns = hiddenAt.map(
       (c) => columns[c],
     ) as unknown as Row<T>['hiddenColumns'];
-    const lines = this.lines();
     const picked = this.picked();
-    const { start, end } = this.drawn();
-    // The base draws rows and their details: groups and holes are lines that the features
-    // contributing them draw.
     type RowLine = Extract<PctTableLine<T>, { kind: 'row' }>;
-    const drawn: { line: RowLine; at: number }[] = [];
-    for (let at = start; at < end; at++) {
-      const line = lines[at];
-      if (line.kind === 'row') drawn.push({ line, at });
-    }
-    return drawn.map(({ line, at }): Row<T> => {
-      const number = this.lineIdOf(pctLineKey(line));
+    return (
+      line: RowLine,
+      where: Pick<Row<T>, 'key' | 'line' | 'open' | 'pinned' | 'at'>,
+    ): Row<T> => {
+      const number = this.lineIdOf(where.key);
       const values = cache(line.row);
       const texts = written(line.row);
       const all = cells.map(({ column, numeric, boolean, slot, marks }, c) => {
@@ -1725,11 +1939,11 @@ export class PctDataTable<
       const shown = shownAt.map((c) => all[c]);
       return {
         kind: 'row',
-        key: pctLineKey(line),
+        key: where.key,
         row: line.row,
         index: line.index,
         id: line.key,
-        line: at,
+        line: where.line,
         level: line.level,
         depth: line.level - grouped + 1,
         expanded: line.expanded,
@@ -1740,7 +1954,7 @@ export class PctDataTable<
         cells: shown,
         hidden: hiddenAt.map((c) => all[c]),
         hiddenColumns,
-        open: lines[at + 1]?.kind === 'details',
+        open: where.open,
         detailsId: `${this.uid}-details-${number}`,
         nameId: `${this.uid}-name-${number}`,
         nameAt: Math.max(
@@ -1748,8 +1962,10 @@ export class PctDataTable<
           shown.findIndex((cell) => cell.slot === null && cell.yes === null),
         ),
         selected: picked.has(line.key),
+        pinned: where.pinned,
+        at: where.at,
       };
-    });
+    };
   });
 
   /** The number a row's ids are made of: the same however the rows above it change. */
@@ -1890,19 +2106,35 @@ export class PctDataTable<
       // font or a wrapped label changes the header's height.
       this.heads();
       this.headRows();
-      this.sections();
+      this.bodies();
       this.resized();
       const frame = this.frame().nativeElement as HTMLElement;
       const table = this.ownTable();
-      const height = sticky
-        ? `${(table.tHead as HTMLElement).getBoundingClientRect().height}px`
-        : '';
+      const pinnedRows = (edge: 'top' | 'bottom') =>
+        Array.from(
+          table.querySelectorAll<HTMLTableRowElement>(
+            `:scope > tbody[data-pct-pinned="${edge}"] > tr`,
+          ),
+        );
+      const above = pinnedRows('top');
+      const below = pinnedRows('bottom');
+      const heightOf = (element: Element) =>
+        element.getBoundingClientRect().height;
+      const headHeight = heightOf(table.tHead as HTMLElement);
+      // The header covers the frame's top with the rows pinned under it, and the rows pinned
+      // below cover its end: measured by the heights, since a stuck row stands where it
+      // sticks, not where it would stand.
+      const covered =
+        headHeight + above.reduce((sum, row) => sum + heightOf(row), 0);
+      const covering = below.reduce((sum, row) => sum + heightOf(row), 0);
+      const height = sticky ? `${covered}px` : '';
       frame.style.scrollPaddingBlockStart = height;
+      frame.style.scrollPaddingBlockEnd = sticky ? `${covering}px` : '';
       // A group's heading sticks below the header and below the headings of the groups it
       // stands in, a heading's height for each level above it.
       frame.style.setProperty('--_head', height);
       // Each row of the header sticks below the rows above it: the groups', the headers', the
-      // filters', each at its own height.
+      // filters', each at its own offset in the header.
       const rows = Array.from((table.tHead as HTMLTableSectionElement).rows);
       const top = rows[0]?.getBoundingClientRect().top ?? 0;
       for (const row of rows)
@@ -1910,11 +2142,37 @@ export class PctDataTable<
           '--_top',
           sticky ? `${row.getBoundingClientRect().top - top}px` : '',
         );
+      // A row pinned above the lines sticks under the header and the rows pinned above it; a
+      // row pinned below them sticks above the rows pinned under it.
+      let offset = headHeight;
+      for (const row of above) {
+        row.style.setProperty('--_top', sticky ? `${offset}px` : '');
+        offset += heightOf(row);
+      }
+      offset = 0;
+      for (const row of below.slice().reverse()) {
+        row.style.setProperty('--_bottom', sticky ? `${offset}px` : '');
+        offset += heightOf(row);
+      }
       const heading = table.querySelector('tr[data-pct-part="group"]');
       frame.style.setProperty(
         '--_group',
         `${heading?.getBoundingClientRect().height ?? 0}px`,
       );
+    });
+
+    // The rows' places at each render, and the slide from the last ones, while asked for.
+    afterRenderEffect(() => {
+      if (!this.animateRows()) {
+        this.rowTops = null;
+        return;
+      }
+      this.bodies();
+      untracked(() => this.flowRows());
+    });
+
+    effect(() => {
+      if (this.order() !== null && !this.reorderable()) this.warnOnOrder();
     });
 
     afterNextRender(() => {
@@ -1994,9 +2252,9 @@ export class PctDataTable<
 
   /** The rows the table draws, a line each, across its bodies. */
   private lineRows(): readonly HTMLTableRowElement[] {
-    return Array.from(this.ownTable().tBodies).flatMap((body) =>
-      Array.from(body.rows),
-    );
+    return Array.from(this.ownTable().tBodies)
+      .filter((body) => body.dataset['pctPinned'] === undefined)
+      .flatMap((body) => Array.from(body.rows));
   }
 
   /** The row of line `line`, while it is drawn. */
@@ -2244,6 +2502,7 @@ export class PctDataTable<
     let p = 0;
     const next = (on: boolean) => (on ? (sticks[p++] ?? null) : null);
     return {
+      order: next(this.order() !== null),
       pick: next(this.selection() !== null),
       disclosure: next(this.disclosure()),
       number: next(this.rowNumbers()),
@@ -2267,7 +2526,10 @@ export class PctDataTable<
     const fixed =
       shown.reduce((sum, { width }) => sum + (width ?? 0), 0) +
       shares.length * narrowest;
-    const toggles = (this.selection() ? 1 : 0) + (this.disclosure() ? 1 : 0);
+    const toggles =
+      (this.order() ? 1 : 0) +
+      (this.selection() ? 1 : 0) +
+      (this.disclosure() ? 1 : 0);
     const numbers = this.rowNumbers() ? 1 : 0;
     return `calc(${fixed}px + ${toggles} * var(--pct-table-toggle-target-min) + ${numbers} * var(--_number))`;
   });
