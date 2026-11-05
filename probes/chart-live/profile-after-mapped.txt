@@ -1,0 +1,16 @@
+   245 ms chunk-DIyfM3CV.js:1067 | (l,d,u)=>{let m=je(d),p=je(u),h=i&&d===t&&u===e&&c(d)&&c(u)?o.indexOf(l[0]):-1,g=o.length-h,x=h>=0&&l.length>=g;for(let P=0;x&&P<g;P++)x=l[P]===o[h+P]
+   198 ms chunk-CmtSb_E5.js:1722 | a=>[...a.slice(1),{at:e,value:i}])}let t=performance.now();this.results.build.push(t-n),fh(()=>this.results.render.push(performance.now()-t),{injector
+    40 ms chunk-DIyfM3CV.js:3455 | k=>{k!==b&&(b=k,s.push(r[k]),c.push(a[k]))},T=()=>{p<0||(P(p),P(Math.min(h,g)),P(Math.max(h,g)),P(x),p=-1)},O=k=>Math.floor((r[k]-t.from)*u),E=k=>{let
+    26 ms chunk-DIyfM3CV.js:8895 | i=>{let s=ee(i,a);return i.pts.length===2?`M${s}L${s}`:`M${s}${te(i,n,a)}`}).join(``)}function mn(o,t,e,n,r,a={}){let i=a.transpose===!0,s=vt(e.map(r)
+    19 ms chunk-DIyfM3CV.js:3198 | (o,t,e,n){let{xs:r,ys:a,length:i}=o,s=[],c=[];if(i===0||!(e>0)||!(t.to>t.from))return{xs:new Float64Array(0),ys:new Float64Array(0),length:0};let l=Ma
+    16 ms chunk-DIyfM3CV.js:58146 | X=>({at:X,text:K.format(X)}))}let P=Math.max(0,...b.map(O=>this.measure(O.text)),u===pt?0:this.measure(u)),T=p.map(O=>typeof O.color==`string`?null:s.
+    15 ms chunk-DIyfM3CV.js:7516 | (o,t)=>Math.round(Math.round(o/t)*t*100)/100;var Qt=o=>Math.round(o*100)/100;function Jt(o,t,e,n,r){let a=r.pixel??1,{xs:i,ys:s,length:c}=o,l=[],d=nul
+     8 ms chunk-DIyfM3CV.js:3598 | k=>{let V=a[k];if(Number.isNaN(V)){T(),c.length>0&&!Number.isNaN(c[c.length-1])&&(s.push(r[k]),c.push(NaN)),m=NaN;return}let Q=O(k);if(Q!==m||p<0){T()
+  1089 ms chunk-DIyfM3CV.js:2123 | (o){let{ys:t,length:e}=o,n=[];for(let a of ot(1,Math.floor(Math.log2(e)),1)){let i=Math.ceil(e/2**a),s=new Int32Array(i).fill(-1),c=new Int32Array(i).
+   295 ms chunk-DIyfM3CV.js:3836 | (k,V)=>{let Q=Math.max(l+1,V*2**k),It=Math.min(d-1,(V+1)*2**k-1);if(Q>It)return;if(k===0)return E(Q);let de=K[k-1];if(Q===V*2**k&&It===(V+1)*2**k-1&&!
+   292 ms chunk-DIyfM3CV.js:30491 | (o,t){let e=0,n=1/0,r=-1/0,a=NaN,i=0,s=!1,c=0,l=0,d=0,u=0,m=0,p=0,h=t?at(o,t.from):0;for(t&&(h<0||o.xs[h]<t.from)&&h++;h<o.length;h++){let b=o.xs[h];i
+   149 ms chunk-DIyfM3CV.js:3598 | k=>{let V=a[k];if(Number.isNaN(V)){T(),c.length>0&&!Number.isNaN(c[c.length-1])&&(s.push(r[k]),c.push(NaN)),m=NaN;return}let Q=O(k);if(Q!==m||p<0){T()
+   142 ms chunk-DIyfM3CV.js:1067 | (l,d,u)=>{let m=je(d),p=je(u),h=i&&d===t&&u===e&&c(d)&&c(u)?o.indexOf(l[0]):-1,g=o.length-h,x=h>=0&&l.length>=g;for(let P=0;x&&P<g;P++)x=l[P]===o[h+P]
+   128 ms chunk-CmtSb_E5.js:1722 | a=>[...a.slice(1),{at:e,value:i}])}let t=performance.now();this.results.build.push(t-n),fh(()=>this.results.render.push(performance.now()-t),{injector
+   126 ms chunk-DIyfM3CV.js:3565 | k=>Math.floor((r[k]-t.from)*u),E=k=>{let V=a[k];if(Number.isNaN(V)){T(),c.length>0&&!Number.isNaN(c[c.length-1])&&(s.push(r[k]),c.push(NaN)),m=NaN;ret
+    25 ms chunk-DIyfM3CV.js:8895 | i=>{let s=ee(i,a);return i.pts.length===2?`M${s}L${s}`:`M${s}${te(i,n,a)}`}).join(``)}function mn(o,t,e,n,r,a={}){let i=a.transpose===!0,s=vt(e.map(r)

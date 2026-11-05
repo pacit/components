@@ -216,6 +216,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
       import('./views/progress/progress-view').then((m) => m.ProgressView),
   },
   {
+    path: 'live-probe',
+    title: 'Live probe',
+    summary: 'Probe only.',
+    group: 'components',
+    load: () =>
+      import('./views/live-probe/live-probe-view').then((m) => m.LiveProbeView),
+  },
+  {
     path: 'sparkline',
     title: 'Sparkline',
     summary:

@@ -1,0 +1,11 @@
+import { pctColumnsOf } from '../../libs/components/chart/src/model/columns';
+import { pctPyramid, pctDecimate } from '../../libs/components/chart/src/model/decimate';
+const N = 60000, t0 = Date.now();
+const rows = Array.from({ length: N }, (_, i) => ({ at: t0 - (N - i) * 1000, value: 500 + 300 * Math.sin(i / 300) }));
+const time = (name: string, f: () => unknown, k = 50) => { f(); const s = performance.now(); for (let i = 0; i < k; i++) f(); console.log(name, ((performance.now() - s) / k).toFixed(3), 'ms'); };
+time('copy rows (slice+push)', () => [...rows.slice(1), rows[0]]);
+time('pctColumnsOf', () => pctColumnsOf(rows, 'at', 'value'));
+const c = pctColumnsOf(rows, 'at', 'value');
+time('pctPyramid', () => pctPyramid(c));
+const p = pctPyramid(c);
+time('pctDecimate window 10 min', () => pctDecimate(c, { from: t0 - 600000, to: t0 }, 860, p));
