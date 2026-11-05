@@ -438,9 +438,19 @@ describe('PctPie', () => {
     await settle(fixture);
     expect(fixture.componentInstance.selected()).toBe('Heating');
     expect(fixture.componentInstance.picked()?.index).toBe(0);
+    // the range says the slice is selected, so the key is heard; on another slice it does not
+    expect(input.getAttribute('aria-valuetext')).toBe(
+      'Heating: 50 kWh, 50%, selected',
+    );
+    key(fixture, 'ArrowRight');
+    await settle(fixture);
+    expect(input.getAttribute('aria-valuetext')).toBe('Cooling: 30 kWh, 30%');
+    key(fixture, 'Home');
+    await settle(fixture);
     key(fixture, 'Enter');
     await settle(fixture);
     expect(fixture.componentInstance.selected()).toBeNull();
+    expect(input.getAttribute('aria-valuetext')).toBe('Heating: 50 kWh, 50%');
     key(fixture, 'End');
     await settle(fixture);
     expect(fixture.componentInstance.cursor()).toBe('Fans');

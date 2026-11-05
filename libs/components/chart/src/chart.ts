@@ -1719,7 +1719,10 @@ export class PctChart extends PctChartScene implements PctLegendSource {
     return { x, text: this.writePosition(x, 'short'), rows, notes };
   });
 
-  /** What the cursor's range says: the full position and every value, or that there is none. */
+  /**
+   * What the cursor's range says: the full position and every value, or that there is none —
+   * and that the band under the cursor is the selected one, so a key that selects is heard.
+   */
   protected readonly valueText = computed(() => {
     const reading = this.reading();
     if (!reading) return this.texts().chartNoCursor;
@@ -1727,7 +1730,10 @@ export class PctChart extends PctChartScene implements PctLegendSource {
     const values = [...reading.rows, ...reading.notes]
       .map((r) => `${r.name} ${r.text}`)
       .join(', ');
-    return values ? `${position}: ${values}` : position;
+    const text = values ? `${position}: ${values}` : position;
+    return this.isSelectedAt(reading.x)
+      ? `${text}, ${this.texts().chartSelected}`
+      : text;
   });
 
   /**
@@ -2615,14 +2621,19 @@ export class PctChart extends PctChartScene implements PctLegendSource {
     return null;
   }
 
+  /** Whether the band at `x` is the selected one. */
+  private isSelectedAt(x: number): boolean {
+    const selected = this.selected();
+    if (!selected) return false;
+    const band = this.bandAt(x);
+    return band?.from === selected.from && band.to === selected.to;
+  }
+
   /** Selects the band at `x`, or lets the selected one go when it is the same. */
   private select(x: number): void {
     const band = this.bandAt(x);
     if (!band) return;
-    const now = this.selected();
-    this.selected.set(
-      now && now.from === band.from && now.to === band.to ? null : band,
-    );
+    this.selected.set(this.isSelectedAt(x) ? null : band);
   }
 
   /** The selection as drawn: the band's pixels inside the plot, or `null`. */
