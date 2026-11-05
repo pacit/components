@@ -2031,7 +2031,7 @@ const fitting = col.of([
 ]);
 
 /** A cell component for the power, in the details as in the row. */
-@Component({ selector: 'x-power', template: `{{ value() }} W` })
+@Component({ selector: 'pct-test-power', template: `{{ value() }} W` })
 class PowerCell {
   readonly value = input<number | null>(null);
 }
@@ -2359,12 +2359,12 @@ describe('PctDataTable — a narrow table hides columns', () => {
     const width = { value: 1000 };
     lay(width);
     await resize(fixture, width, 1000);
-    expect(body()[0].querySelector('x-power')?.textContent).toBe('12 W');
+    expect(body()[0].querySelector('pct-test-power')?.textContent).toBe('12 W');
     await resize(fixture, width, 250);
     disclosures()[1].click();
     await settle(fixture);
     const list = detailsRows()[0].querySelector('dl') as HTMLElement;
-    expect(list.querySelector('dd x-power')?.textContent).toBe('1899.5 W');
+    expect(list.querySelector('dd pct-test-power')?.textContent).toBe('1899.5 W');
   });
 
   it('measures the shown columns past the leading cells', async () => {

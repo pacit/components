@@ -26,7 +26,7 @@ const SOCKETS: readonly Socket[] = [
 
 /** Every input the table sets, each written into the cell. */
 @Component({
-  selector: 'x-state',
+  selector: 'pct-test-state',
   template: `<b>{{ value() }}</b> {{ row().name }} #{{ index() }}
     {{ column().header }}`,
 })
@@ -39,7 +39,7 @@ class StateCell {
 
 /** One input of the four, and one of its own the table never sets. */
 @Component({
-  selector: 'x-live',
+  selector: 'pct-test-live',
   template: `{{ value() ? 'Live' : 'Dead' }}{{ tone() }}`,
 })
 class LiveCell {
@@ -48,7 +48,7 @@ class LiveCell {
 }
 
 /** No input at all. */
-@Component({ selector: 'x-mark', template: `•` })
+@Component({ selector: 'pct-test-mark', template: `•` })
 class MarkCell {}
 
 const col = pctColumnsOf<Socket>();
@@ -140,7 +140,7 @@ describe('PctDataTable — a column drawn by its component', () => {
     await render(Host);
     expect(text(cells(0)[1])).toBe('on Kettle #0 State');
     expect(text(cells(1)[1])).toBe('off Lamp #1 State');
-    expect(cells(0)[1].querySelector('x-state b')?.textContent).toBe('on');
+    expect(cells(0)[1].querySelector('pct-test-state b')?.textContent).toBe('on');
     expect(errors).toEqual([]);
   });
 
@@ -151,29 +151,29 @@ describe('PctDataTable — a column drawn by its component', () => {
     expect(text(cells(1)[2])).toBe('Dead');
     expect(cells(0)[2].querySelector('pct-icon')).toBeNull();
     expect(text(cells(0)[3])).toBe('•');
-    expect(cells(0)[3].querySelector('x-mark')).not.toBeNull();
+    expect(cells(0)[3].querySelector('pct-test-mark')).not.toBeNull();
     expect(errors).toEqual([]);
   });
 
   it('sets the new value on the same component when the row changes', async () => {
     const fixture = await render(Host);
-    const before = cells(0)[1].querySelector('x-state');
+    const before = cells(0)[1].querySelector('pct-test-state');
     fixture.componentInstance.rows.set([
       { ...SOCKETS[0], state: 'off' },
       SOCKETS[1],
     ]);
     await settle(fixture);
     expect(text(cells(0)[1])).toBe('off Kettle #0 State');
-    expect(cells(0)[1].querySelector('x-state')).toBe(before);
+    expect(cells(0)[1].querySelector('pct-test-state')).toBe(before);
   });
 
   it('draws a pctCell template for the column in place of its component', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.slotted.set(true);
     await settle(fixture);
-    expect(cells(0)[1].querySelector('x-state')).toBeNull();
+    expect(cells(0)[1].querySelector('pct-test-state')).toBeNull();
     expect(cells(0)[1].querySelector('i')?.textContent).toBe('on');
     // The other columns keep their components.
-    expect(cells(0)[2].querySelector('x-live')).not.toBeNull();
+    expect(cells(0)[2].querySelector('pct-test-live')).not.toBeNull();
   });
 });
