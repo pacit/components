@@ -74,4 +74,48 @@ export const SECTIONS: Readonly<Record<string, readonly Section[]>> = {
         'datatable.spec.ts › the arrows step over the cell as one, and come back to the column they left',
     },
   ],
+  // The chart's view holds thirty-four demos, and the walk from the top reads the first chart's
+  // range and legend; the arrows were never pressed on any of them.
+  '/chart': [
+    {
+      block: 'demo-pattern',
+      what: 'the cursor moved by the arrows',
+      on: '[data-pct-part="range"]',
+      keys: ['ArrowRight', 'ArrowRight', 'End'],
+      owner:
+        'chart.spec.ts › the arrows walk the cursor from reading to reading, Home and End go to the ends',
+    },
+    {
+      block: 'demo-bars',
+      what: "a bar's band picked at the cursor",
+      on: '[data-pct-part="range"]',
+      keys: ['ArrowRight', 'ArrowRight', 'Enter'],
+      owner:
+        "chart.spec.ts › a press selects a bar's band, and Enter at the cursor does the same",
+    },
+    {
+      block: 'demo-pie',
+      what: 'the slices of a pie',
+      on: '[data-pct-part="range"]',
+      keys: ['ArrowRight', 'End'],
+      owner:
+        'chart.spec.ts › the range is the one stop: the arrow keys walk the slices and read each, the legend hides one and the turn is shared among the rest',
+    },
+    {
+      block: 'demo-brush',
+      what: "an edge of a navigator's selection",
+      on: '[data-pct-part="handle"]',
+      keys: ['ArrowRight', 'PageDown'],
+      owner:
+        'chart.spec.ts › the keys move an edge of the navigator, and the window above follows',
+    },
+    {
+      block: 'demo-live',
+      what: 'a reading added to a live chart',
+      on: '[data-testid="live-add"]',
+      keys: ['activate'],
+      owner:
+        'chart.spec.ts › a reading added at the end is drawn, and the window follows the meter',
+    },
+  ],
 };
