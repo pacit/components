@@ -1,6 +1,8 @@
 import { nvdaTest as test } from '@guidepup/playwright';
 import { routesAsked, walk } from './walk';
 
+test.use({ nvdaStartOptions: { capture: true } });
+
 /**
  * NVDA with Firefox on Windows — one of the two readers `docs/acr/claims.json` declares and
  * that no machine here can run. It has never run: the first `workflow_dispatch` of
