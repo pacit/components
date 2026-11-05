@@ -941,4 +941,36 @@ describe('PctPie', () => {
         'announced by its name, so a reader meets an image with none.',
     );
   });
+
+  it('exports the pie as a standalone SVG, named and described, and rejects a PNG with no canvas', async () => {
+    const fixture = await render();
+    const pie = pieOf(fixture);
+    const root = new DOMParser().parseFromString(
+      pie.svg(),
+      'image/svg+xml',
+    ).documentElement;
+    expect(root.getAttribute('width')).toBe('400');
+    expect(root.getAttribute('height')).toBe('300');
+    expect(root.querySelector('title')?.textContent).toBe('Energy by use');
+    const described = one(fixture, '[role="img"]').getAttribute(
+      'aria-describedby',
+    )!;
+    expect(root.querySelector('desc')?.textContent).toBe(
+      one(fixture, `#${described}`).textContent,
+    );
+    expect(root.querySelectorAll('[data-pct-part="slice"]')).toHaveLength(3);
+    expect(root.querySelector('[class]')).toBeNull();
+    await expect(pie.png()).rejects.toThrow(
+      'pct-chart: no canvas to draw the PNG on',
+    );
+  });
+
+  it('exports nothing while it loads, and rejects a PNG then', async () => {
+    const fixture = await render();
+    fixture.componentInstance.loading.set(true);
+    await settle(fixture);
+    const pie = pieOf(fixture);
+    expect(pie.svg()).toBe('');
+    await expect(pie.png()).rejects.toThrow('pct-pie: nothing drawn to export');
+  });
 });

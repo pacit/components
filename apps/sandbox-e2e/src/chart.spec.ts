@@ -1910,4 +1910,42 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
         .toBeGreaterThan(was);
     });
   });
+
+  test.describe('export and a description of its own', () => {
+    const name = 'Supply air and fan power exported, 25 October 2026';
+
+    test('a chart with no description describes the window in its own words', async ({
+      page,
+    }) => {
+      const picture = chart(page, 'chart-export').getByRole('img', { name });
+      await expect(picture).toHaveAccessibleDescription(
+        'From 25 Oct 2026, 00:00 to 26 Oct 2026, 00:00. Supply air from 17.3 °C to 22.7 °C, ' +
+          'last 18 °C, falling, stretches without readings: 1. ' +
+          'Fan power from 380 W to 640 W, last 380 W, falling.',
+      );
+    });
+
+    test('svg() writes the picture named, and png() draws it at twice its size', async ({
+      page,
+    }) => {
+      const exported = chart(page, 'chart-export');
+      await exported.scrollIntoViewIfNeeded();
+      const said = page.getByTestId('export-said');
+      await page.getByTestId('export-svg').click();
+      await expect(said).toHaveText(
+        new RegExp(`^SVG of \\d{4,} characters titled ${name}$`),
+      );
+      await page.getByTestId('export-png').click();
+      await expect(said).toHaveText('PNG of type image/png');
+      const image = page.getByTestId('export-image');
+      await expect
+        .poll(() => image.evaluate((e) => (e as HTMLImageElement).naturalWidth))
+        .toBeGreaterThan(0);
+      const width = await exported.evaluate((e) => e.clientWidth);
+      const drawn = await image.evaluate(
+        (e) => (e as HTMLImageElement).naturalWidth,
+      );
+      expect(Math.abs(drawn - 2 * width)).toBeLessThanOrEqual(2);
+    });
+  });
 });

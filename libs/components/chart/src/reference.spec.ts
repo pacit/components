@@ -99,8 +99,16 @@ const group = (fixture: ComponentFixture<unknown>) =>
   element(fixture).querySelector('[data-pct-part="reference"]');
 const attrs = (el: Element | null, names: readonly string[]) =>
   names.map((n) => el?.getAttribute(n));
-const described = (fixture: ComponentFixture<unknown>) =>
-  element(fixture).querySelector('.description')?.textContent?.trim() ?? null;
+/** The marks' sentences: what follows the chart's description of its data (0120). */
+const described = (fixture: ComponentFixture<unknown>) => {
+  const text =
+    element(fixture).querySelector('.description')?.textContent?.trim() ?? '';
+  const chart = fixture.debugElement.query((d) => d.name === 'pct-chart');
+  const own = (chart.componentInstance as { describe(): string }).describe();
+  return (
+    (own && text.startsWith(own) ? text.slice(own.length) : text).trim() || null
+  );
+};
 
 describe('PctReference', () => {
   beforeEach(() => {
@@ -178,11 +186,10 @@ describe('PctReference', () => {
     await settle(fixture);
     expect(group(fixture)).toBeNull();
     expect(described(fixture)).toBeNull();
-    expect(
-      element(fixture)
-        .querySelector('[data-pct-part="plot"]')!
-        .getAttribute('aria-describedby'),
-    ).toBeNull();
+    // the picture is left with the data's own words
+    expect(element(fixture).querySelector('.description')?.textContent).toMatch(
+      /^From .+\. Supply air from .+\.$/,
+    );
   });
 
   it('dashes on request, takes a palette place or a colour of its own, and stands in the legend with a toggle that hides it', async () => {

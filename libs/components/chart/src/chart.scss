@@ -283,3 +283,15 @@
     border-color: CanvasText;
   }
 }
+
+// On paper the gestures mean nothing and the colours are the drawing: the zoom bar stays on
+// the screen, and the series print in their tokens' colours, not the printer's economy.
+@media print {
+  :host {
+    print-color-adjust: exact;
+  }
+
+  .zoom-place {
+    display: none;
+  }
+}

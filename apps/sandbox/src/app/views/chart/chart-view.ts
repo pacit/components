@@ -450,6 +450,24 @@ export class ChartView {
   protected readonly brushed = signal<{ from: number; to: number } | null>(
     null,
   );
+  /** Phase 15: what the last export gave, and the PNG as an image to look at. */
+  protected readonly exportSaid = signal('Nothing exported');
+  protected readonly exportedPng = signal<string | null>(null);
+
+  protected exportSvg(chart: PctChart): void {
+    const svg = chart.svg();
+    const title = /<title>([^<]*)<\/title>/.exec(svg)?.[1] ?? '';
+    this.exportSaid.set(`SVG of ${svg.length} characters titled ${title}`);
+  }
+
+  protected async exportPng(chart: PctChart): Promise<void> {
+    const png = await chart.png(2);
+    const url = this.exportedPng();
+    if (url) URL.revokeObjectURL(url);
+    this.exportedPng.set(URL.createObjectURL(png));
+    this.exportSaid.set(`PNG of type ${png.type}`);
+  }
+
   /** The brushed stretch on Warsaw's wall clock. */
   protected readonly brushedText = computed(() => {
     const brushed = this.brushed();

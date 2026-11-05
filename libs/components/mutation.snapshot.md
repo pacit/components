@@ -103,7 +103,8 @@ libs/components/chart/src/area.ts 85.08 154(0) 24 0 3 2
 libs/components/chart/src/band.ts 90.19 193(0) 21 0 0 7
 libs/components/chart/src/bars.ts 94.03 425(0) 26 0 1 2
 libs/components/chart/src/chart-table.ts 89.93 250(1) 24 0 4 0
-libs/components/chart/src/chart.ts 91.28 1864(1) 168 2 8 9
+libs/components/chart/src/chart.ts 91.22 1923(1) 175 2 8 9
+libs/components/chart/src/export.ts 98.98 97(0) 1 0 0 0
 libs/components/chart/src/gauge.ts 91.18 217(0) 19 0 2 4
 libs/components/chart/src/heat.ts 93.48 258(3) 15 0 3 1
 libs/components/chart/src/legend.ts 100.00 60(0) 0 0 0 1
@@ -115,6 +116,7 @@ libs/components/chart/src/model/color.ts 94.50 103(1) 6 0 0 0
 libs/components/chart/src/model/columns.ts 97.06 33(1) 1 0 0 0
 libs/components/chart/src/model/cursor.ts 95.60 87(3) 4 0 0 0
 libs/components/chart/src/model/decimate.ts 90.68 214(84) 22 0 0 0
+libs/components/chart/src/model/describe.ts 98.77 80(1) 1 0 0 0
 libs/components/chart/src/model/duration.ts 96.61 57(0) 2 0 0 0
 libs/components/chart/src/model/extent.ts 90.32 84(0) 9 0 0 0
 libs/components/chart/src/model/gestures.ts 99.41 169(0) 1 0 0 0
@@ -136,7 +138,7 @@ libs/components/chart/src/model/value-at.ts 98.91 91(4) 1 0 0 0
 libs/components/chart/src/model/window.ts 97.22 35(0) 1 0 0 0
 libs/components/chart/src/note.ts 93.85 61(0) 3 0 1 0
 libs/components/chart/src/now.ts 100.00 43(0) 0 0 0 0
-libs/components/chart/src/pie.ts 90.87 388(0) 36 1 2 4
+libs/components/chart/src/pie.ts 90.57 394(0) 38 1 2 4
 libs/components/chart/src/points.ts 83.05 147(2) 27 1 2 2
 libs/components/chart/src/ramp.ts 90.00 9(0) 1 0 0 0
 libs/components/chart/src/range.ts 85.31 209(2) 34 0 2 1
@@ -252,5 +254,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.53 21778/24056
+TOTAL 90.58 22020/24309
 ```
