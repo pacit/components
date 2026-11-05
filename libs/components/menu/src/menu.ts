@@ -330,6 +330,9 @@ export class PctMenu {
   /** What places the panel by its control, while the overlay is up. */
   private position: FlexibleConnectedPositionStrategy | null = null;
 
+  /** Stops hearing the presses that begin while the panel is up. */
+  private unpress: (() => void) | null = null;
+
   /**
    * Whether the inline panel is on the screen — what `ref` is for the overlay, in the mode that
    * has none. The close has bookkeeping to do (the reason, the walk) and it has to run once, on
@@ -791,12 +794,22 @@ export class PctMenu {
       this.dismiss('escape');
     });
 
+    // The secondary button's press that opened the menu from `contextmenu` ends in an
+    // `auxclick` once the panel is up (Firefox, WebKit), and that is no press outside: the two
+    // events close it only for a press begun since it opened.
+    let pressed = false;
+    const press = () => (pressed = true);
+    this.document.addEventListener('pointerdown', press, true);
+    this.unpress = () =>
+      this.document.removeEventListener('pointerdown', press, true);
+
     // A press outside dismisses — **except on the trigger**, which has a press of its own to
     // answer, and except anywhere inside this menu's own tree, which the dependency has no
     // way of knowing about: a submenu is a second overlay, so a press in it is "outside" every
     // panel above it ([`lesson-93`](../../../../docs/lessons.md#lesson-93)).
     ref.outsidePointerEvents().subscribe((event) => {
       const target = event.target as Node | null;
+      if (!pressed && event.type !== 'click') return;
       // The control as it stands now: one registered since the panel opened is the trigger.
       if (!target || untracked(this.trigger)?.contains(target)) return;
       if (this.holds(target)) return;
@@ -874,6 +887,8 @@ export class PctMenu {
     this.cancelLeave = null;
     this.ref = null;
     this.view = null;
+    this.unpress?.();
+    this.unpress = null;
     if (!ref) return;
 
     ref.dispose();

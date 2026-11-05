@@ -2393,6 +2393,8 @@ test.describe('A row’s menu, a status bar and a print — the application’s 
   test('a print draws every register up to its limit, says where it stopped, and the window comes back', async ({
     page,
   }) => {
+    // A thousand rows drawn at once, then laid out for paper: slow by what it measures.
+    test.slow();
     const registers = page.getByTestId('table-registers');
     const rows = registers.locator('tbody tr[data-pct-index]');
     await expect(rows.first()).toBeVisible();

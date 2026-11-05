@@ -64,7 +64,7 @@ before an application ships them.
 ./grid 681 - @angular/core
 ./hero 6005 - @angular/core
 ./icon 8987 - @angular/common,@angular/core
-./menu 23659 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
+./menu 23874 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./nav 3939 - @angular/core
 ./pagination 20682 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./popover 17840 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
@@ -79,7 +79,7 @@ before an application ships them.
 ./stepper 17605 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
 ./switch 23486 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./table 390560 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./table 390775 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./tabs 19419 ./core @angular/core,@angular/forms/signals
 ./testing 15653 - @angular/cdk/testing
 ./theme 518 - @angular/core
@@ -149,12 +149,12 @@ single number this file had ever moved.
 ./date PctCalendar 2 29691 48829
 ./description PctDescription 2 8768 9183
 ./field PctField 3 26779 36509
-./menu PctMenu 2 22446 22449
+./menu PctMenu 2 22661 22664
 ./nav PctNav 3 755 3790
 ./radio PctRadio 2 26368 26370
 ./select PctMultiSelect 2 54633 80820
 ./stepper PctStep 2 17462 17464
-./table PctDataTable 14 116176 380022
+./table PctDataTable 14 116176 380237
 ./tabs PctTab 2 19250 19253
 ./time PctTime 2 50587 50588
 ./topbar PctTopbar 2 1685 2230
