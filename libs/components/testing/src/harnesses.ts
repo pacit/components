@@ -1128,6 +1128,27 @@ export class PctSliderHarness extends PctHarness<
   ] as const;
 }
 
+// ── @pacit/components/sparkline ─────────────────────────────────────────────────
+
+/**
+ * `pct-sparkline` — `PctSparkline`.
+ *
+ * @since next
+ */
+export class PctSparklineHarness extends PctHarness<
+  'area' | 'bar' | 'dot' | 'line' | 'picture' | 'slot'
+> {
+  static override hostSelector = 'pct-sparkline';
+  static override readonly parts = [
+    'area',
+    'bar',
+    'dot',
+    'line',
+    'picture',
+    'slot',
+  ] as const;
+}
+
 // ── @pacit/components/stack ─────────────────────────────────────────────────────
 
 /**

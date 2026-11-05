@@ -274,9 +274,9 @@ form exists and is a condition of entering a release. Forty-two cards are filled
     points and bubbles picked by distance, a zoom on both axes, a log axis of decades (0105);
     areas on a stack or as shares, a monotone curve the tooltip reads too, a histogram recipe,
     a range band and candles, boxes with whiskers and outliers (0106); a heatmap on rows the
-    scene lays (0113); a pie of shares and a donut, a gauge as a meter drawn on an arc (0115)
-  - then a sparkline, a brush, export and a generated description; a canvas layer only behind
-    a measurement; three promoted layers per scene (0100)
+    scene lays (0113); a pie of shares and a donut, a gauge as a meter drawn on an arc (0115);
+    a sparkline in a cell, a picture with no scene on an entrypoint of its own (0116)
+  - then a brush, export, a generated description; a canvas layer only behind a measurement (0100)
   - ends with: every mark's card, the sandbox in three engines, the readers' walk of the cursor
 
 ## 3. Publication
