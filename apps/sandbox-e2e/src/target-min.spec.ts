@@ -230,6 +230,18 @@ const CONTROLS: readonly Control[] = [
     floor: '--pct-table-toggle-target-min',
   },
   {
+    name: 'data table actions',
+    applies:
+      'libs/components/table/src/data-table-row-menu.scss .pct-data-table__actions',
+    route: '/datatable',
+    selector:
+      '[data-testid="table-menu"] tbody tr:first-child [data-pct-part="actions"]',
+    axis: 'both',
+    zero: ['--pct-table-font-size'],
+    ceiling: 24,
+    floor: '--pct-table-toggle-target-min',
+  },
+  {
     name: 'data table pick',
     applies:
       'libs/components/table/src/data-table-selection.scss .pct-data-table__target',

@@ -43,49 +43,49 @@ and the class metadata carries the decorator a second time, and both are compile
 before an application ships them.
 
 ```
-. 6670 ./core @angular/core,@angular/forms/signals
-./accordion 18339 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./avatar 15422 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+. 6756 ./core @angular/core,@angular/forms/signals
+./accordion 18425 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./avatar 15508 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./badge 2357 - @angular/core
-./breadcrumb 15999 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./button 18417 ./core @angular/core,@angular/forms/signals
+./breadcrumb 16085 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./button 18503 ./core @angular/core,@angular/forms/signals
 ./card 17291 ./icon,./skeleton @angular/common,@angular/core
-./chart 307521 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
-./checkbox 23920 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./chips 18151 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./chart 307643 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
+./checkbox 24006 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./chips 18237 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
-./core 14696 - @angular/core,@angular/forms/signals
-./date 49788 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
-./datetime 82081 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
-./description 9251 ./core @angular/core,@angular/forms/signals
-./dialog 23229 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
-./drawer 22436 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./field 39414 ./core,./icon @angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./core 14782 - @angular/core,@angular/forms/signals
+./date 49874 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./datetime 82167 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./description 9337 ./core @angular/core,@angular/forms/signals
+./dialog 23315 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
+./drawer 22522 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./field 39500 ./core,./icon @angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./grid 681 - @angular/core
 ./hero 6005 - @angular/core
 ./icon 8987 - @angular/common,@angular/core
-./menu 23470 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
+./menu 23874 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./nav 3939 - @angular/core
-./pagination 20596 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./popover 17754 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
-./progress 18518 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./radio 26452 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./regions 8453 ./core @angular/core,@angular/forms/signals
-./select 80960 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./pagination 20682 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./popover 17840 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
+./progress 18604 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./radio 26538 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./regions 8539 ./core @angular/core,@angular/forms/signals
+./select 81046 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./skeleton 3730 - @angular/core
-./slider 28387 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./sparkline 15007 ./core @angular/core,@angular/forms/signals
+./slider 28473 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./sparkline 15093 ./core @angular/core,@angular/forms/signals
 ./stack 891 - @angular/core
-./stepper 17519 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./stepper 17605 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
-./switch 23400 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./table 378404 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
-./tabs 19333 ./core @angular/core,@angular/forms/signals
-./testing 15643 - @angular/cdk/testing
+./switch 23486 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./table 390775 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./tabs 19419 ./core @angular/core,@angular/forms/signals
+./testing 15653 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./time 53241 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
-./toast 26903 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./tooltip 16633 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core,@angular/forms/signals
+./time 53327 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./toast 26989 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./tooltip 16719 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core,@angular/forms/signals
 ./topbar 2371 - @angular/core
 ./tree 12928 ./icon @angular/common,@angular/core
 ```
@@ -141,22 +141,22 @@ is worth today, the gap between the two numbers, and on 2026-09-07 it was the la
 single number this file had ever moved.
 
 ```
-./accordion PctAccordion 2 7191 18167
-./breadcrumb PctBreadcrumb 3 7291 15837
+./accordion PctAccordion 2 7277 18253
+./breadcrumb PctBreadcrumb 3 7377 15923
 ./card PctCard 4 15849 16802
-./chart PctArea 19 240388 304324
-./chips PctChip 2 18009 18012
-./date PctCalendar 2 29605 48743
-./description PctDescription 2 8682 9097
-./field PctField 3 26693 36423
-./menu PctMenu 2 22257 22260
+./chart PctArea 19 240474 304446
+./chips PctChip 2 18095 18098
+./date PctCalendar 2 29691 48829
+./description PctDescription 2 8768 9183
+./field PctField 3 26779 36509
+./menu PctMenu 2 22661 22664
 ./nav PctNav 3 755 3790
-./radio PctRadio 2 26282 26284
-./select PctMultiSelect 2 54547 80734
-./stepper PctStep 2 17376 17378
-./table PctDataTable 13 111371 367513
-./tabs PctTab 2 19164 19167
-./time PctTime 2 50501 50502
+./radio PctRadio 2 26368 26370
+./select PctMultiSelect 2 54633 80820
+./stepper PctStep 2 17462 17464
+./table PctDataTable 14 116176 380237
+./tabs PctTab 2 19250 19253
+./time PctTime 2 50587 50588
 ./topbar PctTopbar 2 1685 2230
 ./tree PctTree 2 12783 12786
 ```

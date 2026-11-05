@@ -150,6 +150,8 @@ const ENGLISH: PctTexts = {
   tableMoveRow: 'Move',
   tableMovedTo: 'Moved to row {place} of {count}',
   tableMoveRowKeys: 'Alt+ArrowUp Alt+ArrowDown',
+  tableRowActions: 'Actions',
+  tablePrintLimit: 'The first {limit} of {count} rows printed',
   tableCopied: 'Cells copied: {count}',
   tablePasted: 'Cells pasted: {count}',
   tablePasteSkipped: 'Cells pasted: {count}, left out: {skipped}',

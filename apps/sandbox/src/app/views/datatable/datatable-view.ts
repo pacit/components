@@ -13,6 +13,7 @@ import { form, FormField, minLength, submit } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
 import { pctWarn } from '@pacit/components/core';
 import { PctField, PctText } from '@pacit/components/field';
+import { PctMenu, PctMenuItem } from '@pacit/components/menu';
 import { PctPagination } from '@pacit/components/pagination';
 import { PctSelect, type PctSelectOption } from '@pacit/components/select';
 import { PctSwitch } from '@pacit/components/switch';
@@ -29,6 +30,8 @@ import {
   PctTableTree,
   PctTablePinnedRows,
   PctTableRowOrder,
+  PctTableRowMenu,
+  pctAggregate,
   type PctRowMove,
   PctTablePage,
   type PctTableAnswer,
@@ -380,6 +383,9 @@ const HOME: readonly Place[] = [
     PctTableTree,
     PctTablePinnedRows,
     PctTableRowOrder,
+    PctTableRowMenu,
+    PctMenu,
+    PctMenuItem,
     PctTableSelection,
     PctTableWindow,
     PctTablePage,
@@ -524,6 +530,40 @@ export class DatatableView {
         : rules.findIndex((rule) => rule.id === move.before);
     rules.splice(at < 0 ? rules.length : at, 0, moving);
     this.orderedRules.set(rules);
+  }
+  /** The rules a row's menu acts on, and what the status bar under them counts. */
+  protected readonly menuRules = signal<readonly Rule[]>(RULES.slice(0, 8));
+  protected readonly menuPicked = signal<readonly PctRowId[]>([]);
+  protected readonly menuQuestion = signal('');
+  /** The energy of the rules picked, summed as the foot sums a column. */
+  protected readonly pickedEnergy = computed(() => {
+    const picked = new Set(this.menuPicked());
+    const sum = pctAggregate(
+      this.menuRules()
+        .filter((rule) => picked.has(rule.id))
+        .map((rule) => rule.energy),
+      'sum',
+    );
+    return (typeof sum === 'number' ? sum : 0).toLocaleString('en', {
+      maximumFractionDigits: 1,
+    });
+  });
+  /** A copy of the rule, after it, under the next free id. */
+  protected duplicateRule(id: PctRowId | null): void {
+    const rules = [...this.menuRules()];
+    const at = rules.findIndex((rule) => rule.id === id);
+    if (at < 0) return;
+    const next = Math.max(...rules.map((rule) => rule.id)) + 1;
+    rules.splice(at + 1, 0, {
+      ...rules[at],
+      id: next,
+      name: `${rules[at].name} (copy)`,
+    });
+    this.menuRules.set(rules);
+  }
+  protected removeRule(id: PctRowId | null): void {
+    this.menuRules.set(this.menuRules().filter((rule) => rule.id !== id));
+    this.menuPicked.set(this.menuPicked().filter((picked) => picked !== id));
   }
   protected sortOrdered(): void {
     this.orderSort.set(
@@ -700,6 +740,11 @@ export class DatatableView {
 
   /** The rules as a file of the page's: the table writes the text, the page downloads it. */
   private readonly document = inject(DOCUMENT);
+
+  /** The browser's print of the page: the window draws every row to its limit for it. */
+  protected printPage(): void {
+    this.document.defaultView?.print();
+  }
   private readonly editTable =
     viewChild.required<PctDataTable<Rule>>('editTable');
   protected downloadCsv(): void {

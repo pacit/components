@@ -439,6 +439,13 @@ export interface PctTexts {
    * number among the rows, `{count}` for how many there are.
    */
   readonly tableMovedTo: string;
+  /** Data table: the word a row's button of actions is named by, before the row's first text. */
+  readonly tableRowActions: string;
+  /**
+   * Data table: printed under a windowed table whose print stopped at its limit. `{limit}`
+   * stands for the rows printed, `{count}` for how many there are.
+   */
+  readonly tablePrintLimit: string;
   /** Data table: announced when cells are copied from the grid. `{count}` stands for how many. */
   readonly tableCopied: string;
   /** Data table: announced when cells are pasted into the grid. `{count}` stands for how many. */
@@ -576,6 +583,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableMoveRow: 'Move',
   tableMoveRowKeys: 'Alt+ArrowUp Alt+ArrowDown',
   tableMovedTo: 'Moved to row {place} of {count}',
+  tableRowActions: 'Actions',
+  tablePrintLimit: 'The first {limit} of {count} rows printed',
   tableCopied: 'Cells copied: {count}',
   tablePasted: 'Cells pasted: {count}',
   tablePasteSkipped: 'Cells pasted: {count}, left out: {skipped}',

@@ -5,6 +5,7 @@
   "harnesses": {
     "PctDataTableHarness": {
       "parts": [
+        "actions",
         "details",
         "disclosure",
         "error",

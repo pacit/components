@@ -1,0 +1,29 @@
+/* A row's button of actions: a target of the toggles' size, in the icons' muted colour. */
+.pct-data-table__actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--pct-table-toggle-target-min);
+  block-size: var(--pct-table-toggle-target-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--pct-table-icon-fg-muted);
+  cursor: pointer;
+}
+
+.pct-data-table__actions[aria-expanded='true'] {
+  color: var(--pct-table-fg);
+}
+
+.pct-data-table__dots {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+/* On paper a button does nothing: its place stays, so the columns keep their widths. */
+@media print {
+  .pct-data-table__actions {
+    visibility: hidden;
+  }
+}

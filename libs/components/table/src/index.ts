@@ -15,6 +15,7 @@ export * from './data-table-editing';
 export * from './data-table-export';
 export * from './data-table-pinned-rows';
 export * from './data-table-row-order';
+export * from './data-table-row-menu';
 export * from './column-chooser';
 export * from './model/aggregate';
 export * from './model/columns';
