@@ -141,7 +141,8 @@
       "cell",
       "ramp",
       "pie",
-      "gauge"
+      "gauge",
+      "handle"
     ],
     "properties": [
       "alpha",

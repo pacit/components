@@ -19,6 +19,7 @@ import {
   signal,
   TemplateRef,
   viewChild,
+  viewChildren,
 } from '@angular/core';
 import {
   nextPctId,
@@ -29,6 +30,13 @@ import {
 import { PctSkeleton } from '@pacit/components/skeleton';
 import { PctChartZoom } from './chart-zoom';
 import type { PctColumns } from './model/columns';
+import {
+  pctBrushDrag,
+  pctBrushEdgeAt,
+  pctBrushGrip,
+  type PctBrushEdge,
+  type PctBrushGrip,
+} from './model/brush';
 import { pctCursorJump, pctCursorStep } from './model/cursor';
 import {
   pctIntervals,
@@ -38,6 +46,7 @@ import {
 import { pctStack, pctStackColumns, type PctStacked } from './model/stack';
 import {
   PCT_GESTURE_IDLE,
+  PCT_GESTURE_RULES,
   pctGestureStep,
   type PctGestureAction,
   type PctGestureState,
@@ -571,6 +580,18 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * @since 0.3.0
    */
   readonly now = input<() => number>(() => Date.now());
+  /**
+   * A drag across the plot draws `selected` instead of moving the window, and two ranges stand
+   * at its edges, each a stop that moves its edge. A drag inside the selection moves it whole
+   * and a drag on an edge moves that edge; a tap on an edge and then one on the plot puts the
+   * edge there; a double tap inside zooms to it, as Enter on an edge does
+   * ([0118](../../../../docs/decisions/0118-a-brush-is-the-selection-drawn-by-a-drag-and-moved-by-two-ranges.md)).
+   * Bound with `[(selected)]` to another chart's window, a low chart with a brush is that
+   * chart's navigator.
+   *
+   * @since next
+   */
+  readonly brush = input(false, { transform: booleanAttribute });
 
   protected readonly texts = inject(PCT_TEXTS);
   /** The chart itself, for the zoom bar it draws. */
@@ -599,7 +620,28 @@ export class PctChart extends PctChartScene implements PctLegendSource {
     clip: nextPctId('pct-chart-clip'),
     description: nextPctId('pct-chart-description'),
     keys: nextPctId('pct-chart-keys'),
+    brushKeys: nextPctId('pct-chart-brush-keys'),
   };
+
+  /** The edge a tap picked: the next tap on the plot puts it where it lands. */
+  protected readonly picked = signal<PctBrushEdge | null>(null);
+  /** The edge whose range has the focus: its grip is drawn focused, as the range is hidden. */
+  protected readonly focusedEdge = signal<PctBrushEdge | null>(null);
+  private readonly handleInputs =
+    viewChildren<ElementRef<HTMLInputElement>>('handleInput');
+  /** A press on a brushing plot: its pointer, where it began, and on what. */
+  private brushPress: {
+    readonly id: number;
+    readonly grip: PctBrushGrip;
+    readonly start: PctWindow;
+    readonly at: number;
+    readonly along: number;
+    readonly across: number;
+    moved: boolean;
+  } | null = null;
+  /** The brush's last tap, for a double tap. */
+  private brushTap: { readonly along: number; readonly at: number } | null =
+    null;
 
   private readonly size = signal({ width: 0, height: 0 });
   private readonly font = signal({ family: 'sans-serif', px: 13 });
@@ -1758,6 +1800,18 @@ export class PctChart extends PctChartScene implements PctLegendSource {
       input.max = String(range.max);
       input.value = String(range.value);
     });
+    // The brush's ranges the same way: their ends first, then their values.
+    afterRenderEffect(() => {
+      const handles = this.handles();
+      for (const [i, ref] of this.handleInputs().entries()) {
+        const handle = handles[i];
+        if (!handle) continue;
+        const input = ref.nativeElement;
+        input.min = '0';
+        input.max = String(handle.max);
+        input.value = String(handle.value);
+      }
+    });
     // The tooltip is measured once drawn, and placed by its width: one frame hidden.
     afterRenderEffect(() => {
       this.reading();
@@ -2014,12 +2068,37 @@ export class PctChart extends PctChartScene implements PctLegendSource {
     if (!shown) return;
     if (across && this.zoom() === 'xy') this.moveAcross(across);
     const limits = this.limits() ?? this.dataSpan();
-    const minSpan =
+    this.window.set(
+      pctWindowTransform(shown, change, limits, this.narrowest()),
+    );
+    this.announceWindow();
+  }
+
+  /**
+   * The narrowest window: `minSpan`, or two minutes on a time axis and a millionth of the
+   * limits' span — the data's, or the window's while it has none — on another.
+   */
+  private narrowest(): number {
+    const reach = this.limits() ?? this.dataSpan() ?? this.shown();
+    return (
       this.minSpan() ??
-      (this.x() === 'time'
+      (this.x() === 'time' || !reach
         ? MIN_SPAN_TIME
-        : ((limits ?? shown).to - (limits ?? shown).from) / 1e6);
-    this.window.set(pctWindowTransform(shown, change, limits, minSpan));
+        : (reach.to - reach.from) / 1e6)
+    );
+  }
+
+  /**
+   * Shows the selection as the window and lets the selection go: what Enter on a brush's
+   * edge and a double tap inside its selection do.
+   *
+   * @since next
+   */
+  zoomToSelection(): void {
+    const selected = this.selected();
+    if (!selected) return;
+    this.window.set(selected);
+    this.selected.set(null);
     this.announceWindow();
   }
 
@@ -2252,6 +2331,8 @@ export class PctChart extends PctChartScene implements PctLegendSource {
   }
 
   protected onPointerDown(event: PointerEvent): void {
+    // A brush takes the primary press alone: a mouse's other buttons are the scene's to refuse.
+    if (this.brush() && event.button === 0 && this.pressBrush(event)) return;
     if (this.cursorMode() === 'none' && this.zoom() === 'none') return;
     if (event.pointerType === 'mouse' && event.button > 0) return;
     clearTimeout(this.holdTimer);
@@ -2281,6 +2362,10 @@ export class PctChart extends PctChartScene implements PctLegendSource {
   }
 
   protected onPointerMove(event: PointerEvent): void {
+    if (this.brushPress?.id === event.pointerId) {
+      this.dragBrush(event);
+      return;
+    }
     if (this.gesture.pointers.has(event.pointerId)) {
       this.feed(event, 'move');
       if (this.gesture.mode !== 'pending') clearTimeout(this.holdTimer);
@@ -2304,11 +2389,19 @@ export class PctChart extends PctChartScene implements PctLegendSource {
   }
 
   protected onPointerUp(event: PointerEvent): void {
+    if (this.brushPress?.id === event.pointerId) {
+      this.releaseBrush(event);
+      return;
+    }
     clearTimeout(this.holdTimer);
     this.feed(event, 'up');
   }
 
   protected onPointerCancel(event: PointerEvent): void {
+    if (this.brushPress?.id === event.pointerId) {
+      this.brushPress = null;
+      return;
+    }
     clearTimeout(this.holdTimer);
     this.feed(event, 'cancel');
   }
@@ -2422,6 +2515,215 @@ export class PctChart extends PctChartScene implements PctLegendSource {
       ? { x: left, y: from, width: right - left, height: to - from }
       : { x: from, y: top, width: to - from, height: bottom - top };
   });
+
+  /** The brush's edges: the selection's, held in the window, or the window's ends with none. */
+  protected readonly brushEdges = computed<PctWindow | null>(() => {
+    const shown = this.shown();
+    if (!this.brush() || !shown) return null;
+    const selected = this.selected();
+    if (!selected) return shown;
+    const from = Math.min(Math.max(selected.from, shown.from), shown.to);
+    return { from, to: Math.max(Math.min(selected.to, shown.to), from) };
+  });
+
+  /** The brush's two ranges, in distances from the window's start, as the cursor's (0103). */
+  protected readonly handles = computed(() => {
+    const edges = this.brushEdges();
+    const shown = this.shown();
+    if (!edges || !shown) return [];
+    return (['from', 'to'] as const).map((edge) => ({
+      edge,
+      label:
+        edge === 'from'
+          ? this.texts().chartBrushFrom
+          : this.texts().chartBrushTo,
+      max: shown.to - shown.from,
+      value: edges[edge] - shown.from,
+      text: this.writePosition(edges[edge], 'full'),
+    }));
+  });
+
+  /** The brush's grips as drawn: a line across the picture at each edge. */
+  protected readonly gripView = computed(() => {
+    const edges = this.brushEdges();
+    const scale = this.xScale();
+    if (!edges || !scale) return [];
+    const { top, bottom, left, right } = this.picture();
+    return (['from', 'to'] as const).map((edge) => {
+      const at = scale.map(edges[edge]);
+      return this.horizontal()
+        ? { edge, x: left, y: at, length: right - left }
+        : { edge, x: at, y: top, length: bottom - top };
+    });
+  });
+
+  /** A press on a brushing plot: the brush takes the pointer, or leaves it to the scene. */
+  private pressBrush(event: PointerEvent): boolean {
+    // One pointer brushes: a second finger is no pinch here, and nothing else.
+    if (this.brushPress) return true;
+    const point = this.layerPoint(event);
+    const edges = this.brushEdges();
+    const scale = this.xScale();
+    if (!point || !edges || !scale) return false;
+    const [along, across] = this.horizontal()
+      ? [point.y, point.x]
+      : [point.x, point.y];
+    const at = this.positionAt(along);
+    if (at === null) return false;
+    const grip = pctBrushGrip(
+      along,
+      scale.map(edges.from),
+      scale.map(edges.to),
+      NEAR,
+    );
+    this.brushPress = {
+      id: event.pointerId,
+      // With no selection the window is no span to move: a drag across it draws one.
+      grip: grip === 'inside' && !this.selected() ? 'outside' : grip,
+      start: edges,
+      at,
+      along,
+      across,
+      moved: false,
+    };
+    (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
+    return true;
+  }
+
+  /** The brush's drag: past the slop, the selection follows the pointer. */
+  private dragBrush(event: PointerEvent): void {
+    const press = this.brushPress;
+    const point = this.layerPoint(event);
+    const shown = this.shown();
+    const scale = this.xScale();
+    if (!press || !point || !shown || !scale) return;
+    const along = this.horizontal() ? point.y : point.x;
+    if (!press.moved && Math.abs(along - press.along) < PCT_GESTURE_RULES.slop)
+      return;
+    press.moved = true;
+    this.picked.set(null);
+    const [start, end] = this.alongRange();
+    const now = scale.invert(Math.max(start, Math.min(end, along)));
+    this.selected.set(
+      pctBrushDrag(
+        press.grip,
+        press.start,
+        press.at,
+        now,
+        shown,
+        this.narrowest(),
+      ),
+    );
+  }
+
+  /**
+   * The end of a press on a brushing plot. One that did not travel is a tap: with an edge
+   * picked it puts the edge there, on an edge it picks it, twice it zooms to the selection
+   * inside it and goes home outside it — on a chart that zooms — and otherwise it lets a
+   * selection it missed go and is the scene's own tap.
+   */
+  private releaseBrush(event: PointerEvent): void {
+    const press = this.brushPress;
+    this.brushPress = null;
+    if (!press || press.moved) return;
+    const picked = this.picked();
+    if (picked) {
+      this.picked.set(null);
+      if (press.grip !== picked) this.moveEdge(picked, press.at);
+      return;
+    }
+    if (press.grip === 'from' || press.grip === 'to') {
+      this.picked.set(press.grip);
+      return;
+    }
+    const last = this.brushTap;
+    if (
+      last &&
+      event.timeStamp - last.at <= PCT_GESTURE_RULES.doubleTime &&
+      Math.abs(press.along - last.along) <= PCT_GESTURE_RULES.doubleDistance
+    ) {
+      this.brushTap = null;
+      // A chart that does not zoom keeps its window: a navigator's is the whole data.
+      if (this.zoom() === 'none') return;
+      if (press.grip === 'inside') this.zoomToSelection();
+      else this.home();
+      return;
+    }
+    this.brushTap = { along: press.along, at: event.timeStamp };
+    if (press.grip === 'outside') this.selected.set(null);
+    this.act(
+      { type: 'tap', x: press.along, y: press.across },
+      event.currentTarget as HTMLElement,
+      press.id,
+    );
+  }
+
+  /** One edge of the brush put at `at`, the other kept, inside the window. */
+  private moveEdge(edge: PctBrushEdge, at: number): void {
+    const edges = this.brushEdges();
+    const shown = this.shown();
+    if (!edges || !shown) return;
+    this.selected.set(pctBrushEdgeAt(edges, edge, at, shown, this.narrowest()));
+  }
+
+  /**
+   * The keys of a brush's range: the arrows move its edge by a hundredth of the window, the
+   * page keys by a tenth, Home and End to the window's ends; Enter shows the selection and
+   * Escape lets it go — and passes on with none, for a dialog around the chart.
+   */
+  protected onHandleKey(event: KeyboardEvent, edge: PctBrushEdge): void {
+    const edges = this.brushEdges();
+    const shown = this.shown();
+    if (!edges || !shown) return;
+    const span = shown.to - shown.from;
+    let at: number;
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowUp':
+        at = edges[edge] + span / 100;
+        break;
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        at = edges[edge] - span / 100;
+        break;
+      case 'PageUp':
+        at = edges[edge] + span / 10;
+        break;
+      case 'PageDown':
+        at = edges[edge] - span / 10;
+        break;
+      case 'Home':
+        at = shown.from;
+        break;
+      case 'End':
+        at = shown.to;
+        break;
+      case 'Enter':
+        if (!this.selected() || this.zoom() === 'none') return;
+        event.preventDefault();
+        this.zoomToSelection();
+        return;
+      case 'Escape':
+        if (!this.selected()) return;
+        event.preventDefault();
+        this.selected.set(null);
+        return;
+      default:
+        return;
+    }
+    event.preventDefault();
+    this.moveEdge(edge, at);
+  }
+
+  /** A value set on a brush's range without a key — a reader's own: the edge goes there. */
+  protected onHandleInput(event: Event, edge: PctBrushEdge): void {
+    const shown = this.shown();
+    if (!shown) return;
+    this.moveEdge(
+      edge,
+      shown.from + Number((event.target as HTMLInputElement).value),
+    );
+  }
 
   private readSize(rawWidth: number, rawHeight: number): void {
     const width = Math.round(rawWidth);

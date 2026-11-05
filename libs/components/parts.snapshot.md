@@ -55,6 +55,8 @@ from what the browser really gets.
 ./chart PctChart cursor
 ./chart PctChart data
 ./chart PctChart grid
+./chart PctChart grip
+./chart PctChart handle
 ./chart PctChart marker
 ./chart PctChart message
 ./chart PctChart plot

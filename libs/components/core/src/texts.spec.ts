@@ -79,6 +79,10 @@ const ENGLISH: PctTexts = {
   chartNoCursor: 'No reading selected',
   chartKeys:
     'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor.',
+  chartBrushFrom: 'Start of the selection',
+  chartBrushTo: 'End of the selection',
+  chartBrushKeys:
+    'Arrow keys move this edge by a hundredth of the view, Page Up and Page Down by a tenth, Home and End to the ends of the view; Enter shows the selection; Escape clears it.',
   chartSum: 'Sum',
   chartMean: 'Mean',
   chartDifference: 'Difference',

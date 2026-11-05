@@ -659,7 +659,7 @@ test.describe('The pages', () => {
     page,
   }) => {
     await visit(page, '/components/chart');
-    await expectExamplesFit(page, 'pct-chart, pct-pie, pct-gauge', 13);
+    await expectExamplesFit(page, 'pct-chart, pct-pie, pct-gauge', 14);
     const titles = await page.locator('.example h3').allTextContents();
     expect(titles.filter((title) => /Midnight|\*\//.test(title))).toEqual([]);
   });
@@ -1042,8 +1042,9 @@ test.describe('The pages', () => {
     // (0097); 785 since a cell open in an editor took its outline (0108); 805 since the card took its surface, its edges, its type
     // and its states (0109); 834 since the frame's bar, navigation and description list took
     // theirs (0110); 880 since the heatmap's ramp took its steps and their text colours (0113);
-    // 891 with the pie's and the gauge's (0115); 897 with the sparkline's (0117).
-    await expect(count).toHaveText('897 of 897');
+    // 891 with the pie's and the gauge's (0115); 897 with the sparkline's (0117); 900 with the
+    // brush's handle (0118).
+    await expect(count).toHaveText('900 of 900');
     await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
       3,
     );
@@ -1051,7 +1052,7 @@ test.describe('The pages', () => {
     // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
     // headings, so every chip standing is the address of something on the page.
     await page.getByTestId('theming-filter').fill('select');
-    await expect(count).toHaveText(/^\d+ of 897$/);
+    await expect(count).toHaveText(/^\d+ of 900$/);
     await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
     await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
     const bands = page.getByTestId('theming-bar').getByRole('link');
@@ -1067,7 +1068,7 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('theming-empty')).toBeVisible();
 
     await page.getByTestId('theming-filter').fill('');
-    await expect(count).toHaveText('897 of 897');
+    await expect(count).toHaveText('900 of 900');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({

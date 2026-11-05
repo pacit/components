@@ -1754,4 +1754,160 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(empty.locator('[data-pct-part="band"]')).toHaveCount(0);
     });
   });
+
+  test.describe('a brush and a navigator', () => {
+    const MAIN = 'Supply air on 25 October 2026';
+    const H = 3_600_000;
+    const spanOf = (page: import('@playwright/test').Page) =>
+      page
+        .getByRole('slider', { name: MAIN, exact: true })
+        .evaluate((e) => Number((e as HTMLInputElement).max));
+
+    test('a drag on the navigator shows that stretch above, and a drag inside it pans', async ({
+      page,
+    }) => {
+      const navigator = chart(page, 'chart-brush-navigator');
+      await navigator.scrollIntoViewIfNeeded();
+      expect(await spanOf(page)).toBe(25 * H);
+      // no cursor on the navigator: its stops are the two edges, at the ends of the day
+      await expect(navigator.locator('[data-pct-part="range"]')).toHaveCount(0);
+      const from = navigator.getByRole('slider', {
+        name: 'Start of the selection',
+      });
+      const to = navigator.getByRole('slider', {
+        name: 'End of the selection',
+      });
+      await expect(from).toHaveValue('0');
+      await expect(to).toHaveValue(String(25 * H));
+      const box = (await navigator.boundingBox())!;
+      const y = box.y + box.height / 2;
+      await page.mouse.move(box.x + box.width * 0.3, y);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width * 0.4, y, { steps: 4 });
+      await page.mouse.move(box.x + box.width * 0.6, y, { steps: 4 });
+      await page.mouse.up();
+      await expect.poll(() => spanOf(page)).toBeLessThan(15 * H);
+      const shown = await spanOf(page);
+      expect(shown).toBeGreaterThan(5 * H);
+      const before = Number(await from.inputValue());
+      expect(before).toBeGreaterThan(0);
+      // inside the selection the drag moves it whole: the span above stays
+      await page.mouse.move(box.x + box.width * 0.5, y);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width * 0.55, y, { steps: 4 });
+      await page.mouse.move(box.x + box.width * 0.6, y, { steps: 4 });
+      await page.mouse.up();
+      await expect
+        .poll(async () => Number(await from.inputValue()))
+        .toBeGreaterThan(before);
+      expect(await spanOf(page)).toBeCloseTo(shown, -3);
+      // the grips stand at the edges, inside the navigator's plot
+      const grips = navigator.locator('[data-pct-part="grip"]');
+      await expect(grips).toHaveCount(2);
+      const [a, b] = await Promise.all([
+        grips.nth(0).boundingBox(),
+        grips.nth(1).boundingBox(),
+      ]);
+      expect(a!.x).toBeLessThan(b!.x);
+      expect(a!.x).toBeGreaterThan(box.x);
+      expect(b!.x + b!.width).toBeLessThan(box.x + box.width);
+    });
+
+    test('the keys move an edge of the navigator, and the window above follows', async ({
+      page,
+    }) => {
+      const navigator = chart(page, 'chart-brush-navigator');
+      const to = navigator.getByRole('slider', {
+        name: 'End of the selection',
+      });
+      await to.focus();
+      await expect(
+        navigator.locator('[data-pct-part="grip"].focused'),
+      ).toHaveCount(1);
+      await expect(to).toHaveAccessibleDescription(
+        /Arrow keys move this edge by a hundredth of the view/,
+      );
+      await page.keyboard.press('PageDown');
+      await expect.poll(() => spanOf(page)).toBeCloseTo(22.5 * H, -3);
+      await page.keyboard.press('PageDown');
+      await expect.poll(() => spanOf(page)).toBeCloseTo(20 * H, -3);
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Home');
+      await page.keyboard.press('PageUp');
+      await expect.poll(() => spanOf(page)).toBeCloseTo(17.5 * H, -3);
+      // a zoom above moves the selection below
+      await page.getByRole('slider', { name: MAIN, exact: true }).focus();
+      await page.keyboard.press('0');
+      await expect.poll(() => spanOf(page)).toBe(25 * H);
+      await expect(to).toHaveValue(String(25 * H));
+    });
+
+    test('a brush on its own draws, shows and clears the selection', async ({
+      page,
+    }) => {
+      const brushed = chart(page, 'chart-brush-alone');
+      await brushed.scrollIntoViewIfNeeded();
+      const picked = page.getByTestId('brush-picked');
+      await expect(picked).toHaveText('Nothing brushed');
+      const box = (await brushed.boundingBox())!;
+      const y = box.y + box.height / 2;
+      await page.mouse.move(box.x + box.width * 0.3, y);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width * 0.4, y, { steps: 4 });
+      await page.mouse.move(box.x + box.width * 0.6, y, { steps: 4 });
+      await page.mouse.up();
+      await expect(picked).toHaveText(/^Brushed \d\d:\d\d to \d\d:\d\d$/);
+      await expect(brushed.locator('[data-pct-part="selection"]')).toHaveCount(
+        1,
+      );
+      const name = 'Fan power on 25 October 2026';
+      const span = () =>
+        brushed
+          .getByRole('slider', { name, exact: true })
+          .evaluate((e) => Number((e as HTMLInputElement).max));
+      const from = brushed.getByRole('slider', {
+        name: 'Start of the selection',
+      });
+      await from.focus();
+      await page.keyboard.press('Escape');
+      await expect(picked).toHaveText('Nothing brushed');
+      // drawn again, Enter shows it
+      await page.mouse.move(box.x + box.width * 0.3, y);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width * 0.45, y, { steps: 4 });
+      await page.mouse.move(box.x + box.width * 0.6, y, { steps: 4 });
+      await page.mouse.up();
+      await from.focus();
+      await page.keyboard.press('Enter');
+      await expect.poll(span).toBeLessThan(15 * H);
+      await expect(picked).toHaveText('Nothing brushed');
+    });
+
+    test('a tap on a grip picks its edge, and the next tap puts it down', async ({
+      page,
+    }) => {
+      const brushed = chart(page, 'chart-brush-alone');
+      await brushed.scrollIntoViewIfNeeded();
+      const box = (await brushed.boundingBox())!;
+      const y = box.y + box.height / 2;
+      await page.mouse.move(box.x + box.width * 0.3, y);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width * 0.4, y, { steps: 4 });
+      await page.mouse.move(box.x + box.width * 0.5, y, { steps: 4 });
+      await page.mouse.up();
+      const to = brushed.getByRole('slider', { name: 'End of the selection' });
+      const was = Number(await to.inputValue());
+      const grip = brushed.locator(
+        '[data-pct-part="grip"][data-pct-edge="to"]',
+      );
+      const edge = (await grip.boundingBox())!;
+      await page.mouse.click(edge.x + edge.width / 2, y);
+      await expect(grip).toHaveAttribute('data-pct-picked', '');
+      await page.mouse.click(box.x + box.width * 0.8, y);
+      await expect(grip).not.toHaveAttribute('data-pct-picked', '');
+      await expect
+        .poll(async () => Number(await to.inputValue()))
+        .toBeGreaterThan(was);
+    });
+  });
 });

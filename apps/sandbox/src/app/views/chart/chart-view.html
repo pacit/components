@@ -945,3 +945,69 @@
     Warmer
   </button>
 </sbx-demo>
+
+<sbx-demo
+  heading="A navigator with a brush"
+  summary="brush turns a drag across the plot into a selection with a grip at each edge, and a range beside the picture for each edge. Bound with [(selected)] to the window of the chart above, a low chart that neither zooms nor follows the pointer is its navigator: a drag on it shows that stretch above, a drag inside it pans, a drag on an edge widens or narrows, and a zoom above moves the selection below."
+  [reqs]="['req-api-templates', 'req-a11y-built-in', 'req-a11y-wcag']"
+  data-testid="demo-brush"
+>
+  <pct-chart
+    ariaLabel="Supply air on 25 October 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    [(window)]="brushWindow"
+    data-testid="chart-brush"
+  >
+    <pct-line [data]="supply" x="at" y="value" name="Supply air" unit="°C" />
+  </pct-chart>
+  <pct-chart
+    ariaLabel="Supply air on 25 October 2026, the whole day"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-navigator"
+    brush
+    zoom="none"
+    cursorMode="none"
+    [(selected)]="brushWindow"
+    data-testid="chart-brush-navigator"
+  >
+    <pct-line
+      [data]="supply"
+      x="at"
+      y="value"
+      name="Supply air"
+      unit="°C"
+      area
+    />
+  </pct-chart>
+</sbx-demo>
+
+<sbx-demo
+  heading="A brush on its own"
+  summary="The selection a brush draws is the chart's selected, read here under the picture; a double tap inside it or Enter on an edge shows it, a tap outside it or Escape on an edge clears it, and a tap on a grip picks the edge for the next tap to put down."
+  [reqs]="['req-api-templates', 'req-a11y-built-in']"
+  data-testid="demo-brush-alone"
+>
+  <pct-chart
+    ariaLabel="Fan power on 25 October 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    brush
+    [(selected)]="brushed"
+    data-testid="chart-brush-alone"
+  >
+    <pct-line
+      [data]="fan"
+      x="at"
+      y="value"
+      name="Fan power"
+      unit="W"
+      curve="step"
+      [end]="end"
+    />
+  </pct-chart>
+  <p data-testid="brush-picked">{{ brushedText() }}</p>
+</sbx-demo>

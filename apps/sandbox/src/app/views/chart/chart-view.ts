@@ -443,6 +443,24 @@ export class ChartView {
     null,
   );
   protected readonly pickedDay = signal<number | null>(null);
+  /** Phase 14: the window of the chart above the navigator, which is the navigator's selection. */
+  protected readonly brushWindow = signal<{ from: number; to: number } | null>(
+    null,
+  );
+  protected readonly brushed = signal<{ from: number; to: number } | null>(
+    null,
+  );
+  /** The brushed stretch on Warsaw's wall clock. */
+  protected readonly brushedText = computed(() => {
+    const brushed = this.brushed();
+    if (!brushed) return 'Nothing brushed';
+    const time = new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Warsaw',
+    });
+    return `Brushed ${time.format(brushed.from)} to ${time.format(brushed.to)}`;
+  });
   /** The picked day written in Warsaw's calendar: the app's locale has no date data of its own. */
   protected readonly pickedText = computed(() => {
     const at = this.pickedDay();
