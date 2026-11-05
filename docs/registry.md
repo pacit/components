@@ -417,3 +417,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-255`](lessons.md#lesson-255) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-256`](lessons.md#lesson-256) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-257`](lessons.md#lesson-257) | `req-quality-inheritance`                                                                                                                                         |
+| [`lesson-258`](lessons.md#lesson-258) | — _(not cited)_                                                                                                                                                   |

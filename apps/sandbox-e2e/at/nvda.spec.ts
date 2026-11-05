@@ -1,6 +1,13 @@
 import { nvdaTest as test } from '@guidepup/playwright';
 import { routesAsked, walk } from './walk';
 
+// The whole of what NVDA says after a key, not its first message. Guidepup's own default is
+// `initial`: it stops listening at the first `speak`, and NVDA says a control in a table in
+// three — the table, the cell, the control. The record of 2026-11-05 kept the first and lost
+// the role and the state of every box, switch and button in a cell; captured whole, the same
+// stop reads `Select Heater, row 3, Select, column 1. Select Heater, check box, not checked`.
+test.use({ nvdaStartOptions: { capture: true } });
+
 /**
  * NVDA with Firefox on Windows — one of the two readers `docs/acr/claims.json` declares and
  * that no machine here can run. It has never run: the first `workflow_dispatch` of

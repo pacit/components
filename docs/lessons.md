@@ -7531,3 +7531,26 @@ measured against the inputs that break the claim, not restated as a rule nearby.
 the same run: a lookup keyed without the file keeps the class read last, so a case meant to fail
 it has to put the wrong namesake last in the reading order. One put first passes by accident of
 the sort.
+
+### <a id="lesson-258"></a>`lesson-258` — A reader's record that keeps its first message says what the reader left out
+
+The readers' walk of 2026-11-05 put the kettle of the data table's tree under NVDA, and the
+record read the checkbox `Select Kitchen, row 3, Select, column 1` — no role, no state. Every
+box, switch and button in a table cell read the same, and so had the cards: NVDA "does not say
+the sort is a control", "does not say the link is a link", said `list` alone on a switch in a
+description list, `Choisir une heure, dialog` and nothing of the column. A probe of bare tables
+of one control each (`probe/nvda-cell-role`, never merged) read the same shape with no library
+markup at all: `P 1 box with aria-label, table` and nothing after it.
+
+The cause was the instrument. Guidepup's NVDA fixture starts with `capture: "initial"`, which
+stops listening at the first `speak` message after a key, and NVDA speaks a focus change in
+several: the table entered, the cell with its row and column, then the control with its role and
+its state. With `capture: true` the same stop reads `P 1 box with aria-label, table. P 1 Kettle,
+row 2, Pick, column 1. P 1 Kettle, check box, not checked`, and the walk's own
+`Select Kitchen, check box, half checked`. Ten cards quoted the first message as what NVDA says
+and drew a limitation from what it did not; every one of them was the walk's.
+
+The wider reading: a silence in a record is a measurement only when the instrument was listening
+for the whole of what it measures. A recording tool's default is chosen for its own tests — one
+assertion on the first phrase — not for a record of everything a reader says, and a claim that a
+reader omits something has to name how long the record listened after the key.
