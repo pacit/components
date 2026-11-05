@@ -1011,3 +1011,59 @@
   </pct-chart>
   <p data-testid="brush-picked">{{ brushedText() }}</p>
 </sbx-demo>
+
+<sbx-demo
+  heading="Export and a description of its own"
+  summary="With no description the chart describes the window in its own words: its ends, then each series from its lowest to its highest value, its last one, which way it went and how many stretches it has without readings. svg() writes the picture again as a standalone document with its colours written in, named and described; png() draws that document onto a canvas. The cursor and the zoom bar stay on the page."
+  [reqs]="['req-a11y-built-in', 'req-api-templates']"
+  data-testid="demo-export"
+>
+  <pct-chart
+    #exported
+    ariaLabel="Supply air and fan power exported, 25 October 2026"
+    timeZone="Europe/Warsaw"
+    locale="en-GB"
+    class="sbx-chart"
+    data-testid="chart-export"
+  >
+    <pct-line [data]="supply" x="at" y="value" name="Supply air" unit="°C" />
+    <pct-line
+      [data]="fan"
+      x="at"
+      y="value"
+      name="Fan power"
+      unit="W"
+      curve="step"
+      [end]="end"
+    />
+  </pct-chart>
+  <p class="sbx-chart-controls">
+    <button
+      pctButton
+      variant="soft"
+      size="sm"
+      data-testid="export-svg"
+      (click)="exportSvg(exported)"
+    >
+      Export SVG
+    </button>
+    <button
+      pctButton
+      variant="soft"
+      size="sm"
+      data-testid="export-png"
+      (click)="exportPng(exported)"
+    >
+      Export PNG
+    </button>
+  </p>
+  <p data-testid="export-said">{{ exportSaid() }}</p>
+  @if (exportedPng(); as src) {
+  <img
+    [src]="src"
+    alt="The chart exported as a PNG"
+    data-testid="export-image"
+    width="300"
+  />
+  }
+</sbx-demo>

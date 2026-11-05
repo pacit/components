@@ -138,8 +138,15 @@ const segments = (fixture: ComponentFixture<unknown>) =>
       color: (rect as HTMLElement).style.getPropertyValue('--_pct-chart-color'),
     }),
   );
-const described = (fixture: ComponentFixture<unknown>) =>
-  query(fixture, '.description')?.textContent?.trim() ?? null;
+/** The marks' sentences: what follows the chart's description of its data (0120). */
+const described = (fixture: ComponentFixture<unknown>) => {
+  const text = query(fixture, '.description')?.textContent?.trim() ?? '';
+  const chart = fixture.debugElement.query((d) => d.name === 'pct-chart');
+  const own = (chart.componentInstance as { describe(): string }).describe();
+  return (
+    (own && text.startsWith(own) ? text.slice(own.length) : text).trim() || null
+  );
+};
 const range = (fixture: ComponentFixture<unknown>) =>
   query(fixture, 'input[data-pct-part="range"]') as HTMLInputElement;
 const key = async (fixture: ComponentFixture<unknown>, name: string) => {

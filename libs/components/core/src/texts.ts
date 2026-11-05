@@ -267,6 +267,24 @@ export interface PctTexts {
   readonly chartBrushTo: string;
   /** Chart: the keys of a brush's edge, one sentence, read as its range's description. */
   readonly chartBrushKeys: string;
+  /**
+   * Chart: the first sentence of the description written from the data. `{from}` and `{to}`
+   * stand for the ends of the window.
+   */
+  readonly chartDescribe: string;
+  /**
+   * Chart: a series in the description written from the data. `{name}` stands for its name,
+   * `{min}`, `{max}` and `{last}` for its lowest, highest and last reading with its unit.
+   */
+  readonly chartDescribeSeries: string;
+  /** Chart: how often a series fell silent, in its sentence. `{count}` stands for how often. */
+  readonly chartDescribeGaps: string;
+  /** Chart: a series whose readings went up across the window, in its sentence. */
+  readonly chartRising: string;
+  /** Chart: a series whose readings went down across the window, in its sentence. */
+  readonly chartFalling: string;
+  /** Chart: a series whose readings stayed level across the window, in its sentence. */
+  readonly chartFlat: string;
   /** Chart: the data table's foot that sums the columns. */
   readonly chartSum: string;
   /** Chart: the data table's foot that averages the columns. */
@@ -522,6 +540,12 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartBrushTo: 'End of the selection',
   chartBrushKeys:
     'Arrow keys move this edge by a hundredth of the view, Page Up and Page Down by a tenth, Home and End to the ends of the view; Enter shows the selection; Escape clears it.',
+  chartDescribe: 'From {from} to {to}.',
+  chartDescribeSeries: '{name} from {min} to {max}, last {last}',
+  chartDescribeGaps: 'stretches without readings: {count}',
+  chartRising: 'rising',
+  chartFalling: 'falling',
+  chartFlat: 'level',
   chartSum: 'Sum',
   chartMean: 'Mean',
   chartDifference: 'Difference',
