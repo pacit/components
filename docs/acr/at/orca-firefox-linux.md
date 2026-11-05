@@ -18,7 +18,7 @@ person has made it.
 
 - Orca version 50.3, AT-SPI2 version: 2.60.4
 - Firefox 155.0 (the Playwright build), drawn on gnome-shell 50.1 headless, virtual monitor 1280x900, its own Wayland socket (wayland-at) — the browser's connection to it read off ss(8); speech synthesised into a null device
-- 630 steps over 45 views, at most 12 stops of a view's own
+- 665 steps over 48 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -26,18 +26,21 @@ the sandbox's own navigation to the view — the document is loaded once, before
 stops from there until focus leaves `main`. A view with something to OPEN ends on three more:
 `reach` puts focus on the control that opens it, `open` presses the key, and `close` presses
 Escape — the row every card asking "what does a reader announce when this appears" was waiting
-for, and the row beneath it is what leaving sounds like. `(silence)` is a stop the reader said nothing
-at — 5 of 630 here. 15 view(s) hit the cap, and each says so.
+for, and the row beneath it is what leaving sounds like. A block deeper in a view than the
+cap reaches is a heading of its own, `/view#block`: `enter` puts focus on its first stop,
+the keys a person presses there follow under their names, then Tab stops while focus stays
+inside it. `(silence)` is a stop the reader said nothing
+at — 5 of 665 here. 16 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 2590
-phrases, and 2587 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 2781
+phrases, and 2778 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
 
-**Every view spoke.** No view of the 45 went unread, so nothing below is
+**Every view spoke.** No view of the 48 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
-15 view(s) have more stops than the 12 taken, and each says so where it bit.
+16 view(s) have more stops than the 12 taken, and each says so where it bit.
 
 ### `/`
 
@@ -294,7 +297,7 @@ Tab moved nothing — focus had left the page.
 ### `/switch`
 
 ```
-arrive  a "Switch"                                           navigation · Sandbox views · List with 39 items · Switch · link. · Browse mode
+arrive  a "Switch"                                           navigation · Sandbox views · List with 39 items · Switch · visited link. · Browse mode
 enter   input[control]                                       Backups · switch not pressed. · Runs every night at 03:00.
 tab 1   —                                                    Theme · panel · light · selected radio button. · alert. · Backups have to stay on
 ```
@@ -371,7 +374,7 @@ Tab moved nothing — focus had left the page.
 ### `/popover`
 
 ```
-arrive  a "Popover"                                          navigation · Sandbox views · List with 39 items · Popover · link. · Browse mode
+arrive  a "Popover"                                          navigation · Sandbox views · List with 39 items · Popover · visited link. · Browse mode
 enter   button "Filters"                                     Filters · collapsed button. · opens dialog · Focus mode
 tab 1   button "start"                                       start · collapsed button. · opens dialog
 tab 2   button "top"                                         top · collapsed button. · opens dialog
@@ -394,7 +397,7 @@ the act: `Enter` on `[data-testid="panel-trigger"]`, to open a non-modal dialog 
 ### `/menu`
 
 ```
-arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 39 items · Menu · link. · Browse mode
+arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 39 items · Menu · visited link. · Browse mode
 enter   button "Actions"                                     Actions · collapsed button. · opens menu · Focus mode
 tab 1   button "Count up"                                    Count up · button. · Browse mode
 tab 2   button "File"                                        File · collapsed button. · opens menu · Focus mode
@@ -427,7 +430,7 @@ tab 8   input[control]                                       leaving panel. · S
 tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 10  button "Open the bare one"                           leaving panel. · Open the bare one · collapsed button. · Focus mode
 tab 11  button "Open the bare one"                           Drawer · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Sections"                                    main content · A panel docked to an edge of the window. It is not an overlay: it is drawn where it stands in · Browse mode · Sections · collapsed button. · Focus mode
+reach   button "Sections"                                    main content · Sections · collapsed button. · Focus mode
 open    button "Sections"                                    expanded
 close   button "Sections"                                    (silence)
 ```
@@ -481,7 +484,7 @@ the act: `Enter` on `[data-testid="item-payment"] [data-pct-part="heading"]`, to
 ### `/tabs`
 
 ```
-arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 39 items · Tabs · visited link. · Browse mode
+arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 39 items · Tabs · link. · Browse mode
 enter   button[tab] "General"                                General · page tab. · Focus mode
 tab 1   pct-tab[panel] "The general settings, and a word that…" General · scroll pane clickable. · Browse mode
 tab 2   pct-tab[panel]                                       Network · scroll pane clickable.
@@ -623,7 +626,7 @@ Tab moved nothing — focus had left the page.
 ### `/skeleton`
 
 ```
-arrive  a "Skeleton"                                         navigation · Sandbox views · List with 39 items · Skeleton · link. · Browse mode
+arrive  a "Skeleton"                                         navigation · Sandbox views · List with 39 items · Skeleton · visited link. · Browse mode
 enter   button "The content arrives"                         The content arrives · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -675,7 +678,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/avatar`
 
 ```
-arrive  a "Avatar"                                           leaving list. · leaving main content. · navigation · Sandbox views · List with 39 items · Avatar · visited link.
+arrive  a "Avatar"                                           leaving list. · leaving main content. · navigation · Sandbox views · List with 39 items · Avatar · link.
 enter   button "Swap the source"                             Swap the source · button.
 tab 1   input[control]                                       Theme · panel · light · selected radio button.
 tab 2   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -854,10 +857,68 @@ tab 11  input[control] "Enabled: Boiler"                     row 6. · Enabled: 
 
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
+### `/datatable#demo-filters`
+
+```
+enter   button[filter] "Filter Name"                         table with 21 rows 6 columns · Name · column header. · row 1. · column 1 · Filter Name · collapsed button. · opens dialog · Focus mode
+act     div[panel] "Filter Name"                             Filter Name · dialog clickable. · Browse mode
+escape  button[filter] "Filter Name"                         main content · table with 21 rows 6 columns · Name · column header. · row 1. · column 1 · Filter Name · collapsed button. · opens dialog · Focus mode · collapsed
+tab 1   button[toggle] "Room"                                column header. · column 2 · Room · button. · Browse mode
+tab 2   button[filter] "Filter Room"                         Filter Room · collapsed button. · opens dialog · Focus mode
+tab 3   button[toggle] "Address"                             column header. · column 3 · Address · button. · Browse mode
+tab 4   button[filter] "Filter Address"                      Filter Address · collapsed button. · opens dialog · Focus mode
+tab 5   button[toggle] "Energy"                              column header. · column 4 · Energy · button. · Browse mode
+tab 6   button[filter] "Filter Energy"                       Filter Energy · collapsed button. · opens dialog · Focus mode
+tab 7   button[toggle] "Next run"                            column header. · column 5 · Next run · button. · Browse mode
+tab 8   button[filter] "Filter Next run"                     Filter Next run · collapsed button. · opens dialog · Focus mode
+tab 9   button[toggle] "Enabled"                             column header. · column 6 · Enabled · button. · Browse mode
+tab 10  button[filter] "Filter Enabled"                      Filter Enabled · collapsed button. · opens dialog · Focus mode
+tab 11  input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
+```
+
+the section: `activate`, `Escape` in `demo-filters`, to read a column's filter (the keys belong to `datatable.spec.ts › a header’s button opens its filter, a text keeps the rows it is found in, and Escape goes back to the button`).
+
+### `/datatable#demo-grid`
+
+```
+enter   input[select]                                        table with 21 rows 9 columns · Select column header. · row 2. · column 1 · Select Supply fan · check box not checked. · Focus mode
+right   button[disclosure] "Show details"                    Details column header. · column 2 · Show details · collapsed button.
+down    button[disclosure] "Show details"                    row 3. · Show details · collapsed button.
+end     input[control] "Enabled: Heater"                     Enabled column header. · column 9 · Enabled: Heater · switch not pressed.
+tab 1   input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
+```
+
+the section: `ArrowRight`, `ArrowDown`, `End` in `demo-grid`, to read the grid (the keys belong to `datatable.spec.ts › the arrows move cell to cell, Home and End along the row, Ctrl with them to the ends`).
+
+### `/datatable#demo-row-menu`
+
+```
+enter   button[actions]                                      leaving panel. · table with 9 rows 8 columns · Actions column header. · row 2. · column 8 · Actions Supply fan · collapsed button. · opens menu. · Focus mode
+act     button[item] "Duplicate"                             leaving main content. · menu · Duplicate.
+down    button[item] "Remove"                                Remove.
+escape  button[actions]                                      main content · table with 9 rows 8 columns · Actions column header. · row 2. · column 8 · Actions Supply fan · collapsed button. · opens menu. · collapsed
+tab 1   input[select]                                        Select column header. · row 3. · column 1 · Select Heater · check box not checked. · Browse mode
+tab 2   button[actions]                                      Actions column header. · column 8 · Actions Heater · collapsed button. · opens menu. · Focus mode
+tab 3   input[select]                                        Select column header. · row 4. · column 1 · Select Bypass · check box not checked. · Browse mode
+tab 4   button[actions]                                      Actions column header. · column 8 · Actions Bypass · collapsed button. · opens menu. · Focus mode
+tab 5   input[select]                                        Select column header. · row 5. · column 1 · Select Exhaust fan · check box not checked. · Browse mode
+tab 6   button[actions]                                      Actions column header. · column 8 · Actions Exhaust fan · collapsed button. · opens menu. · Focus mode
+tab 7   input[select]                                        Select column header. · row 6. · column 1 · Select Boiler · check box not checked. · Browse mode
+tab 8   button[actions]                                      Actions column header. · column 8 · Actions Boiler · collapsed button. · opens menu. · Focus mode
+tab 9   input[select]                                        Select column header. · row 7. · column 1 · Select Floor heating · check box not checked. · Browse mode
+tab 10  button[actions]                                      Actions column header. · column 8 · Actions Floor heating · collapsed button. · opens menu. · Focus mode
+tab 11  input[select]                                        Select column header. · row 8. · column 1 · Select Lamp · check box not checked. · Browse mode
+tab 12  button[actions]                                      Actions column header. · column 8 · Actions Lamp · collapsed button. · opens menu. · Focus mode
+```
+
+the section: `activate`, `ArrowDown`, `Escape` in `demo-row-menu`, to read a row's menu (the keys belong to `datatable.spec.ts › Shift+F10 opens a row’s menu at its first item, and Escape gives the focus back to the row’s button`).
+
+The cap bit here: 12 stops of this view's own were read, and it has more.
+
 ### `/hero`
 
 ```
-arrive  a "Hero"                                             leaving table. · leaving main content. · navigation · Sandbox views · List with 39 items · Hero · link.
+arrive  a "Hero"                                             leaving table. · leaving main content. · navigation · Sandbox views · List with 39 items · Hero · link. · Browse mode
 enter   a "Under attention"                                  Under attention The rim is drawn and hidden, so the reveal is an opacity. · visited link.
 tab 1   a "Read the case"                                    Read the case · visited link.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -875,7 +936,7 @@ Tab moved nothing — focus had left the page.
 ### `/stepper`
 
 ```
-arrive  a "Stepper"                                          navigation · Sandbox views · List with 39 items · Stepper · link. · Browse mode
+arrive  a "Stepper"                                          navigation · Sandbox views · List with 39 items · Stepper · visited link. · Browse mode
 enter   button "Back"                                        Back · button.
 tab 1   button "Next"                                        Next · button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button.
@@ -899,7 +960,7 @@ Tab moved nothing — focus had left the page.
 ### `/layout`
 
 ```
-arrive  a "Layout"                                           navigation · Sandbox views · List with 39 items · Layout · link. · Browse mode
+arrive  a "Layout"                                           navigation · Sandbox views · List with 39 items · Layout · visited link. · Browse mode
 enter   input[control]                                       Theme · panel · light · selected radio button.
 tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
@@ -995,7 +1056,7 @@ Tab moved nothing — focus had left the page.
 ### `/all`
 
 ```
-arrive  a "Everything at once"                               navigation · Sandbox views · List with 6 items · Everything at once · visited link. · Browse mode
+arrive  a "Everything at once"                               navigation · Sandbox views · List with 6 items · Everything at once · link. · Browse mode
 enter   button "Solid"                                       Solid · button.
 tab 1   button "Outline"                                     Outline · button.
 tab 2   button "Small"                                       Small · button.
