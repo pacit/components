@@ -140,7 +140,9 @@ describe('PctDataTable — a column drawn by its component', () => {
     await render(Host);
     expect(text(cells(0)[1])).toBe('on Kettle #0 State');
     expect(text(cells(1)[1])).toBe('off Lamp #1 State');
-    expect(cells(0)[1].querySelector('pct-test-state b')?.textContent).toBe('on');
+    expect(cells(0)[1].querySelector('pct-test-state b')?.textContent).toBe(
+      'on',
+    );
     expect(errors).toEqual([]);
   });
 

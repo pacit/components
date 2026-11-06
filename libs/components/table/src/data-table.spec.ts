@@ -2364,7 +2364,9 @@ describe('PctDataTable — a narrow table hides columns', () => {
     disclosures()[1].click();
     await settle(fixture);
     const list = detailsRows()[0].querySelector('dl') as HTMLElement;
-    expect(list.querySelector('dd pct-test-power')?.textContent).toBe('1899.5 W');
+    expect(list.querySelector('dd pct-test-power')?.textContent).toBe(
+      '1899.5 W',
+    );
   });
 
   it('measures the shown columns past the leading cells', async () => {
