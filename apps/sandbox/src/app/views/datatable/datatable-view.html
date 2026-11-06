@@ -765,6 +765,33 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="An archive from a server, one branch at a time"
+  summary="Forty meters on the server, each holding ten years, each year twelve months. The table asks for the meters alone; a branch that opens asks the server for its children, under its id and the path to it, and draws a row of placeholders until they come. A branch closed and opened again asks nothing: the rows that came stay."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-remote-tree"
+>
+  <pct-data-table
+    #archive="pctTableRemote"
+    data-testid="table-remote-tree"
+    class="datatable__rules"
+    caption="Meter archive on the server"
+    locale="en"
+    pctTableWindow
+    [pctTableRemote]="loadArchive"
+    [hasChildren]="archiveBranch"
+    [pctTableTree]="archiveColumns"
+    [(expanded)]="archiveOpen"
+    [pctTableGrid]="archiveColumns"
+    [columns]="archiveColumns"
+    [rowId]="archiveId"
+  />
+  <p class="muted" data-testid="remote-tree-asked">
+    {{ archive.total() }} meters · the server was asked {{ archiveAsked() }}
+    times
+  </p>
+</sbx-demo>
+
+<sbx-demo
   heading="The home as a tree"
   summary="Floors hold rooms, rooms hold devices: each row opens the places inside it from the button in its first cell. The filter keeps the way to a match, its ancestors muted; the sort orders siblings; with the grid the table is a treegrid, and on a first cell the arrow into the line opens a branch, the arrow out of it closes one or goes to the parent."
   [reqs]="['req-a11y-built-in']"

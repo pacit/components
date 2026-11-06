@@ -23,8 +23,24 @@ describe('pctLines', () => {
   it('draws a hole for a row not delivered, keyed and counted by its index', () => {
     expect(pctLines([a, undefined, b], id)).toEqual([
       { kind: 'row', key: 'a', row: a, index: 0, level: 0, expanded: null },
-      { kind: 'hole', key: 1, index: 1 },
+      { kind: 'hole', key: 1, index: 1, level: 0, parent: null, at: 1 },
       { kind: 'row', key: 'b', row: b, index: 2, level: 0, expanded: null },
+    ]);
+  });
+
+  it("places a hole among its parent's children, its index still counting every line", () => {
+    // A remote source's branch: its children come a block at a time, holes where none came.
+    const below = new Map<string, readonly (Node | undefined)[]>([
+      ['a', [undefined, b, undefined]],
+    ]);
+    const lines = pctLines([undefined, a], id, {
+      children: (row) => below.get(row.id) as readonly Node[] | undefined,
+      expanded: new Set(['a']),
+    });
+    expect(lines.filter((line) => line.kind === 'hole')).toEqual([
+      { kind: 'hole', key: 0, index: 0, level: 0, parent: null, at: 0 },
+      { kind: 'hole', key: 2, index: 2, level: 1, parent: 'a', at: 0 },
+      { kind: 'hole', key: 4, index: 4, level: 1, parent: 'a', at: 2 },
     ]);
   });
 
@@ -197,6 +213,17 @@ describe('pctLines — groups', () => {
       'details 3',
       'hole 3',
     ]);
+    // A hole after the groups keeps its place in the list the source sent.
+    expect(
+      pctLines([l1, undefined, l3, l2], byId, { groups: [empty] }).at(-1),
+    ).toEqual({
+      kind: 'hole',
+      key: 3,
+      index: 3,
+      level: 0,
+      parent: null,
+      at: 1,
+    });
   });
 });
 
@@ -224,7 +251,16 @@ describe('pctGroupKey', () => {
 
 describe('pctLineKey', () => {
   it('holds the kind and the key, so lines of two kinds or two id types never meet', () => {
-    expect(pctLineKey({ kind: 'hole', key: 1, index: 1 })).toBe('hole:1');
+    expect(
+      pctLineKey({
+        kind: 'hole',
+        key: 1,
+        index: 1,
+        level: 0,
+        parent: null,
+        at: 1,
+      }),
+    ).toBe('hole:1');
     expect(
       pctLineKey({
         kind: 'row',
