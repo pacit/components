@@ -17,7 +17,7 @@ import {
 } from './model/columns';
 import {
   pctDecimate,
-  pctPyramid,
+  pctPyramidGrower,
   pctPyramidPays,
   type PctPyramid,
 } from './model/decimate';
@@ -198,7 +198,8 @@ export class PctLine<T> extends PctMark {
   );
   /** The readings as drawn: on their way to the rows while a change is eased (0121). */
   private readonly drawnOf = pctTweened(this.readingsOf, this.scene.animate);
-  private readonly pyramid = computed(() => pctPyramid(this.readingsOf()));
+  private readonly grow = pctPyramidGrower();
+  private readonly pyramid = computed(() => this.grow(this.readingsOf()));
   private readonly held = computed(() => this.end() ?? undefined);
 
   override readonly series = computed<readonly PctSeriesSpec[]>(() => [
