@@ -18,6 +18,11 @@
   ],
   "internal": [
     {
+      "file": "libs/components/chart/src/tween.ts",
+      "type": "PctWay",
+      "reason": "How a drawn value moves while a recount eases — whether a change can be eased, and where it stands part of the way — shared by the marks of the chart entrypoint so that the points, the ranges, the pie and the gauge ease by the one `pctEased` the lines do (0121, amended 2026-11-05). No public signature carries it: a consumer asks for motion with `animate` and never hands the chart a way of its own, and what a series' columns do on the way is published already as `pctTweenable` and `pctTween`. Publishing it would turn the shape of a mark's drawn state into a contract. The entry retires if a public API ever takes or returns one."
+    },
+    {
       "file": "libs/components/testing/src/property.testkit.ts",
       "type": "PctArbitrary",
       "reason": "What a property sweep draws from. `testing/src/index.ts` publishes none of the testkit on purpose: what `@pacit/components/testing` offers a consumer is the harnesses and the DOM helpers, while `property.testkit.ts` is this repository's own instrument, imported by four specs over a relative path and never through the package. Publishing the interface publishes the sweep around it — `pctForAll`, the shrink, the seed — and turns a thing we change whenever a law needs a new generator into somebody else's contract. The entry retires if the testkit is ever published, and nothing has decided that it will be."

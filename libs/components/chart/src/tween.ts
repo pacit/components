@@ -29,18 +29,59 @@ export function pctTweened(
   readings: Signal<PctColumns>,
   animate: Signal<boolean>,
 ): Signal<PctColumns> {
+  return pctEased(readings, animate, COLUMNS);
+}
+
+/**
+ * How a drawn value moves: whether a change from one value to another only moves what can be
+ * eased, and where the value stands `progress` of the way.
+ */
+export interface PctWay<T> {
+  readonly tweenable: (from: T, to: T) => boolean;
+  readonly tween: (from: T, to: T, progress: number) => T;
+}
+
+/**
+ * `way` over a value that may be missing: a value that comes or goes is drawn at once, and two
+ * that are there move as `way` moves them.
+ */
+export function pctOrNone<T>(way: PctWay<T>): PctWay<T | null> {
+  return {
+    tweenable: (from, to) =>
+      from !== null && to !== null && way.tweenable(from, to),
+    tween: (from, to, progress) =>
+      from === null || to === null ? to : way.tween(from, to, progress),
+  };
+}
+
+/** A series' columns: the values move, the positions stay. */
+const COLUMNS: PctWay<PctColumns> = {
+  tweenable: pctTweenable,
+  tween: pctTween,
+};
+
+/**
+ * What is drawn of `value`: the value itself, or, while `animate` is on and `way` can ease the
+ * change, the value on its way there from what was drawn, as `pctTweened` moves a series'
+ * columns. Called where a mark is built.
+ */
+export function pctEased<T>(
+  value: Signal<T>,
+  animate: Signal<boolean>,
+  way: PctWay<T>,
+): Signal<T> {
   const host = inject(ElementRef).nativeElement as HTMLElement;
   // What is drawn stays where it was when the change can be eased, and the effect below moves
   // it; any other change is drawn as it comes.
-  const drawn = linkedSignal<PctColumns, PctColumns>({
-    source: readings,
+  const drawn = linkedSignal<T, T>({
+    source: value,
     computation: (to, previous) =>
-      previous && untracked(animate) && pctTweenable(previous.value, to)
+      previous && untracked(animate) && way.tweenable(previous.value, to)
         ? previous.value
         : to,
   });
   effect((onCleanup) => {
-    const to = readings();
+    const to = value();
     const from = untracked(drawn);
     if (from === to) return;
     const view = host.ownerDocument.defaultView;
@@ -80,7 +121,7 @@ export function pctTweened(
         drawn.set(to);
         return;
       }
-      drawn.set(pctTween(from, to, timing.getComputedTiming().progress ?? 0));
+      drawn.set(way.tween(from, to, timing.getComputedTiming().progress ?? 0));
       frame = view.requestAnimationFrame(step);
     };
     let frame = view.requestAnimationFrame(step);

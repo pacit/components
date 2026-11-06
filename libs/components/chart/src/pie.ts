@@ -35,6 +35,7 @@ import {
   pctPieLabels,
   pctSlices,
 } from './model/arc';
+import { pctEased, type PctWay } from './tween';
 import { pctRead, type PctAccessor } from './model/columns';
 import { pctPlaces } from './model/places';
 import type { PctSummary } from './model/summarize';
@@ -51,6 +52,19 @@ import { pctPictureOf, pctPngOf } from './export';
 const OTHERS = 'pct-others';
 /** The leader from the rim to a label, in pixels, and the gap before the text. */
 const LEADER = 12;
+
+/** The slices' way when a recount eases: the same slices in the same order, their values move. */
+const SLICES: PctWay<
+  readonly { readonly id: string; readonly value: number }[]
+> = {
+  tweenable: (from, to) =>
+    from.length === to.length && from.every((s, i) => s.id === to[i].id),
+  tween: (from, to, progress) =>
+    to.map((s, i) => ({
+      id: s.id,
+      value: from[i].value + (s.value - from[i].value) * progress,
+    })),
+};
 
 /**
  * What a press on a slice picks: the slice's series, the row of the data and its index — `null`
@@ -225,6 +239,15 @@ export class PctPie<T> implements PctShareSource {
    * @since next
    */
   readonly loading = input(false, { transform: booleanAttribute });
+  /**
+   * Whether a recount — the same slices with other values — turns the slices into place over
+   * twice the motion transition, rather than at once
+   * ([0121](../../../../docs/decisions/0121-live-data-is-read-where-it-changed.md)).
+   * `prefers-reduced-motion` draws every change at once; the table and the range read the data.
+   *
+   * @since next
+   */
+  readonly animate = input(false, { transform: booleanAttribute });
   /**
    * The picture's name, which a reader announces and the table takes as its caption. Give this
    * or `ariaLabelledby`.
@@ -417,6 +440,19 @@ export class PctPie<T> implements PctShareSource {
     }));
   });
 
+  /** The turn of each slice shown, as drawn: on its way into place while a recount eases. */
+  private readonly drawnValues = pctEased(
+    computed(() => this.shown().map((s) => ({ id: s.id, value: s.value }))),
+    this.animate,
+    SLICES,
+  );
+  private readonly drawnTurns = computed(() =>
+    pctSlices(
+      this.drawnValues().map((s) => s.value),
+      (this.startAngle() * Math.PI) / 180,
+    ),
+  );
+
   /** The label of a slice beside the rim: its name and its share. */
   private labelOf(name: string, share: number): string {
     return `${name} ${this.shareFormat().format(share)}`;
@@ -451,8 +487,10 @@ export class PctPie<T> implements PctShareSource {
     const places = this.places();
     const selected = this.selected();
     const explode = this.explode();
-    return this.shown().map((s) => {
-      const middle = (s.start + s.end) / 2;
+    const turns = this.drawnTurns();
+    return this.shown().map((s, i) => {
+      const { start, end } = turns[i] ?? s;
+      const middle = (start + end) / 2;
       const isSelected = s.id === selected;
       const shift = isSelected
         ? pctArcPoint(0, 0, explode, middle)
@@ -465,14 +503,7 @@ export class PctPie<T> implements PctShareSource {
         value: s.value,
         share: s.share,
         middle,
-        path: pctArcPath(
-          cx + shift.x,
-          cy + shift.y,
-          radius,
-          inner,
-          s.start,
-          s.end,
-        ),
+        path: pctArcPath(cx + shift.x, cy + shift.y, radius, inner, start, end),
         place: custom ? 'custom' : (places.get(s.id) ?? 1),
         color: custom ? (s.color as string) : null,
         selected: isSelected,
