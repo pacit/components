@@ -2,6 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
+  booleanAttribute,
   Component,
   computed,
   DestroyRef,
@@ -19,6 +20,7 @@ import {
   type PctTone,
 } from '@pacit/components/core';
 import { pctArcPath, pctArcPoint, pctGaugeAngle } from './model/arc';
+import { pctEased, pctOrNone } from './tween';
 
 /**
  * A band of a gauge's range: from a value to another, in a tone, with the word the band stands
@@ -40,6 +42,12 @@ const BAND_WIDTH = 4;
 const BAND_GAP = 2;
 /** The needle's width at the hub. */
 const NEEDLE_WIDTH = 2;
+
+/** A reading's way: from one value to the next; no reading, or a first one, at once. */
+const VALUE = pctOrNone<number>({
+  tweenable: () => true,
+  tween: (from, to, progress) => from + (to - from) * progress,
+});
 
 /**
  * A gauge: one value in its range, drawn as an arc — or a needle — over the bands of its tones
@@ -85,6 +93,16 @@ export class PctGauge {
   readonly value = input<number | null, unknown>(null, {
     transform: gaugeValue,
   });
+  /**
+   * Whether a new value moves the arc or the needle there over twice the motion transition,
+   * rather than at once ([0121](../../../../docs/decisions/0121-live-data-is-read-where-it-changed.md)).
+   * `prefers-reduced-motion` draws every change at once; the meter and the words carry the value.
+   *
+   * @since next
+   */
+  readonly animate = input(false, { transform: booleanAttribute });
+  /** The value as drawn: on its way to the new one while `animate` eases it. */
+  private readonly drawnValue = pctEased(this.value, this.animate, VALUE);
   /**
    * The left end of the arc.
    *
@@ -265,7 +283,7 @@ export class PctGauge {
 
   /** The value as an arc from the left end, or as a needle: `null` for no reading. */
   protected readonly indicatorView = computed(() => {
-    const value = this.value();
+    const value = this.drawnValue();
     if (value === null) return null;
     const { cx, cy, radius, sweep } = this.circle();
     const { min, max } = this.ends();

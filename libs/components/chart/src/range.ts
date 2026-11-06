@@ -20,6 +20,7 @@ import { pctExtent } from './model/extent';
 import { pctBandPath } from './model/path';
 import type { PctDomain } from './model/scale';
 import { pctSpacing } from './model/stats';
+import { pctTween, pctTweenable } from './model/tween';
 import { pctValueAt, type PctCurve } from './model/value-at';
 import { pctIndicesIn, type PctWindow } from './model/window';
 import {
@@ -30,6 +31,7 @@ import {
   type PctSeriesSpec,
   type PctSwatchContext,
 } from './scene';
+import { pctEased, pctOrNone, type PctWay } from './tween';
 
 /** One candle drawn: its wick from low to high and its body from open to close, in pixels. */
 interface PctCandle {
@@ -206,6 +208,13 @@ export class PctRange<T> extends PctMark {
   });
   private readonly opens = computed(() => this.ends()?.a ?? null);
   private readonly closes = computed(() => this.ends()?.b ?? null);
+  /** The four as drawn: on their way to new values while a recount eases (0121). */
+  private readonly drawnPair = pctEased(this.pair, this.scene.animate, PAIR);
+  private readonly drawnEnds = pctEased(this.ends, this.scene.animate, ENDS);
+  private readonly drawnLows = computed(() => this.drawnPair().a);
+  private readonly drawnHighs = computed(() => this.drawnPair().b);
+  private readonly drawnOpens = computed(() => this.drawnEnds()?.a ?? null);
+  private readonly drawnCloses = computed(() => this.drawnEnds()?.b ?? null);
 
   override readonly series = computed<readonly PctSeriesSpec[]>(() => [
     {
@@ -246,7 +255,7 @@ export class PctRange<T> extends PctMark {
     const drawn = this.drawn();
     if (!scales || !drawn || this.candles()) return '';
     const [lo, hi] = drawn;
-    const highs = this.highs();
+    const highs = this.drawnHighs();
     const tops = {
       xs: highs.xs.subarray(lo, hi),
       ys: highs.ys.subarray(lo, hi),
@@ -254,7 +263,7 @@ export class PctRange<T> extends PctMark {
     };
     return pctBandPath(
       tops,
-      this.lows().ys.subarray(lo, hi),
+      this.drawnLows().ys.subarray(lo, hi),
       scales.x,
       scales.y,
       this.curve(),
@@ -270,12 +279,12 @@ export class PctRange<T> extends PctMark {
   protected readonly drawnCandles = computed<readonly PctCandle[]>(() => {
     const scales = this.scales();
     const drawn = this.drawn();
-    const opens = this.opens();
-    const closes = this.closes();
+    const opens = this.drawnOpens();
+    const closes = this.drawnCloses();
     if (!scales || !drawn || !opens || !closes) return [];
     const [lo, hi] = drawn;
-    const { xs, ys: highs } = this.highs();
-    const lows = this.lows().ys;
+    const { xs, ys: highs } = this.drawnHighs();
+    const lows = this.drawnLows().ys;
     const horizontal = this.horizontal();
     const spacing = pctSpacing(xs.subarray(lo, hi), scales.x);
     const width = Math.min(
@@ -339,8 +348,8 @@ export class PctRange<T> extends PctMark {
   override extent(id: string, window: PctWindow): PctDomain | null {
     if (id !== this.key()) return null;
     const curve = this.curveOf();
-    const low = pctExtent(this.lows(), window, curve, this.held());
-    const high = pctExtent(this.highs(), window, curve, this.held());
+    const low = pctExtent(this.drawnLows(), window, curve, this.held());
+    const high = pctExtent(this.drawnHighs(), window, curve, this.held());
     if (!low || !high) return low ?? high;
     return [Math.min(low[0], high[0]), Math.max(low[1], high[1])];
   }
@@ -353,7 +362,7 @@ export class PctRange<T> extends PctMark {
   override valueAt(id: string, x: number): number | null {
     if (id !== this.key()) return null;
     return pctValueAt(
-      this.closes() ?? this.highs(),
+      this.drawnCloses() ?? this.drawnHighs(),
       x,
       this.curveOf(),
       this.held(),
@@ -368,8 +377,8 @@ export class PctRange<T> extends PctMark {
    */
   override readAt(id: string, x: number, bare = false): string | null {
     if (id !== this.key() || this.candles()) return null;
-    const low = this.read(this.lows(), x);
-    const high = this.read(this.highs(), x);
+    const low = this.read(this.drawnLows(), x);
+    const high = this.read(this.drawnHighs(), x);
     if (low === null || high === null) return null;
     const unit = bare ? '' : this.unit();
     return `${this.scene.writeValue(low, unit)} – ${this.scene.writeValue(high, unit)}`;
@@ -459,10 +468,28 @@ export class PctRange<T> extends PctMark {
 }
 
 /** Two columns of one set of rows, a gap in either made a gap in both. */
-function mask(
-  a: PctColumns,
-  b: PctColumns,
-): { readonly a: PctColumns; readonly b: PctColumns } {
+/** Two columns of one series, masked with each other: the lows and highs, or opens and closes. */
+interface Pair {
+  readonly a: PctColumns;
+  readonly b: PctColumns;
+}
+
+/**
+ * A pair's way when a recount eases: both columns keep their positions — one set of rows, so
+ * the first answers for both — and both move.
+ */
+const PAIR: PctWay<Pair> = {
+  tweenable: (from, to) => pctTweenable(from.a, to.a),
+  tween: (from, to, progress) => ({
+    a: pctTween(from.a, to.a, progress),
+    b: pctTween(from.b, to.b, progress),
+  }),
+};
+
+/** The opens and closes, which a band has none of. */
+const ENDS = pctOrNone(PAIR);
+
+function mask(a: PctColumns, b: PctColumns): Pair {
   const ya = Float64Array.from(a.ys);
   const yb = Float64Array.from(b.ys);
   for (let i = 0; i < a.length; i++) {

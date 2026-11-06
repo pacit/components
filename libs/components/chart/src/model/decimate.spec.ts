@@ -1,9 +1,11 @@
-import type { PctColumns } from './columns';
+import { pctColumnsReader, type PctColumns } from './columns';
 import {
   pctDecimate,
   pctPyramid,
+  pctPyramidGrower,
   pctPyramidPays,
   pctRangeExtent,
+  type PctPyramid,
 } from './decimate';
 import {
   pctForAll,
@@ -425,5 +427,109 @@ describe('pctPyramidPays', () => {
     const many = count(40_000);
     expect(pctPyramidPays(many, { from: 30_000, to: 40_000 })).toBe(false);
     expect(pctPyramidPays(many, { from: 10_000, to: 40_000 })).toBe(true);
+  });
+});
+
+describe('pctPyramidGrower', () => {
+  type Row = { at: number; value: number };
+  const rowsOf = (c: PctColumns): Row[] =>
+    Array.from({ length: c.length }, (_, i) => ({
+      at: c.xs[i],
+      value: c.ys[i],
+    }));
+  const slice = (c: PctColumns, from: number, to: number): PctColumns => ({
+    xs: c.xs.subarray(from, to),
+    ys: c.ys.subarray(from, to),
+    length: to - from,
+  });
+
+  it('grows with a live feed, and every pyramid it hands out draws its columns as the readings do', () => {
+    const cases = pctRecord({
+      seed: pctInt(1, 10_000),
+      gaps: pctInt(0, 3),
+      start: pctInt(1, 600),
+      steps: pctInt(1, 12),
+      drop: pctInt(0, 200),
+      add: pctInt(0, 400),
+      a: pctInt(-50, 3000),
+      span: pctInt(1, 3000),
+      width: pctInt(1, 20),
+    });
+    pctForAll(
+      cases,
+      ({ seed, gaps, start, steps, drop, add, a, span, width }) => {
+        const rows = rowsOf(noisy(3000, seed, [0, 0.001, 0.05, 0.5][gaps]));
+        const read = pctColumnsReader<Row>();
+        const grow = pctPyramidGrower();
+        const handed: [PctColumns, PctPyramid][] = [];
+        let from = 0;
+        let to = start;
+        for (let step = 0; step < steps; step++) {
+          const columns = read(rows.slice(from, to), 'at', 'value');
+          handed.push([columns, grow(columns)]);
+          from = Math.min(to, from + drop);
+          to = Math.min(rows.length, to + add);
+        }
+        const window = { from: a, to: a + span };
+        for (const [columns, pyramid] of handed) {
+          expect(pairs(pctDecimate(columns, window, width, pyramid))).toEqual(
+            reference(columns, window.from, window.to, width),
+          );
+          expect(
+            pctRangeExtent(columns, window.from, window.to, pyramid),
+          ).toEqual(pctRangeExtent(columns, window.from, window.to));
+        }
+      },
+      { runs: 80 },
+    );
+  });
+
+  it('builds whole the columns of another buffer, and readings put before the start', () => {
+    const grow = pctPyramidGrower();
+    const c = noisy(2000, 7, 0.01);
+    const window = { from: 0, to: 7000 };
+    const check = (columns: PctColumns) => {
+      expect(pairs(pctDecimate(columns, window, 4, grow(columns)))).toEqual(
+        reference(columns, window.from, window.to, 4),
+      );
+    };
+    check(slice(c, 1000, 2000));
+    check(slice(c, 0, 2000));
+    check(noisy(2000, 8, 0.01));
+    // and readings cut from the back, then added again over other values
+    const d = noisy(2000, 9, 0);
+    check(slice(d, 0, 2000));
+    check(slice(d, 0, 1200));
+    d.ys.subarray(1200).forEach((_, i) => (d.ys[1200 + i] = 1000 + i));
+    check(slice(d, 0, 2000));
+  });
+
+  it('builds only the runs over the readings added: a reading written over before the end is not read again', () => {
+    // The promise `pctColumnsReader` keeps, broken on purpose: a grower that built every run
+    // again would see the reading written over, and one that built only the new runs does not.
+    const grow = pctPyramidGrower();
+    const c = noisy(4096, 11, 0);
+    const columns = slice(c, 0, 4096);
+    // a window that holds every reading, and a reading that is no extreme of the half built first
+    const [from, to] = [c.xs[0] - 1, c.xs[4095] + 1];
+    const truth = pctRangeExtent(columns, from, to);
+    const half = pctRangeExtent(slice(c, 0, 2048), from, to);
+    const kept = Array.from(c.ys.subarray(0, 2048)).findIndex(
+      (y) => y !== half?.[0] && y !== half?.[1],
+    );
+    grow(slice(c, 0, 2048));
+    c.ys[kept] = -1e9;
+    const pyramid = grow(columns);
+    expect(pctRangeExtent(columns, from, to)?.[0]).toBe(-1e9);
+    expect(pctRangeExtent(columns, from, to, pyramid)).toEqual(truth);
+  });
+
+  it('a pyramid of other columns is not read', () => {
+    const columns = noisy(1000, 11, 0);
+    const other = pctPyramid(noisy(2000, 12, 0));
+    const [from, to] = [columns.xs[0] - 1, columns.xs[999] + 1];
+    expect(pctRangeExtent(columns, from, to, other)).toEqual(
+      pctRangeExtent(columns, from, to),
+    );
   });
 });

@@ -50,7 +50,7 @@ before an application ships them.
 ./breadcrumb 16591 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./button 19009 ./core @angular/core,@angular/forms/signals
 ./card 17291 ./icon,./skeleton @angular/common,@angular/core
-./chart 324225 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
+./chart 326295 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
 ./checkbox 24512 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 18743 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
@@ -144,7 +144,7 @@ single number this file had ever moved.
 ./accordion PctAccordion 2 7783 18759
 ./breadcrumb PctBreadcrumb 3 7883 16429
 ./card PctCard 4 15849 16802
-./chart PctArea 19 256089 320559
+./chart PctArea 19 257524 322491
 ./chips PctChip 2 18601 18604
 ./date PctCalendar 2 30197 49335
 ./description PctDescription 2 9274 9689
