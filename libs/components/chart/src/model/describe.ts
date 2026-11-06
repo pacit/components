@@ -12,14 +12,14 @@ import type { PctWindow } from './window';
  * Which way a series went across a window: the line that fits its readings best rises, falls,
  * or moves no more than a tenth of the series' own range.
  *
- * @since next
+ * @since 0.3.1
  */
 export type PctTrend = 'rising' | 'falling' | 'flat';
 
 /**
  * What a series did in a window.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctSeriesFacts {
   /** The lowest reading. */
@@ -46,7 +46,7 @@ export interface PctSeriesFacts {
  * pctFactsOf({ xs: Float64Array.of(0, 1, 2), ys: Float64Array.of(1, 3, 2), length: 3 }, null);
  * // { min: 1, max: 3, last: 2, trend: 'rising', gaps: 0, count: 3 }
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctFactsOf(
   columns: PctColumns,

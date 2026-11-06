@@ -21,7 +21,7 @@ function contextOf(document: Document): CanvasRenderingContext2D | null {
  * own width (0100, P3). Without a canvas — on the server, in a test — a letter is six tenths of
  * the font's size, so a layout still has a number to thin by.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctMeasureText(
   document: Document,

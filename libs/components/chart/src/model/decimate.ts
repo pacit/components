@@ -136,7 +136,7 @@ export function pctPyramid(columns: PctColumns): PctPyramid {
  * const grow = pctPyramidGrower();
  * const pyramid = computed(() => grow(this.columns()));
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctPyramidGrower(): (columns: PctColumns) => PctPyramid {
   // The levels last built, the buffer they read and the readings they hold.
@@ -180,7 +180,7 @@ const PYRAMID_FROM = 16_384;
  * @example
  * const pyramid = pctPyramidPays(columns, window) ? pctPyramid(columns) : undefined;
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctPyramidPays(
   columns: PctColumns,

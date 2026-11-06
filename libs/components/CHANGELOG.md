@@ -1,3 +1,28 @@
+## 0.3.1 (2026-11-06)
+
+### Features
+
+- **table:** a branch of a remote source is a list of its own — a tree the server holds, asked for as it opens (0122) ([#210](https://github.com/pacit/components/pull/210))
+- **table:** a column drawn by its component — the cells an application keeps in its columns ([#207](https://github.com/pacit/components/pull/207))
+- **chart:** points, ranges, the pie and the gauge ease a recount too (0121) ([#206](https://github.com/pacit/components/pull/206))
+- **chart:** live data read where it changed, a recount eased (1.11, phase 15b, 0121) ([#202](https://github.com/pacit/components/pull/202))
+- **table:** a cell over its neighbours — a column's colSpan asks each row how many columns its cell takes ([#201](https://github.com/pacit/components/pull/201))
+- **table:** a cascading selection in a tree — a branch picks the rows below it, and a half-picked one is mixed ([#200](https://github.com/pacit/components/pull/200))
+- **chart:** export and a description of its own — the picture as SVG or PNG, the data's own words, a print (1.11, phase 15, 0120) ([#199](https://github.com/pacit/components/pull/199))
+- **chart:** brush and navigator — a drag draws the selection, two ranges move its edges (1.11, phase 14, 0119) ([#197](https://github.com/pacit/components/pull/197))
+- **table:** a row's menu, a status bar and a print (0097, phase 15, 0118) ([#196](https://github.com/pacit/components/pull/196))
+- **sparkline:** pct-sparkline — one series drawn small in a cell, a picture with no scene on an entrypoint of its own (1.11, phase 13, 0117) ([#195](https://github.com/pacit/components/pull/195))
+- **table:** pinned rows, the order of the rows and animated rows (0097, phase 14, 0116) ([#194](https://github.com/pacit/components/pull/194))
+- **chart:** a pie, a donut and a gauge — a scene of shares with the legend and the table on a source, a meter drawn as an arc (0097, phase 12, 0115) ([#193](https://github.com/pacit/components/pull/193))
+- **table:** header groups — a column's group as a header over its adjacent columns, moved and pinned whole (0097, phase 13, 0113) ([#192](https://github.com/pacit/components/pull/192))
+- **chart:** pct-heat and pct-chart-ramp — a heatmap on rows the scene lays, painted on a ramp the stylesheet mixes (1.11, phase 11, 0113) ([#190](https://github.com/pacit/components/pull/190))
+- **table:** pctTableTree — the rows as a tree, pruned to the matches and their ancestors, a treegrid with the grid (0097, phase 12, 0112) ([#191](https://github.com/pacit/components/pull/191))
+- **table:** copy, paste, CSV and .xlsx — a sheet's text through the platform's clipboard, exports as functions (0097, phase 11, 0111) ([#189](https://github.com/pacit/components/pull/189))
+
+### Performance
+
+- **chart:** the pyramid grows with its columns — a live series shown whole pays a reading's worth (0121) ([#205](https://github.com/pacit/components/pull/205))
+
 ## 0.3.0 (2026-11-03)
 
 ### Features

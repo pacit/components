@@ -113,7 +113,7 @@ const TURNED: Readonly<Partial<Record<PctGridMove, PctGridMove>>> = {
  * pctCellSpans([2, 1, 3, 1, 1], [false, false, false, false, true]);
  * // [2, 0, 2, 0, 1]
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctCellSpans(
   asks: readonly number[],

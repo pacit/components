@@ -70,7 +70,7 @@ const SLICES: PctWay<
  * What a press on a slice picks: the slice's series, the row of the data and its index — `null`
  * and `-1` for the slice of the rest — its value and its share of the total shown.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctSlicePick<T> {
   readonly series: string;
@@ -109,7 +109,7 @@ interface PctSliceView {
  * share in the pie's unit and locale. `PctPie<T>` implements it for every `T`, so `pct-chart-table` takes a
  * pie of any row.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctShareSource extends PctLegendSource {
   readonly ariaLabel: Signal<string>;
@@ -146,7 +146,7 @@ export interface PctShareSource extends PctLegendSource {
  * <pct-chart-legend [chart]="pie" value="latest" />
  * <pct-chart-table [chart]="pie" summary="sum" />
  *
- * @since next
+ * @since 0.3.1
  */
 @Component({
   selector: 'pct-pie',
@@ -162,34 +162,34 @@ export class PctPie<T> implements PctShareSource {
   /**
    * The rows, each a slice.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly data = input.required<readonly T[]>();
   /**
    * A slice's value, its size among the others; a value that is not a positive finite number
    * draws no slice and stands in the table as it is, a gap for `null`.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly value =
     input.required<PctAccessor<NoInfer<T>, number | null | undefined>>();
   /**
    * What a slice is called: in the legend, the tooltip, the table and the label beside it.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly name = input.required<PctAccessor<NoInfer<T>, string>>();
   /**
    * The slice's id, stable across changes of the data; the name when unset.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly id = input<PctAccessor<NoInfer<T>, string> | undefined>(undefined);
   /**
    * A slice's colour: a palette place from 1 to 8, any CSS colour, or `undefined` for the next
    * free place, which the slice keeps while it stays.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly color = input<
     PctAccessor<NoInfer<T>, number | string | undefined> | undefined
@@ -197,46 +197,46 @@ export class PctPie<T> implements PctShareSource {
   /**
    * The unit of the values, written after each; `''` is a plain number.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly unit = input('');
   /**
    * The locale the values and the shares are written in: the application's when unset.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly locale = input('');
   /**
    * The hole in the middle, as a share of the radius from 0 (a pie) to 0.9; a value outside
    * is held at the ends.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly donut = input(0, { transform: numberAttribute });
   /**
    * Where the first slice starts, in degrees clockwise from twelve o'clock.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly startAngle = input(0, { transform: numberAttribute });
   /**
    * The most slices that stand on their own: the largest values; the rest, where they are two
    * or more, fold into one slice of the rest. `Infinity` draws every slice.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly others = input(6, { transform: numberAttribute });
   /**
    * The name and the share written beside each slice (`auto`, where they fit), or none, left to
    * the legend.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly labels = input<'auto' | 'none'>('auto');
   /**
    * A skeleton in place of the picture while the data are on their way.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly loading = input(false, { transform: booleanAttribute });
   /**
@@ -245,52 +245,52 @@ export class PctPie<T> implements PctShareSource {
    * ([0121](../../../../docs/decisions/0121-live-data-is-read-where-it-changed.md)).
    * `prefers-reduced-motion` draws every change at once; the table and the range read the data.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly animate = input(false, { transform: booleanAttribute });
   /**
    * The picture's name, which a reader announces and the table takes as its caption. Give this
    * or `ariaLabelledby`.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly ariaLabel = input('');
   /**
    * As `ariaLabel`, for a name that already stands on the page.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly ariaLabelledby = input('');
   /**
    * What the picture shows, for a reader, in a sentence; unset, the slices' names and shares.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly description = input('');
   /**
    * The ids of the slices not drawn: what the legend's toggles write. The shares are of the
    * slices drawn.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly hiddenSeries = model<readonly string[]>([]);
   /**
    * The id of the slice that stands out of the circle, or `null`: what a press on a slice, or
    * Enter on the cursor's slice, toggles.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly selected = model<string | null>(null);
   /**
    * The id of the slice under the cursor — the pointer's, or the range's — or `null`.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly cursor = model<string | null>(null);
   /**
    * A press on a slice: its series, its row and index, its value and its share.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly pick = output<PctSlicePick<T>>();
 
@@ -305,7 +305,7 @@ export class PctPie<T> implements PctShareSource {
   /**
    * The slices' swatch: a block of the slice's colour, hatched under forced colours.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly swatch =
     viewChild.required<TemplateRef<PctSwatchContext>>('swatchTemplate');
@@ -332,7 +332,7 @@ export class PctPie<T> implements PctShareSource {
   /**
    * The locale the values are written in: `locale`, or the application's.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly effectiveLocale = computed(() => this.locale() || this.appLocale);
   private readonly valueFormat = computed(() =>
@@ -390,7 +390,7 @@ export class PctPie<T> implements PctShareSource {
    * Every slice as a series, in the order of the data, the slice of the rest last
    * (`PctLegendSource`).
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly series = computed<readonly PctSeriesSpec[]>(() =>
     this.entries().map((e) => ({
@@ -413,13 +413,13 @@ export class PctPie<T> implements PctShareSource {
   /**
    * The palette place of each slice, kept while the slice stays (`PctLegendSource`).
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly places = this.placesState.asReadonly();
   /**
    * No marks: a pie draws its own slices (`PctLegendSource`).
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly marks = signal<readonly PctMark[]>([]).asReadonly();
 
@@ -539,7 +539,7 @@ export class PctPie<T> implements PctShareSource {
    * What the cursor reads, or `null`: the slice under it as a row, and its share as a note
    * (`PctLegendSource`).
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly reading = computed<PctChartReading | null>(() => {
     const id = this.cursor();
@@ -612,7 +612,7 @@ export class PctPie<T> implements PctShareSource {
    * slices, their leaders and labels with their computed styles written in, the pie's name as
    * its `<title>` and its description as its `<desc>`. `''` while the pie has not drawn.
    *
-   * @since next
+   * @since 0.3.1
    */
   svg(): string {
     return pctPictureOf(
@@ -628,7 +628,7 @@ export class PctPie<T> implements PctShareSource {
    * The pie as a PNG, `svg()` drawn onto a canvas `scale` times its size — the screen's pixel
    * ratio by default. It rejects while the pie has not drawn, or with no canvas to draw on.
    *
-   * @since next
+   * @since 0.3.1
    */
   png(scale = this.document.defaultView?.devicePixelRatio ?? 1): Promise<Blob> {
     const svg = this.svg();
@@ -701,7 +701,7 @@ export class PctPie<T> implements PctShareSource {
   /**
    * A value written with the unit in the pie's locale, the gap for `null`.
    *
-   * @since next
+   * @since 0.3.1
    */
   writeValue(value: number | null): string {
     if (value === null) return this.texts().chartGap;
@@ -713,7 +713,7 @@ export class PctPie<T> implements PctShareSource {
   /**
    * A slice's share of the total shown, written in percent; `null` for a slice not drawn.
    *
-   * @since next
+   * @since 0.3.1
    */
   shareOf(id: string): number | null {
     return this.shown().find((s) => s.id === id)?.share ?? null;
@@ -722,7 +722,7 @@ export class PctPie<T> implements PctShareSource {
   /**
    * The value of a slice as the data give it, `null` for none or no such slice.
    *
-   * @since next
+   * @since 0.3.1
    */
   valueAt(id: string): number | null {
     return this.entries().find((e) => e.id === id)?.value ?? null;
@@ -732,7 +732,7 @@ export class PctPie<T> implements PctShareSource {
    * The swatch of every slice: the same block, painted by the slice's place
    * (`PctLegendSource`).
    *
-   * @since next
+   * @since 0.3.1
    */
   swatchOf(id: string): TemplateRef<PctSwatchContext> | null {
     void id;
@@ -743,7 +743,7 @@ export class PctPie<T> implements PctShareSource {
    * The value and the share of a slice, whatever `mode` asks: a pie has no window to sum
    * (`PctLegendSource`).
    *
-   * @since next
+   * @since 0.3.1
    */
   summaryOf(id: string, mode: 'latest' | PctSummary): string | null {
     void mode;

@@ -5,7 +5,7 @@ import type { PctAnyCellKind, PctInstantCellOptions } from './columns';
  * What separates the cells of a line: a comma, a semicolon where a comma is the locale's
  * decimal separator, a tab on the clipboard.
  *
- * @since next
+ * @since 0.3.1
  */
 export type PctDelimiter = ',' | ';' | '\t';
 
@@ -18,7 +18,7 @@ export type PctDelimiter = ',' | ';' | '\t';
  * pctDelimiterOf('pl'); // ';'
  * pctDelimiterOf('en'); // ','
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctDelimiterOf(locale: string): ',' | ';' {
   return decimalOf(locale) === ',' ? ';' : ',';
@@ -33,7 +33,7 @@ export function pctDelimiterOf(locale: string): ',' | ';' {
  * pctWriteDelimited([['Name', 'Note'], ['Lamp', 'say "hi"']], ',');
  * // 'Name,Note\r\nLamp,"say ""hi"""\r\n'
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctWriteDelimited(
   cells: readonly (readonly string[])[],
@@ -63,7 +63,7 @@ export function pctWriteDelimited(
  * @example
  * pctParseDelimited('Lamp\t12\r\nFan\t"4\n0"\r\n', '\t'); // [['Lamp', '12'], ['Fan', '4\n0']]
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctParseDelimited(
   text: string,
@@ -132,7 +132,7 @@ export function pctParseDelimited(
  * @example
  * pctPlainWriter({ number: { unit: 'kWh', fractionDigits: 1 } }, 'pl')(1950.25); // '1950,25'
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctPlainWriter(
   kind: PctAnyCellKind | undefined,
@@ -172,7 +172,7 @@ export function pctPlainWriter(
  * pctPlainReader({ number: {} }, 'pl')('1 950,3'); // 1950.3
  * pctPlainReader({ number: {} }, 'pl')('12 W'); // undefined
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctPlainReader(
   kind: PctAnyCellKind | undefined,
@@ -270,7 +270,7 @@ export function pctPlainReader(
  * does, and a format that asks for an hour, a minute, a second or a time style; with no format
  * the platform writes the day.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctShowsTime(instant: PctInstantCellOptions): boolean {
   if (instant.relative) return true;

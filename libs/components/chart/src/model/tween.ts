@@ -9,7 +9,7 @@ import type { PctColumns } from './columns';
  * @example
  * pctTweenable(before, after); // true when only the values changed
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctTweenable(from: PctColumns, to: PctColumns): boolean {
   if (from.length !== to.length) return false;
@@ -24,7 +24,7 @@ export function pctTweenable(from: PctColumns, to: PctColumns): boolean {
  * @example
  * pctTween(before, after, 0.5); // each value halfway
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctTween(
   from: PctColumns,

@@ -27,7 +27,7 @@ import type {
  * ([0115](../../../../docs/decisions/0115-a-pie-is-a-scene-of-shares-and-a-gauge-is-a-meter-drawn-as-an-arc.md)).
  * `PctChart` and `PctPie` are the two sources; the legend asks nothing else of either.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctLegendSource {
   /** The series, in order. */

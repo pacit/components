@@ -129,7 +129,7 @@ export class PctTableWindow {
    * print stops there and says so under the table. Five thousand by default, which a browser
    * lays out on paper in about a second.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly printLimit = input(5000, { transform: numberAttribute });
 

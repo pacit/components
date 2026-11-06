@@ -81,7 +81,7 @@ function fieldOf(value: unknown, key: string): unknown {
  * The levels of a column's `group`, the outermost first: `'Power/Peak'` is `['Power',
  * 'Peak']`, a blank level is passed over, and a column with no group has none.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctGroupPath<T>(column: PctAnyColumn<T>): readonly string[] {
   return (column.group ?? '')

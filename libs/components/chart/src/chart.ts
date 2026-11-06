@@ -238,7 +238,7 @@ export interface PctChartReadingRow {
    * The row the series is drawn in, for a series of a mark that lays rows (`PctSeriesSpec.row`):
    * the marker stands at its middle, not on a value axis.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly row?: string;
 }
@@ -586,7 +586,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * ([0121](../../../../docs/decisions/0121-live-data-is-read-where-it-changed.md)). Off by
    * default. The table and the description read the data, never a step on the way.
    *
-   * @since next
+   * @since 0.3.1
    */
   override readonly animate = input(false, { transform: booleanAttribute });
   /**
@@ -611,7 +611,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * Bound with `[(selected)]` to another chart's window, a low chart with a brush is that
    * chart's navigator.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly brush = input(false, { transform: booleanAttribute });
 
@@ -675,7 +675,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
   /**
    * See `PctChartScene.cellGap`.
    *
-   * @since next
+   * @since 0.3.1
    */
   override readonly cellGap = this.cellGapState.asReadonly();
   private readonly pixelState = signal(1);
@@ -1459,7 +1459,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * The strip of a row across the plot (0113): the plot's width and the row's band of its
    * height; turned, the plot's height and a band of its width.
    *
-   * @since next
+   * @since 0.3.1
    */
   override rowFrame(row: string): PctNoteFrame | null {
     const index = this.rowNames().indexOf(row);
@@ -1966,7 +1966,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * The swatch template of the mark that declares a series, for the tooltip, the markers and
    * the legend (`PctLegendSource`).
    *
-   * @since next
+   * @since 0.3.1
    */
   swatchOf(id: string): TemplateRef<PctSwatchContext> | null {
     return this.markOf(id)?.swatch() ?? null;
@@ -1977,7 +1977,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * reading in the window, or the sum or the mean of the readings there, written with the
    * unit; `null` with no window or no mark (`PctLegendSource`).
    *
-   * @since next
+   * @since 0.3.1
    */
   summaryOf(id: string, mode: 'latest' | PctSummary): string | null {
     const shown = this.shown();
@@ -2178,7 +2178,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * Shows the selection as the window and lets the selection go: what Enter on a brush's
    * edge and a double tap inside its selection do.
    *
-   * @since next
+   * @since 0.3.1
    */
   zoomToSelection(): void {
     const selected = this.selected();
@@ -2194,7 +2194,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * picture reads it when the consumer gives no `description`; `''` before the chart has a
    * window or with nothing in it.
    *
-   * @since next
+   * @since 0.3.1
    */
   describe(): string {
     return this.generated();
@@ -2207,7 +2207,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * bar are not in it — they are the page's — and a font travels by its name alone. `''` while
    * the chart has not drawn.
    *
-   * @since next
+   * @since 0.3.1
    */
   svg(): string {
     return pctPictureOf(
@@ -2224,7 +2224,7 @@ export class PctChart extends PctChartScene implements PctLegendSource {
    * pixel ratio by default. It rejects while the chart has not drawn, or where the browser has
    * no canvas to draw on.
    *
-   * @since next
+   * @since 0.3.1
    */
   png(scale = this.document.defaultView?.devicePixelRatio ?? 1): Promise<Blob> {
     const svg = this.svg();

@@ -27,7 +27,7 @@ import { pctEased, pctOrNone } from './tween';
  * for — what a reader hears beside the value, and what the picture writes under it
  * ([0076](../../../../docs/decisions/0076-a-tone-is-two-channels-and-four-names.md)).
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctGaugeBand {
   readonly from: number;
@@ -71,7 +71,7 @@ const VALUE = pctOrNone<number>({
  * <pct-gauge ariaLabel="Supply air" [value]="21.5" [min]="10" [max]="30" unit="°C"
  *   [bands]="[{ from: 10, to: 18, tone: 'info', label: 'Cold' }, { from: 18, to: 24, tone: 'success', label: 'Comfort' }, { from: 24, to: 30, tone: 'danger', label: 'Hot' }]" />
  *
- * @since next
+ * @since 0.3.1
  */
 @Component({
   selector: 'pct-gauge',
@@ -88,7 +88,7 @@ export class PctGauge {
    * The value, in the unit of `min` and `max`; `null`, or anything that is not a finite
    * number, is no reading.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly value = input<number | null, unknown>(null, {
     transform: gaugeValue,
@@ -98,7 +98,7 @@ export class PctGauge {
    * rather than at once ([0121](../../../../docs/decisions/0121-live-data-is-read-where-it-changed.md)).
    * `prefers-reduced-motion` draws every change at once; the meter and the words carry the value.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly animate = input(false, { transform: booleanAttribute });
   /** The value as drawn: on its way to the new one while `animate` eases it. */
@@ -106,56 +106,56 @@ export class PctGauge {
   /**
    * The left end of the arc.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly min = input(0, { transform: numberAttribute });
   /**
    * The right end of the arc; a `max` not above `min` stands the value at the left end.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly max = input(100, { transform: numberAttribute });
   /**
    * The unit written after the value and the ends; `''` is a plain number.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly unit = input('');
   /**
    * The locale the numbers are written in: the application's when unset.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly locale = input('');
   /**
    * The bands of the range, each in a tone with a word for it, drawn on the rim in order.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly bands = input<readonly PctGaugeBand[]>([]);
   /**
    * How the value is shown: an arc filled from the minimum to it, or a needle at it.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly indicator = input<'arc' | 'needle'>('arc');
   /**
    * The angle the arc sweeps, in degrees, around twelve o'clock: 240 leaves the bottom open
    * for the value; 360 is a ring.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly sweep = input(240, { transform: numberAttribute });
   /**
    * The meter's name — what is measured. Give this or `ariaLabelledby`.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly ariaLabel = input('');
   /**
    * As `ariaLabel`, for a name that already stands on the page.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly ariaLabelledby = input('');
 
@@ -176,7 +176,7 @@ export class PctGauge {
   /**
    * The locale the numbers are written in: `locale`, or the application's.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly effectiveLocale = computed(() => this.locale() || this.appLocale);
   private readonly format = computed(() =>
@@ -194,7 +194,7 @@ export class PctGauge {
    * The band the value falls in — from its `from` up to its `to`, the last band at its `to`
    * too — or `null` for none, or no reading.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly band = computed<PctGaugeBand | null>(() => {
     const value = this.value();
@@ -212,7 +212,7 @@ export class PctGauge {
   /**
    * The value written with the unit, or the gap for no reading.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly valueText = computed(() => this.write(this.value()));
 
