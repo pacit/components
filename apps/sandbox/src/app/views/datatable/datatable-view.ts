@@ -312,6 +312,108 @@ function serveBlock(
   });
 }
 
+/** A meter's archive on a server: the meters, each meter's years, each year's months. */
+interface Archived {
+  readonly id: string;
+  readonly name: string;
+  readonly energy: number;
+  readonly kind: 'meter' | 'year' | 'month';
+}
+
+const ARCHIVE_METERS = 40;
+const ARCHIVE_FIRST_YEAR = 2017;
+const ARCHIVE_YEARS = 10;
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+const arch = pctColumnsOf<Archived>();
+
+/** A month's energy, in kWh: the same for the same meter, year and month. */
+function monthEnergy(meter: number, year: number, month: number): number {
+  return ((meter * 37 + year * 11 + month * 7) % 90) + 10;
+}
+
+/** A year's energy: its months'. */
+function yearEnergy(meter: number, year: number): number {
+  return MONTHS.reduce(
+    (sum, _, month) => sum + monthEnergy(meter, year, month),
+    0,
+  );
+}
+
+/**
+ * One list of the archive, as the server answers it: the meters at the top, a meter's years,
+ * a year's months — the branch named by the request's path, a meter first.
+ */
+function archiveList(path: readonly PctRowId[]): {
+  readonly total: number;
+  readonly at: (at: number) => Archived;
+} {
+  if (path.length === 0)
+    return {
+      total: ARCHIVE_METERS,
+      at: (meter) => ({
+        id: `m${meter + 1}`,
+        name: `Meter ${meter + 1}`,
+        energy: Array.from({ length: ARCHIVE_YEARS }, (_, year) =>
+          yearEnergy(meter, year),
+        ).reduce((sum, energy) => sum + energy, 0),
+        kind: 'meter',
+      }),
+    };
+  const meter = Number(String(path[0]).slice(1)) - 1;
+  if (path.length === 1)
+    return {
+      total: ARCHIVE_YEARS,
+      at: (year) => ({
+        id: `${String(path[0])}-${ARCHIVE_FIRST_YEAR + year}`,
+        name: String(ARCHIVE_FIRST_YEAR + year),
+        energy: yearEnergy(meter, year),
+        kind: 'year',
+      }),
+    };
+  const year = Number(String(path[1]).split('-')[1]) - ARCHIVE_FIRST_YEAR;
+  return {
+    total: MONTHS.length,
+    at: (month) => ({
+      id: `${String(path[1])}-${month + 1}`,
+      name: MONTHS[month],
+      energy: monthEnergy(meter, year, month),
+      kind: 'month',
+    }),
+  };
+}
+
+/** The archive's server: a list a request, a third of a second later. */
+function serveArchive(
+  request: PctTableRequest<never>,
+  abort: AbortSignal,
+): Promise<PctTableAnswer<Archived>> {
+  const list = archiveList(request.path);
+  const rows: Archived[] = [];
+  for (let at = request.from; at < Math.min(request.to, list.total); at++)
+    rows.push(list.at(at));
+  return new Promise((done, fail) => {
+    const timer = setTimeout(() => done({ rows, total: list.total }), 300);
+    abort.addEventListener('abort', () => {
+      clearTimeout(timer);
+      fail(abort.reason);
+    });
+  });
+}
+
 /**
  * Data table: the first layer drawn from data. What is worth watching: the columns are a
  * typed list, so the switch's template reads `rule.enabled` as a boolean; the header order is
@@ -950,6 +1052,29 @@ export class DatatableView {
   ) => {
     this.remoteAsked.update((count) => count + 1);
     return serveBlock(request, abort);
+  };
+
+  /** The archive demo's columns: the server orders nothing, and is asked for nothing else. */
+  protected readonly archiveColumns = arch.of([
+    arch.key('name', { header: 'Period', sort: false }),
+    arch.key('energy', {
+      header: 'Energy',
+      kind: { number: { unit: 'kWh' } },
+      sort: false,
+    }),
+  ]);
+  protected readonly archiveId = (row: Archived) => row.id;
+  /** A meter holds years and a year months; a month holds nothing. */
+  protected readonly archiveBranch = (row: Archived) => row.kind !== 'month';
+  protected readonly archiveOpen = signal<readonly PctRowId[]>([]);
+  /** The lists the server was asked for, each a block of one branch or of the meters. */
+  protected readonly archiveAsked = signal(0);
+  protected readonly loadArchive: PctTableLoad<Archived, never> = (
+    request,
+    abort,
+  ) => {
+    this.archiveAsked.update((count) => count + 1);
+    return serveArchive(request, abort);
   };
 
   /**

@@ -341,7 +341,15 @@ describe('PctTableRemote', () => {
   it('asks for the first block, and stands in for its rows until it comes', async () => {
     const fixture = await render();
     expect(asked.map(({ request }) => request)).toEqual([
-      { from: 0, to: 50, sort: [], filter: '', columnFilters: {} },
+      {
+        parent: null,
+        path: [],
+        from: 0,
+        to: 50,
+        sort: [],
+        filter: '',
+        columnFilters: {},
+      },
     ]);
     const remote = fixture.componentInstance.remote();
     expect(remote.loading()).toBe(true);
@@ -392,6 +400,8 @@ describe('PctTableRemote', () => {
     // Lines 92 to 117, with 25 rows more each side: 67 to 142, in blocks 1 and 2.
     expect(froms()).toEqual([0, 50, 100]);
     expect(asked[1].request).toEqual({
+      parent: null,
+      path: [],
       from: 50,
       to: 100,
       sort: [],
@@ -612,6 +622,8 @@ describe('PctTableRemote', () => {
     expect(frameOf(fixture).scrollTop).toBe(0);
     expect(froms()).toEqual([0, 50, 100, 0]);
     expect(asked[3].request).toEqual({
+      parent: null,
+      path: [],
       from: 0,
       to: 50,
       sort: [{ key: 'name', direction: 'descending' }],
@@ -691,6 +703,8 @@ describe('PctTableRemote', () => {
     await stable(fixture);
     expect(asked[0].signal.aborted).toBe(false);
     expect(asked.at(-1)?.request).toEqual({
+      parent: null,
+      path: [],
       from: 0,
       to: 50,
       sort: [],
@@ -714,6 +728,8 @@ describe('PctTableRemote', () => {
     // Lines 0 to 17 and ten rows more, in blocks of twenty.
     expect(froms()).toEqual([0, 0, 20]);
     expect(asked[1].request).toEqual({
+      parent: null,
+      path: [],
       from: 0,
       to: 20,
       sort: [],

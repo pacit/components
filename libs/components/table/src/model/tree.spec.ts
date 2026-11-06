@@ -22,7 +22,8 @@ const id = (row: Node) => row.id;
 const kids = (row: Node) => row.kids;
 const byName = (rows: readonly Node[]) =>
   [...rows].sort((a, b) => a.name.localeCompare(b.name));
-const names = (rows: readonly Node[]) => rows.map((row) => row.name);
+const names = (rows: readonly (Node | undefined)[]) =>
+  rows.map((row) => row?.name);
 
 describe('pctTree', () => {
   it('keeps every row in the order given when nothing filters or orders', () => {
@@ -131,6 +132,38 @@ describe('pctTree', () => {
     expect(names(tree.rows)).toHaveLength(9);
     expect(tree.children(tree.roots[1])).toHaveLength(2);
     expect(tree.parents.get('kettle')).toBe('kitchen');
+  });
+
+  it('keeps a hole where it stands, judges and orders nothing around it, and counts it a sibling', () => {
+    // A remote source's tree: a branch's children come a block at a time, holes where none came.
+    const below = new Map<Node, readonly (Node | undefined)[]>([
+      [kitchen, [undefined, lamp, undefined]],
+    ]);
+    const tree = pctTree([undefined, kitchen], id, {
+      children: (row) => below.get(row),
+      matches: (row) => row.name === 'Lamp',
+      order: byName,
+    });
+    expect(tree.roots).toEqual([kitchen]);
+    expect(names(tree.rows)).toEqual(['Kitchen', 'Lamp']);
+    expect(tree.children(kitchen)).toEqual([undefined, lamp, undefined]);
+    expect(tree.places.get('kitchen')).toEqual({ position: 2, siblings: 2 });
+    expect(tree.places.get('lamp')).toEqual({ position: 2, siblings: 3 });
+    expect(tree.parents.get('lamp')).toBe('kitchen');
+    expect([...tree.muted]).toEqual(['kitchen']);
+  });
+
+  it('leaves a list with a hole as it came, and orders one without', () => {
+    const tree = pctTree([lamp, kettle, undefined], id, {
+      children: () => undefined,
+      order: byName,
+    });
+    expect(names(tree.roots)).toEqual(['Lamp', 'Kettle']);
+    const whole = pctTree([lamp, kettle], id, {
+      children: () => undefined,
+      order: byName,
+    });
+    expect(names(whole.roots)).toEqual(['Kettle', 'Lamp']);
   });
 });
 

@@ -1186,6 +1186,72 @@ test.describe('PctTableRemote — a million registers from a server, a block at 
  * chooser's checkboxes and buttons, the pinned columns that stay while the rest scroll, and
  * the layout saved as JSON and laid back as it was.
  */
+test.describe('PctTableRemote with a tree — an archive from a server, one branch at a time', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const archive = (page: Page) => page.getByTestId('table-remote-tree');
+  const rows = (page: Page) =>
+    archive(page).locator('tbody tr[data-pct-index]');
+  const asked = (page: Page) => page.getByTestId('remote-tree-asked');
+  /** A row's disclosure, by the name its first cell shows. */
+  const button = (page: Page, name: string) =>
+    rows(page)
+      .filter({ hasText: name })
+      .first()
+      .locator('button[data-pct-part="disclosure"]');
+
+  test('a branch asks the server for its children when it opens, a placeholder standing in for them', async ({
+    page,
+  }) => {
+    await expect(
+      archive(page).getByRole('treegrid', {
+        name: 'Meter archive on the server',
+      }),
+    ).toHaveCount(1);
+    await expect(asked(page)).toHaveText(
+      '40 meters · the server was asked 1 times',
+    );
+    const first = rows(page).first();
+    await expect(first).toContainText('Meter 1');
+    await expect(first).toHaveAttribute('aria-expanded', 'false');
+    await expect(first).toHaveAttribute('aria-setsize', '40');
+    await button(page, 'Meter 1').click();
+    // Asked at once, answered a third of a second later: the hole first, its level the years'.
+    await expect(asked(page)).toHaveText(
+      '40 meters · the server was asked 2 times',
+    );
+    await expect(rows(page).nth(1)).toContainText('2017');
+    const year = rows(page).nth(1);
+    await expect(year).toHaveAttribute('aria-level', '2');
+    await expect(year).toHaveAttribute('aria-posinset', '1');
+    await expect(year).toHaveAttribute('aria-setsize', '10');
+    await expect(rows(page).nth(10)).toContainText('2026');
+    await expect(rows(page).nth(11)).toContainText('Meter 2');
+    await button(page, '2026').click();
+    await expect(rows(page).nth(11)).toContainText('January');
+    await expect(rows(page).nth(11)).toHaveAttribute('aria-level', '3');
+    await expect(asked(page)).toHaveText(
+      '40 meters · the server was asked 3 times',
+    );
+  });
+
+  test('a branch closed and opened again asks nothing: the rows that came stay', async ({
+    page,
+  }) => {
+    await button(page, 'Meter 1').click();
+    await expect(rows(page).nth(1)).toContainText('2017');
+    await button(page, 'Meter 1').click();
+    await expect(rows(page).nth(1)).toContainText('Meter 2');
+    await button(page, 'Meter 1').click();
+    await expect(rows(page).nth(1)).toContainText('2017');
+    await expect(asked(page)).toHaveText(
+      '40 meters · the server was asked 2 times',
+    );
+  });
+});
+
 test.describe('PctTableColumns — the columns as the user lays them out', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/datatable');

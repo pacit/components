@@ -8,8 +8,9 @@ import type { PctRowId } from './columns';
  * - `row`: a row of data. `index` counts the rows and holes drawn before it; `level` is its
  *   depth in a tree, 0 without one, and `expanded` whether its children are shown, `null`
  *   for a row with no children to show.
- * - `hole`: a row a remote source has not delivered yet, keyed by its index — the index of
- *   the source's list as long as no tree is expanded above it.
+ * - `hole`: a row a remote source has not delivered yet, keyed by its index. `parent` is the
+ *   id of the row whose children it stands among, `null` among the roots, `at` its place in
+ *   that list, from 0 — what a source is asked for to fill it — and `level` its depth.
  * - `details`: the details of the row before it, the full width of the table.
  * - `group`: the heading of a group of rows.
  *
@@ -24,7 +25,14 @@ export type PctTableLine<T> =
       readonly level: number;
       readonly expanded: boolean | null;
     }
-  | { readonly kind: 'hole'; readonly key: number; readonly index: number }
+  | {
+      readonly kind: 'hole';
+      readonly key: number;
+      readonly index: number;
+      readonly level: number;
+      readonly parent: PctRowId | null;
+      readonly at: number;
+    }
   | {
       readonly kind: 'details';
       readonly key: PctRowId;
@@ -68,8 +76,11 @@ export interface PctLinesOptions<T> {
   readonly collapsed?: ReadonlySet<string>;
   /** The rows whose details are open, by id. */
   readonly details?: ReadonlySet<PctRowId>;
-  /** A row's children, for a tree; `undefined` or an empty list for a leaf. */
-  readonly children?: (row: T) => readonly T[] | undefined;
+  /**
+   * A row's children, for a tree; `undefined` or an empty list for a leaf. An `undefined` in
+   * the list is a hole.
+   */
+  readonly children?: (row: T) => readonly (T | undefined)[] | undefined;
   /** The rows whose children are shown, by id. */
   readonly expanded?: ReadonlySet<PctRowId>;
 }
@@ -120,10 +131,17 @@ export function pctLines<T>(
   const { details, children, expanded, groups = [], collapsed } = options;
   const lines: PctTableLine<T>[] = [];
   let index = 0;
-  const walk = (list: readonly (T | undefined)[], level: number): void => {
-    for (const row of list) {
+  // `places` are the rows' places in their list, where the list walked is not the whole of it.
+  const walk = (
+    list: readonly (T | undefined)[],
+    level: number,
+    parent: PctRowId | null,
+    places?: readonly number[],
+  ): void => {
+    for (const [i, row] of list.entries()) {
       if (row === undefined) {
-        lines.push({ kind: 'hole', key: index, index });
+        const at = places?.[i] ?? i;
+        lines.push({ kind: 'hole', key: index, index, level, parent, at });
         index++;
         continue;
       }
@@ -141,7 +159,7 @@ export function pctLines<T>(
       });
       if (details?.has(key)) lines.push({ kind: 'details', key, row, index });
       index++;
-      if (open) walk(kids as readonly T[], level + 1);
+      if (open) walk(kids, level + 1, key);
     }
   };
   // The groups are one more level above the rows, walked by the same recursion: a group is a
@@ -153,7 +171,7 @@ export function pctLines<T>(
     path: readonly unknown[],
   ): void => {
     if (level === groups.length) {
-      walk(list, level);
+      walk(list, level, null);
       return;
     }
     const by = new Map<string, { value: unknown; rows: T[] }>();
@@ -180,7 +198,7 @@ export function pctLines<T>(
       if (!closed) group(members, level + 1, values);
     }
   };
-  if (groups.length === 0) walk(rows, 0);
+  if (groups.length === 0) walk(rows, 0, null);
   else {
     // Holes have no value to be grouped by: they stand after the groups, as they came.
     group(
@@ -188,9 +206,12 @@ export function pctLines<T>(
       0,
       [],
     );
+    const holes = [...rows.keys()].filter((at) => rows[at] === undefined);
     walk(
-      rows.filter((row) => row === undefined),
+      holes.map(() => undefined),
       0,
+      null,
+      holes,
     );
   }
   return lines;
