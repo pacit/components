@@ -240,6 +240,9 @@ test.describe('An application’s frame — topbar, nav, description list', () =
     }) => {
       const menu = page.getByTestId('menu');
       await menu.click();
+      // The drawer shows its panel at the render after the click, and a hidden link takes no
+      // focus: the link is focused once it is on the screen.
+      await expect(page.getByTestId('link-rooms')).toBeVisible();
       await page.getByTestId('link-rooms').focus();
       await expect(page.getByTestId('link-rooms')).toBeFocused();
       await page.setViewportSize({ width: 1280, height: 900 });
