@@ -3,6 +3,7 @@ import type {
   PctRelativeOptions,
   PctTone,
 } from '@pacit/components/core';
+import type { InputSignalWithTransform } from '@angular/core';
 import type { PctAggregate } from './aggregate';
 
 /**
@@ -206,7 +207,65 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * @since next
    */
   readonly colSpan?: (row: T) => number;
+  /**
+   * The component that draws the column's cells, for an application that keeps its cells in
+   * its columns rather than in its template. The table sets the inputs it declares of
+   * `value`, `row`, `column` and `index`, and no other; a `pctCell` template for the column
+   * draws in its place.
+   *
+   * @since next
+   */
+  readonly component?: abstract new (...args: never) => unknown;
 }
+
+/**
+ * What a cell's component is refused for: the input that cannot take what the table sets,
+ * and the type it would be set to.
+ *
+ * @since next
+ */
+export interface PctCellInputMismatch<Name extends string, X> {
+  readonly 'the cell component declares an input the table cannot set': Name;
+  readonly 'the table sets it to': X;
+}
+
+/** Whether the input `Name` of an instance `I`, when it has one, takes an `X`. */
+type PctTakes<I, Name extends string, X> = Name extends keyof I
+  ? I[Name] extends InputSignalWithTransform<infer _R, infer W>
+    ? [X] extends [W]
+      ? unknown
+      : PctCellInputMismatch<Name, X>
+    : [X] extends [I[Name]]
+      ? unknown
+      : PctCellInputMismatch<Name, X>
+  : unknown;
+
+/**
+ * A component a column of rows `T` and values `V` may draw its cells with: every input it
+ * declares of the four the table sets takes what the table sets it to.
+ *
+ * @since next
+ */
+export type PctCellComponentOf<C, V, T> = C extends abstract new (
+  ...args: never
+) => infer I
+  ? PctTakes<I, 'value', V> &
+      PctTakes<I, 'row', T> &
+      PctTakes<I, 'column', PctColumn<T, V>> &
+      PctTakes<I, 'index', number>
+  : unknown;
+
+/**
+ * A column built by an accessor, or what its component is refused for. The accessor's value is
+ * known only once the accessor is read, after the rest of the call, so the component is
+ * checked on the column built: a refused one is no column, and the list it joins says why.
+ *
+ * @since next
+ */
+export type PctCellChecked<C, V, T, Column> =
+  PctCellComponentOf<C, V, T> extends PctCellInputMismatch<infer N, infer X>
+    ? PctCellInputMismatch<N, X>
+    : Column;
 
 /**
  * What a consumer writes beside the key or the accessor when building a column: `V` the
@@ -274,19 +333,25 @@ export type PctColumns<T, M extends Record<string, unknown>> = readonly {
  * @since 0.3.0
  */
 export function pctColumnsOf<T>(): {
-  key<K extends keyof T & string>(
+  key<K extends keyof T & string, C = undefined>(
     key: K,
-    spec: PctColumnSpec<T[K], T>,
+    spec: PctColumnSpec<T[K], T> & {
+      readonly component?: C & PctCellComponentOf<C, T[K], T>;
+    },
   ): PctColumn<T, T[K], K>;
   value<
     Id extends string,
     V extends PctValueOfKind<K>,
     K extends PctAnyCellKind = 'text',
+    C = undefined,
   >(
     id: Id,
     value: (row: T) => V,
-    spec: Omit<PctColumnSpec<V, T>, 'kind'> & { readonly kind?: K },
-  ): PctColumn<T, V, Id>;
+    spec: Omit<PctColumnSpec<V, T>, 'kind'> & {
+      readonly kind?: K;
+      readonly component?: C;
+    },
+  ): PctCellChecked<C, V, T, PctColumn<T, V, Id>>;
   of<C extends readonly PctAnyColumn<T>[]>(
     columns: C,
   ): PctColumns<T, PctColumnMap<C>>;
@@ -295,8 +360,9 @@ export function pctColumnsOf<T>(): {
   // the signature, and the list against the ids by the map, before the call compiled.
   return {
     key: (key, spec) => ({ ...spec, id: key, value: (row) => row[key] }),
+    // The column is the same whatever its type says: a refused one is stopped by the list.
     value: <Id extends string, V>(id: Id, value: (row: T) => V, spec: object) =>
-      ({ ...spec, id, value }) as PctColumn<T, V, Id>,
+      ({ ...spec, id, value }) as PctColumn<T, V, Id> as never,
     of: <C extends readonly PctAnyColumn<T>[]>(columns: C) =>
       columns as unknown as PctColumns<T, PctColumnMap<C>>,
   };

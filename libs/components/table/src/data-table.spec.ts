@@ -2,6 +2,7 @@ import {
   ApplicationRef,
   Component,
   ErrorHandler,
+  input,
   LOCALE_ID,
   provideZonelessChangeDetection,
   signal,
@@ -2029,6 +2030,19 @@ const fitting = col.of([
   col.key('seen', { header: 'Seen', priority: 3 }),
 ]);
 
+/** A cell component for the power, in the details as in the row. */
+@Component({ selector: 'pct-test-power', template: `{{ value() }} W` })
+class PowerCell {
+  readonly value = input<number | null>(null);
+}
+
+const fittingDrawn = col.of([
+  col.key('name', { header: 'Name' }),
+  col.key('room', { header: 'Room', priority: 1 }),
+  col.key('power', { header: 'Power', priority: 2, component: PowerCell }),
+  col.key('seen', { header: 'Seen', priority: 3 }),
+]);
+
 @Component({
   imports: [PctDataTable, PctTableDetails, PctDetailsTemplate, PctCellTemplate],
   template: `
@@ -2335,6 +2349,24 @@ describe('PctDataTable — a narrow table hides columns', () => {
       ['Power', '1899.5'],
       ['Seen', String(11 * HOUR)],
     ]);
+  });
+
+  it('draws a hidden column by its component in the details', async () => {
+    const fixture = await render(DetailsHost);
+    fixture.componentInstance.slotted.set(false);
+    fixture.componentInstance.columns.set(fittingDrawn as typeof fitting);
+    await settle(fixture);
+    const width = { value: 1000 };
+    lay(width);
+    await resize(fixture, width, 1000);
+    expect(body()[0].querySelector('pct-test-power')?.textContent).toBe('12 W');
+    await resize(fixture, width, 250);
+    disclosures()[1].click();
+    await settle(fixture);
+    const list = detailsRows()[0].querySelector('dl') as HTMLElement;
+    expect(list.querySelector('dd pct-test-power')?.textContent).toBe(
+      '1899.5 W',
+    );
   });
 
   it('measures the shown columns past the leading cells', async () => {
