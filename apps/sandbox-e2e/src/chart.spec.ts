@@ -1647,7 +1647,8 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await page.keyboard.press('ArrowRight');
       await expect(range).toHaveAttribute(
         'aria-valuetext',
-        'Heat pump: 412 kWh, 46%',
+        // the demo's selected slice, so the range says so
+        'Heat pump: 412 kWh, 46%, selected',
       );
       await expect(pie.locator('[data-pct-part="tooltip"]')).toBeVisible();
       await page.keyboard.press('End');
