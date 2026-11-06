@@ -1,7 +1,7 @@
 import { Component, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { PctColumns } from './model/columns';
-import { pctTweened } from './tween';
+import { pctOrNone, pctTweened, type PctWay } from './tween';
 
 const of = (xs: number[], ys: number[]): PctColumns => ({
   xs: Float64Array.from(xs),
@@ -201,5 +201,24 @@ describe('pctTweened', () => {
     fixture.destroy();
     expect(cancelled).toBe(1);
     expect(cancelAnimationFrame).toHaveBeenCalledWith(1);
+  });
+});
+
+describe('pctOrNone', () => {
+  const NUMBER: PctWay<number> = {
+    tweenable: (from, to) => from <= to,
+    tween: (from, to, progress) => from + (to - from) * progress,
+  };
+  const way = pctOrNone(NUMBER);
+
+  it('eases two values as the way does, and a value that comes or goes at once', () => {
+    expect(way.tweenable(1, 3)).toBe(true);
+    expect(way.tweenable(3, 1)).toBe(false);
+    expect(way.tweenable(null, 3)).toBe(false);
+    expect(way.tweenable(1, null)).toBe(false);
+    expect(way.tweenable(null, null)).toBe(false);
+    expect(way.tween(1, 3, 0.5)).toBe(2);
+    expect(way.tween(null, 3, 0.5)).toBe(3);
+    expect(way.tween(1, null, 0.5)).toBeNull();
   });
 });

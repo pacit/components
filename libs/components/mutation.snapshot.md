@@ -105,7 +105,7 @@ libs/components/chart/src/bars.ts 94.03 425(0) 26 0 1 2
 libs/components/chart/src/chart-table.ts 89.93 250(1) 23 0 5 0
 libs/components/chart/src/chart.ts 91.23 1924(1) 175 2 8 10
 libs/components/chart/src/export.ts 98.98 97(0) 1 0 0 0
-libs/components/chart/src/gauge.ts 91.18 217(0) 19 0 2 4
+libs/components/chart/src/gauge.ts 91.46 225(0) 19 0 2 5
 libs/components/chart/src/heat.ts 93.48 258(3) 15 0 3 1
 libs/components/chart/src/legend.ts 100.00 60(0) 0 0 0 1
 libs/components/chart/src/line.ts 95.20 218(0) 11 0 0 2
@@ -139,14 +139,14 @@ libs/components/chart/src/model/value-at.ts 98.91 91(4) 1 0 0 0
 libs/components/chart/src/model/window.ts 97.22 35(0) 1 0 0 0
 libs/components/chart/src/note.ts 93.85 61(0) 3 0 1 0
 libs/components/chart/src/now.ts 100.00 43(0) 0 0 0 0
-libs/components/chart/src/pie.ts 90.57 394(0) 38 1 2 4
-libs/components/chart/src/points.ts 83.05 147(2) 27 1 2 2
+libs/components/chart/src/pie.ts 90.69 419(0) 40 1 2 5
+libs/components/chart/src/points.ts 84.62 154(2) 25 1 2 2
 libs/components/chart/src/ramp.ts 90.00 9(0) 1 0 0 0
-libs/components/chart/src/range.ts 85.31 209(2) 34 0 2 1
+libs/components/chart/src/range.ts 84.44 217(2) 36 0 4 1
 libs/components/chart/src/reference.ts 93.55 58(0) 4 0 0 1
 libs/components/chart/src/scene.ts 97.73 43(0) 1 0 0 0
 libs/components/chart/src/span.ts 93.65 59(0) 4 0 0 0
-libs/components/chart/src/tween.ts 100.00 55(0) 0 0 0 0
+libs/components/chart/src/tween.ts 100.00 77(0) 0 0 0 0
 libs/components/checkbox/src/checkbox.ts 96.83 61(0) 2 0 0 6
 libs/components/chips/src/chips.ts 89.47 51(0) 6 0 0 2
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0 0
@@ -256,5 +256,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 90.65 22350/24655
+TOTAL 90.66 22420/24729
 ```
