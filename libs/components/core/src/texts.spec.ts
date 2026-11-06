@@ -77,6 +77,7 @@ const ENGLISH: PctTexts = {
   chartPosition: 'Position',
   chartAllHidden: 'Every series is hidden',
   chartNoCursor: 'No reading selected',
+  chartSelected: 'selected',
   chartKeys:
     'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor.',
   chartBrushFrom: 'Start of the selection',

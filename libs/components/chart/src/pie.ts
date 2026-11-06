@@ -569,12 +569,18 @@ export class PctPie<T> implements PctShareSource {
     };
   });
 
-  /** What the cursor's range says: the slice's name, value and share, or that there is none. */
+  /**
+   * What the cursor's range says: the slice's name, value and share, or that there is none —
+   * and that the slice is the selected one, so a key that selects is heard.
+   */
   protected readonly valueText = computed(() => {
     const reading = this.reading();
     if (!reading) return this.texts().chartNoCursor;
     const [row] = reading.rows;
-    return `${row.name}: ${row.text}, ${reading.notes[0].text}`;
+    const text = `${row.name}: ${row.text}, ${reading.notes[0].text}`;
+    return row.id === this.selected()
+      ? `${text}, ${this.texts().chartSelected}`
+      : text;
   });
 
   /** The range: a step per slice shown, its value the cursor's slice. */

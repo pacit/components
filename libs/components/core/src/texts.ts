@@ -259,6 +259,11 @@ export interface PctTexts {
   readonly chartAllHidden: string;
   /** Chart: what the cursor's range says while no reading is selected. */
   readonly chartNoCursor: string;
+  /**
+   * Chart: what the cursor's range adds to its reading when the band or the slice under the
+   * cursor is the selected one.
+   */
+  readonly chartSelected: string;
   /** Chart: the keys of the cursor, one sentence, read as the range's description. */
   readonly chartKeys: string;
   /** Chart: the name of the range at a brush's start. */
@@ -534,6 +539,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   chartPosition: 'Position',
   chartAllHidden: 'Every series is hidden',
   chartNoCursor: 'No reading selected',
+  chartSelected: 'selected',
   chartKeys:
     'Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor.',
   chartBrushFrom: 'Start of the selection',

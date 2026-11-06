@@ -706,6 +706,7 @@ describe('PctBars', () => {
     const range = element(fixture).querySelector(
       'input[data-pct-part="range"]',
     )!;
+    const reading = range.getAttribute('aria-valuetext');
     const enter = new KeyboardEvent('keydown', {
       key: 'Enter',
       bubbles: true,
@@ -718,6 +719,13 @@ describe('PctBars', () => {
       from: MARCH + 3 * D,
       to: MARCH + 4 * D,
     });
+    // the range says the band is selected, so the key is heard; on another band it does not
+    expect(range.getAttribute('aria-valuetext')).toBe(`${reading}, selected`);
+    chart.cursor.set(MARCH + 2 * D + H);
+    await settle(fixture);
+    expect(range.getAttribute('aria-valuetext')).not.toMatch(/selected/);
+    chart.cursor.set(MARCH + 3 * D + H);
+    await settle(fixture);
     const space = new KeyboardEvent('keydown', {
       key: ' ',
       bubbles: true,
@@ -726,6 +734,11 @@ describe('PctBars', () => {
     range.dispatchEvent(space);
     await settle(fixture);
     expect(chart.selected()).toBeNull();
+    expect(range.getAttribute('aria-valuetext')).toBe(reading);
+    // a selection that starts where the band does and ends elsewhere is not the band
+    chart.selected.set({ from: MARCH + 3 * D, to: MARCH + 5 * D });
+    await settle(fixture);
+    expect(range.getAttribute('aria-valuetext')).toBe(reading);
   });
 
   it("stands on a band axis by category, with a line through the bands' middles", async () => {

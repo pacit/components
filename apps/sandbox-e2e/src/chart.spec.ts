@@ -764,8 +764,14 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await expect(range).toHaveAttribute('aria-valuetext', /^Sun 1: March/);
       await page.keyboard.press('Enter');
       await expect(selection).toHaveCount(1);
+      // the range says so, which is what a reader hears of the key
+      await expect(range).toHaveAttribute(
+        'aria-valuetext',
+        /^Sun 1: March .*, selected$/,
+      );
       await page.keyboard.press('Space');
       await expect(selection).toHaveCount(0);
+      await expect(range).toHaveAttribute('aria-valuetext', /^Sun 1: .*%$/);
       const table = page.getByTestId('bars-table');
       await expect(table.locator('tbody tr')).toHaveCount(31);
       await expect(table.locator('tfoot th')).toHaveText('Sum');
@@ -1641,7 +1647,8 @@ test.describe('PctChart — a scene of scales and the marks drawn on them', () =
       await page.keyboard.press('ArrowRight');
       await expect(range).toHaveAttribute(
         'aria-valuetext',
-        'Heat pump: 412 kWh, 46%',
+        // the demo's selected slice, so the range says so
+        'Heat pump: 412 kWh, 46%, selected',
       );
       await expect(pie.locator('[data-pct-part="tooltip"]')).toBeVisible();
       await page.keyboard.press('End');
