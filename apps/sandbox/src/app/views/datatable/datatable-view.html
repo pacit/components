@@ -881,6 +881,22 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="A cell drawn by its column's component"
+  summary="A column may carry the component its cells are drawn with, for an application that keeps its cells in its columns: the table sets the value, and the humidity of a damp room is a warning badge."
+  [reqs]="['req-api-templates']"
+  data-testid="demo-cell-component"
+>
+  <pct-data-table
+    data-testid="table-cell-component"
+    caption="Humidity by room"
+    locale="en"
+    [rows]="readings"
+    [columns]="drawnColumns"
+    [rowId]="byReadingId"
+  />
+</sbx-demo>
+
+<sbx-demo
   heading="Groups of headers"
   summary="A column's group puts a header over the adjacent columns that share it, a row per level. The groups' rows stick with the header, and a column's menu moves and pins its group whole."
   [reqs]="['req-a11y-built-in']"

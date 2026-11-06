@@ -2119,6 +2119,36 @@ test.describe('A column that spans — a cell over its neighbours', () => {
   });
 });
 
+test.describe("A column's component — the humidity drawn as a badge", () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const cell = (page: Page, room: string) =>
+    page
+      .getByTestId('table-cell-component')
+      .locator('tbody tr')
+      .filter({ hasText: room })
+      .locator('td')
+      .nth(1);
+
+  test('draws each cell with the component, which reads the value it is set', async ({
+    page,
+  }) => {
+    await expect(cell(page, 'Bathroom').locator('pct-badge')).toHaveText(
+      '71 %',
+    );
+    await expect(cell(page, 'Bathroom').locator('pct-badge')).toHaveAttribute(
+      'data-pct-tone',
+      'warning',
+    );
+    await expect(
+      cell(page, 'Kitchen').locator('pct-badge'),
+    ).not.toHaveAttribute('data-pct-tone');
+    await expect(cell(page, 'Hall')).toHaveText('No reading');
+  });
+});
+
 test.describe('PctTableSelection cascading in a tree — the home picked as one', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/datatable');

@@ -50,7 +50,7 @@ before an application ships them.
 ./breadcrumb 16591 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./button 19009 ./core @angular/core,@angular/forms/signals
 ./card 17291 ./icon,./skeleton @angular/common,@angular/core
-./chart 326295 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
+./chart 326322 ./button,./core,./icon,./skeleton,./table @angular/common,@angular/core,@angular/forms/signals
 ./checkbox 24512 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 18743 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
@@ -79,7 +79,7 @@ before an application ships them.
 ./stepper 18111 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./svg-icon 6119 - @angular/core
 ./switch 23992 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
-./table 393894 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./table 394868 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./tabs 19925 ./core @angular/core,@angular/forms/signals
 ./testing 15669 - @angular/cdk/testing
 ./theme 518 - @angular/core
@@ -144,7 +144,7 @@ single number this file had ever moved.
 ./accordion PctAccordion 2 7783 18759
 ./breadcrumb PctBreadcrumb 3 7883 16429
 ./card PctCard 4 15849 16802
-./chart PctArea 19 257524 322491
+./chart PctArea 19 257524 322518
 ./chips PctChip 2 18601 18604
 ./date PctCalendar 2 30197 49335
 ./description PctDescription 2 9274 9689
@@ -154,7 +154,7 @@ single number this file had ever moved.
 ./radio PctRadio 2 26874 26876
 ./select PctMultiSelect 2 55139 81326
 ./stepper PctStep 2 17968 17970
-./table PctDataTable 14 118147 383329
+./table PctDataTable 14 119118 384303
 ./tabs PctTab 2 19756 19759
 ./time PctTime 2 51093 51094
 ./topbar PctTopbar 2 1685 2230
