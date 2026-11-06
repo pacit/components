@@ -197,14 +197,14 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * the same group, in a row above the headers. `'Power/Peak'` is two levels, a row each.
    * `pctTableColumns` moves and pins the columns of a group together.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly group?: string;
   /**
    * How many of the columns shown a row's cell takes, from its own: the cells it covers are
    * not drawn. Never into a pinned column; read down to a whole number, at least one.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly colSpan?: (row: T) => number;
   /**
@@ -213,7 +213,7 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
    * `value`, `row`, `column` and `index`, and no other; a `pctCell` template for the column
    * draws in its place.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly component?: abstract new (...args: never) => unknown;
 }
@@ -222,7 +222,7 @@ export interface PctColumn<T, V = unknown, Id extends string = string> {
  * What a cell's component is refused for: the input that cannot take what the table sets,
  * and the type it would be set to.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctCellInputMismatch<Name extends string, X> {
   readonly 'the cell component declares an input the table cannot set': Name;
@@ -244,7 +244,7 @@ type PctTakes<I, Name extends string, X> = Name extends keyof I
  * A component a column of rows `T` and values `V` may draw its cells with: every input it
  * declares of the four the table sets takes what the table sets it to.
  *
- * @since next
+ * @since 0.3.1
  */
 export type PctCellComponentOf<C, V, T> = C extends abstract new (
   ...args: never
@@ -260,7 +260,7 @@ export type PctCellComponentOf<C, V, T> = C extends abstract new (
  * known only once the accessor is read, after the rest of the call, so the component is
  * checked on the column built: a refused one is no column, and the list it joins says why.
  *
- * @since next
+ * @since 0.3.1
  */
 export type PctCellChecked<C, V, T, Column> =
   PctCellComponentOf<C, V, T> extends PctCellInputMismatch<infer N, infer X>

@@ -15,7 +15,7 @@ import { PCT_XLSX_TYPE, type PctSheetCell, pctXlsx } from './model/xlsx';
  * What an export writes: the values as another program reads them, or with `formatted` the
  * texts the cells show — a number in its unit, an instant on its clock, a boolean as its word.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctTableExportOptions {
   readonly formatted?: boolean;
@@ -26,7 +26,7 @@ export interface PctTableExportOptions {
  * `;` where its decimals are written with a comma — and whether the file begins with the
  * byte-order mark that tells a spreadsheet it is UTF-8, which it does by default.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctTableCsvOptions extends PctTableExportOptions {
   readonly delimiter?: PctDelimiter;
@@ -37,7 +37,7 @@ export interface PctTableCsvOptions extends PctTableExportOptions {
  * An `.xlsx` export: the sheet's name, and the columns' widths in pixels by id — the
  * `widths` of a `pctTableColumns` layout — where a sheet should not size them by their text.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctTableXlsxOptions extends PctTableExportOptions {
   readonly sheet?: string;
@@ -56,7 +56,7 @@ export interface PctTableXlsxOptions extends PctTableExportOptions {
  * const csv = pctTableCsv(table);
  * const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctTableCsv<T, M extends Record<string, unknown>>(
   table: PctDataTable<T, M>,
@@ -101,7 +101,7 @@ export function pctTableCsv<T, M extends Record<string, unknown>>(
  * const file = await pctTableXlsx(table, { sheet: 'Rules' });
  * const url = URL.createObjectURL(file);
  *
- * @since next
+ * @since 0.3.1
  */
 export async function pctTableXlsx<T, M extends Record<string, unknown>>(
   table: PctDataTable<T, M>,

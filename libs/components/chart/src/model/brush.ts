@@ -9,14 +9,14 @@ import type { PctWindow } from './window';
 /**
  * Where a press lands on a selection: on one of its edges, inside it, or outside it.
  *
- * @since next
+ * @since 0.3.1
  */
 export type PctBrushGrip = 'from' | 'to' | 'inside' | 'outside';
 
 /**
  * One edge of a selection.
  *
- * @since next
+ * @since 0.3.1
  */
 export type PctBrushEdge = 'from' | 'to';
 
@@ -28,7 +28,7 @@ export type PctBrushEdge = 'from' | 'to';
  * pctBrushGrip(104, 100, 300, 12); // 'from'
  * pctBrushGrip(200, 100, 300, 12); // 'inside'
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctBrushGrip(
   px: number,
@@ -54,7 +54,7 @@ const hold = (value: number, low: number, high: number): number =>
  * pctBrushEdgeAt({ from: 10, to: 50 }, 'from', 30, { from: 0, to: 100 }, 5); // { from: 30, to: 50 }
  * pctBrushEdgeAt({ from: 10, to: 50 }, 'to', 12, { from: 0, to: 100 }, 5); // { from: 10, to: 15 }
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctBrushEdgeAt(
   selection: PctWindow,
@@ -83,7 +83,7 @@ export function pctBrushEdgeAt(
  * pctBrushDrag('outside', { from: 0, to: 100 }, 70, 40, { from: 0, to: 100 }, 1); // { from: 40, to: 70 }
  * pctBrushDrag('inside', { from: 20, to: 40 }, 30, 90, { from: 0, to: 100 }, 1); // { from: 80, to: 100 }
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctBrushDrag(
   grip: PctBrushGrip,

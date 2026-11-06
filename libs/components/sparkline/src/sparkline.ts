@@ -18,7 +18,7 @@ import {
  * What a sparkline reads off a row: a key of the row holding a number, or a function of the
  * row and its index; unset, the rows are the numbers.
  *
- * @since next
+ * @since 0.3.1
  */
 export type PctSparkValue<T> =
   keyof T | ((row: T, index: number) => number | null | undefined);
@@ -64,7 +64,7 @@ const two = (n: number) => Math.round(n * 100) / 100;
  * <pct-sparkline [data]="week()" value="kwh" unit="kWh" ariaLabel="Energy this week" />
  * <pct-sparkline [data]="[3, 5, 4, 8]" kind="bars" ariaLabel="Orders" [extremes]="true" />
  *
- * @since next
+ * @since 0.3.1
  */
 @Component({
   selector: 'pct-sparkline',
@@ -84,82 +84,82 @@ export class PctSparkline<T = number> {
   /**
    * The rows, in order: each a value, or a row `value` reads one from.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly data = input<readonly T[]>([]);
   /**
    * How to read a row's value: a key or a function; unset, each row is its value. Anything that
    * is not a finite number is a gap.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly value = input<PctSparkValue<T> | null>(null);
   /**
    * The drawing: a line, a bar per value, or a band with each slot on (a value of a half or
    * more) or off.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly kind = input<'line' | 'bars' | 'band'>('line');
   /**
    * A line filled to the floor.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly area = input(false, { transform: booleanAttribute });
   /**
    * The last value as a dot, on a line or bars.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly last = input(true, { transform: booleanAttribute });
   /**
    * The lowest and the highest value as dots, on a line or bars.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly extremes = input(false, { transform: booleanAttribute });
   /**
    * The value at the bottom of the box; unset, the lowest value — or nought for bars, which
    * rise from it.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly floor = input<number | null>(null);
   /**
    * The value at the top of the box; unset, the highest value — or nought for bars.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly ceiling = input<number | null>(null);
   /**
    * The colour of the drawing, any CSS colour; unset, `sparkline-fg`.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly color = input('');
   /**
    * The unit the description writes after each value; `''` is a plain number.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly unit = input('');
   /**
    * The locale of the description's numbers: the application's when unset.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly locale = input('');
   /**
    * The picture's name — what is drawn. Give this or `ariaLabelledby`.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly ariaLabel = input('');
   /**
    * As `ariaLabel`, for a name that already stands on the page — a row's header, say.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly ariaLabelledby = input('');
 
@@ -335,7 +335,7 @@ export class PctSparkline<T = number> {
    * What the picture says to a reader: the lowest and the highest value and the last, or that
    * there is nothing; a band says the last slot's state.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly description = computed(() => {
     const known = this.known();

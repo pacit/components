@@ -41,7 +41,7 @@ const leaf = (): undefined => undefined;
  * @example
  * <pct-data-table [pctTableTree]="columns" [children]="kidsOf" [(expanded)]="open" …>
  *
- * @since next
+ * @since 0.3.1
  */
 @Directive({
   selector: 'pct-data-table[pctTableTree]',
@@ -53,7 +53,7 @@ export class PctTableTree<T, M extends Record<string, unknown>> {
   /**
    * The table's list of columns, which carries the type of the rows. Never read.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly columns = input.required<PctColumns<T, M>>({
     alias: 'pctTableTree',
@@ -65,7 +65,7 @@ export class PctTableTree<T, M extends Record<string, unknown>> {
    * Left out, every row is a leaf — unless `pctTableRemote`'s `hasChildren` says which rows
    * the source holds children of, and then the source gives them.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly children = input<(row: T) => readonly T[] | undefined>(leaf);
 
@@ -73,14 +73,14 @@ export class PctTableTree<T, M extends Record<string, unknown>> {
    * The ids of the rows whose children are shown. A row not among them is closed, so a new
    * list of rows keeps the branches open by their ids.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly expanded = model<readonly PctRowId[]>([]);
 
   /**
    * The rows stand flat, whatever `children` says, and every row is a root.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 
@@ -101,7 +101,7 @@ export class PctTableTree<T, M extends Record<string, unknown>> {
   /**
    * Opens a closed row's children, or closes an open row's.
    *
-   * @since next
+   * @since 0.3.1
    */
   toggle(id: PctRowId): void {
     this.expanded.update((open) =>
@@ -113,7 +113,7 @@ export class PctTableTree<T, M extends Record<string, unknown>> {
    * Opens every branch the filter kept: a row whose children the filter dropped is a leaf, and
    * none to open.
    *
-   * @since next
+   * @since 0.3.1
    */
   expandAll(): void {
     this.expanded.set(this.table.branchIds());
@@ -122,7 +122,7 @@ export class PctTableTree<T, M extends Record<string, unknown>> {
   /**
    * Closes every branch.
    *
-   * @since next
+   * @since 0.3.1
    */
   collapseAll(): void {
     this.expanded.set([]);

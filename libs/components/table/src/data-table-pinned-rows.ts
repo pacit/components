@@ -13,7 +13,7 @@ import { PctDataTable } from './data-table';
  * @example
  * <pct-data-table pctTablePinnedRows [pinnedTop]="[total()]" [rows]="rules()" [columns]="columns" [rowId]="byId" />
  *
- * @since next
+ * @since 0.3.1
  */
 @Directive({
   selector: 'pct-data-table[pctTablePinnedRows]',
@@ -23,14 +23,14 @@ export class PctTablePinnedRows<T> {
   /**
    * The rows drawn above the rows, under the header, in the order given.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly pinnedTop = input<readonly T[]>([]);
 
   /**
    * The rows drawn below the rows, above the foot, in the order given.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly pinnedBottom = input<readonly T[]>([]);
 

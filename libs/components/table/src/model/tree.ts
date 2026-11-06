@@ -4,7 +4,7 @@ import type { PctRowId } from './columns';
  * How a tree of rows is read: each row's children, which rows the filter matches, and how a
  * list of siblings is ordered.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctTreeOptions<T> {
   /**
@@ -27,7 +27,7 @@ export interface PctTreeOptions<T> {
 /**
  * Where a row stands among the siblings kept beside it, counted from 1.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctTreePlace {
   readonly position: number;
@@ -38,7 +38,7 @@ export interface PctTreePlace {
  * The tree the filter left, in order: what the table draws its lines from, and what it
  * answers questions about a row's parent and place with.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctTree<T> {
   /** The roots kept, in order, their holes left out. */
@@ -69,7 +69,7 @@ export interface PctTree<T> {
  * roots or among a row's children, is kept where it stands and judged by nothing: only a
  * remote source writes one, and it filtered its rows itself.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctTree<T>(
   roots: readonly (T | undefined)[],
@@ -135,7 +135,7 @@ export function pctTree<T>(
  * The ids of the rows above a row, its parent first: what opens to show it. Empty for a root
  * and for an id the tree does not hold.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctTreeAbove(
   parents: ReadonlyMap<PctRowId, PctRowId>,

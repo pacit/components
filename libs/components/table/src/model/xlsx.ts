@@ -3,7 +3,7 @@
  * moment are a wall clock written as the milliseconds `Date.UTC` gives for its fields, so the
  * sheet shows the clock the table showed whatever zone it is opened in.
  *
- * @since next
+ * @since 0.3.1
  */
 export type PctSheetCell =
   | string
@@ -16,7 +16,7 @@ export type PctSheetCell =
  * A sheet to write: its name, its columns' headers and widths — in characters, as a sheet
  * counts them — and its rows of cells.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctSheet {
   readonly name: string;
@@ -39,7 +39,7 @@ export interface PctSheet {
  * const bytes = await pctXlsx({ name: 'Rules', columns: [{ header: 'Name', width: 20 }], rows: [['Lamp']] });
  * new Blob([bytes], { type: PCT_XLSX_TYPE });
  *
- * @since next
+ * @since 0.3.1
  */
 export async function pctXlsx(sheet: PctSheet): Promise<Uint8Array> {
   const encoder = new TextEncoder();
@@ -63,7 +63,7 @@ export async function pctXlsx(sheet: PctSheet): Promise<Uint8Array> {
 /**
  * The media type of an `.xlsx` file, for the `Blob` an application downloads.
  *
- * @since next
+ * @since 0.3.1
  */
 export const PCT_XLSX_TYPE =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';

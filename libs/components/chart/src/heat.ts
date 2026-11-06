@@ -79,7 +79,7 @@ interface PctCell {
  * </pct-chart>
  * <pct-chart-ramp [chart]="chart" />
  *
- * @since next
+ * @since 0.3.1
  */
 @Component({
   selector: 'pct-heat',
@@ -91,26 +91,26 @@ export class PctHeat<T> extends PctMark {
   /**
    * The rows, each a cell: a position, a row's name and a value.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly data = input.required<readonly T[]>();
   /**
    * Where a cell stands along the x axis: a time, placed in the chart's `interval`, or the
    * index of a `band` category.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly x = input.required<PctAccessor<NoInfer<T>, number>>();
   /**
    * The row a cell stands in: a category, laid across the plot and named at its side.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly y = input.required<PctAccessor<NoInfer<T>, string>>();
   /**
    * A cell's value; a value that is not a finite number is a gap, drawn as no cell.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly value =
     input.required<PctAccessor<NoInfer<T>, number | null | undefined>>();
@@ -118,33 +118,33 @@ export class PctHeat<T> extends PctMark {
    * The rows in order, top to bottom. Unset, the rows stand in the order the data first names
    * them.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly rowOrder = input<readonly string[] | undefined>(undefined);
   /**
    * The mark's name: the ramp's title, and the description's subject.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly name = input.required<string>();
   /**
    * The mark's id, where two heatmaps share a name; the name otherwise. A row's series is
    * `id:row`.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly id = input('');
   /**
    * The unit of the values; `''` is a plain number.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly unit = input('');
   /**
    * The ramp: `sequential` from a low to a high, or `diverging` from a low through a middle to a
    * high, each side on its own reach.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly scale = input<'sequential' | 'diverging'>('sequential');
   /**
@@ -152,20 +152,20 @@ export class PctHeat<T> extends PctMark {
    * ramp — held at the ends past them. Unset, the data's extent; a diverging ramp centres on
    * zero and reaches as far on both sides as the farther value.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly domain = input<readonly number[] | undefined>(undefined);
   /**
    * Write each cell's value on it, where the cell is wide enough.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly labels = input(false, { transform: booleanAttribute });
   /**
    * A press on a cell: its row's series, the band's index, the row of the data, the band's
    * start and the value.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly pick = output<PctPick<T>>();
 
@@ -174,14 +174,14 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.template`.
    *
-   * @since next
+   * @since 0.3.1
    */
   override readonly template =
     viewChild.required<TemplateRef<unknown>>('drawing');
   /**
    * See `PctMark.swatch`.
    *
-   * @since next
+   * @since 0.3.1
    */
   override readonly swatch =
     viewChild.required<TemplateRef<PctSwatchContext>>('swatch');
@@ -192,7 +192,7 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.rows`: the categories `y` names, in the order given or first met.
    *
-   * @since next
+   * @since 0.3.1
    */
   override readonly rows = computed<readonly string[]>(() => {
     const given = this.rowOrder();
@@ -209,7 +209,7 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.series`: one per row, in its row, with no axis and no palette place.
    *
-   * @since next
+   * @since 0.3.1
    */
   override readonly series = computed<readonly PctSeriesSpec[]>(() =>
     this.rows().map((row) => ({
@@ -235,7 +235,7 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.span`: from the first cell's band to the end of the last.
    *
-   * @since next
+   * @since 0.3.1
    */
   override readonly span = computed<PctDomain | null>(() => {
     let lo = Infinity;
@@ -305,7 +305,7 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.colorScale`.
    *
-   * @since next
+   * @since 0.3.1
    */
   override readonly colorScale = computed<PctColorScale>(() => ({
     kind: this.scale(),
@@ -379,7 +379,7 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.extent`: none — a series in a row has no value axis.
    *
-   * @since next
+   * @since 0.3.1
    */
   override extent(id: string, window: PctWindow): PctDomain | null {
     void id;
@@ -390,7 +390,7 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.valueAt`: the cell's value in the band under `x`, held across the band.
    *
-   * @since next
+   * @since 0.3.1
    */
   override valueAt(id: string, x: number): number | null {
     const r = this.rowIndexOf(id);
@@ -405,7 +405,7 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.readings`: the row's values at the bands' starts.
    *
-   * @since next
+   * @since 0.3.1
    */
   override readings(id: string): PctColumns {
     const r = this.rowIndexOf(id);
@@ -422,7 +422,7 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.rowsIn`: the bands in the window, each a row of the table.
    *
-   * @since next
+   * @since 0.3.1
    */
   override rowsIn(id: string, window: PctWindow): readonly number[] | null {
     if (this.rowIndexOf(id) < 0) return null;
@@ -435,7 +435,7 @@ export class PctHeat<T> extends PctMark {
   /**
    * See `PctMark.bandAt`: the band under `x`.
    *
-   * @since next
+   * @since 0.3.1
    */
   override bandAt(id: string, x: number): PctWindow | null {
     if (this.rowIndexOf(id) < 0) return null;
@@ -448,7 +448,7 @@ export class PctHeat<T> extends PctMark {
    * See `PctMark.pickAt`: a press on a cell of the row's series picks the row of the data it
    * was drawn from.
    *
-   * @since next
+   * @since 0.3.1
    */
   override pickAt(id: string, x: number, y: number): boolean {
     const r = this.rowIndexOf(id);
@@ -479,7 +479,7 @@ export class PctHeat<T> extends PctMark {
    * See `PctMark.describe`: the name, the rows and the reach of the ramp — `Power: 24 rows,
    * from 0 kW to 3.2 kW.` — so a reader knows what the colours say.
    *
-   * @since next
+   * @since 0.3.1
    */
   override describe(): string {
     const rows = this.rows();

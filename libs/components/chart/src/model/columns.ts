@@ -106,7 +106,7 @@ const valueOf = (y: unknown): number =>
  * const read = pctColumnsReader<Reading>();
  * const columns = computed(() => read(this.data(), 'at', 'value'));
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctColumnsReader<T>(): (
   rows: readonly T[],

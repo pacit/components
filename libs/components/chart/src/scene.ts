@@ -72,7 +72,7 @@ export const PCT_SERIES_MARKERS: readonly string[] = [
  * diagonal, a horizontal, a vertical, a cross, a grid, dots and two horizontals — what tells
  * the slices of a pie apart where the colours are gone, under forced colours (0115).
  *
- * @since next
+ * @since 0.3.1
  */
 export const PCT_SERIES_HATCHES: readonly string[] = [
   'M0 8L8 0M-2 2L2-2M6 10L10 6',
@@ -110,7 +110,7 @@ export interface PctSeriesSpec {
    * a heatmap's row. A series in a row has no value axis and takes no place in the palette; the
    * cursor's marker stands at the row's middle.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly row?: string;
 }
@@ -166,7 +166,7 @@ export abstract class PctChartScene {
    * Whether a change of data that only moves values is eased into place, rather than drawn at
    * once. Off unless the scene asks for it.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly animate: Signal<boolean> = signal(false);
   /**
@@ -340,13 +340,13 @@ export abstract class PctChartScene {
    * share of its width — for a mark that lays rows (`PctMark.rows`); `null` for a row no mark
    * asked for.
    *
-   * @since next
+   * @since 0.3.1
    */
   abstract rowFrame(row: string): PctNoteFrame | null;
   /**
    * The gap between the cells of a heatmap, in pixels: the `cell-gap` token, read with the font.
    *
-   * @since next
+   * @since 0.3.1
    */
   abstract readonly cellGap: Signal<number>;
 }
@@ -661,7 +661,7 @@ export abstract class PctMark {
    * the scene lends (`PctChartScene.rowFrame`) and labels at the side. Marks that name the same
    * row share it. The default lays none.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly rows: Signal<readonly string[]> = signal<readonly string[]>(
     [],
@@ -671,7 +671,7 @@ export abstract class PctMark {
    * The colour scale the mark paints its values with, for a legend of its ramp
    * (`pct-chart-ramp`); `null` for a mark that paints by series.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly colorScale: Signal<PctColorScale | null> =
     signal<PctColorScale | null>(null).asReadonly();

@@ -64,7 +64,7 @@ const KEY_GUARD = 1000;
  *   <button pctMenuItem (click)="remove(rowMenu.id())">Remove</button>
  * </pct-menu>
  *
- * @since next
+ * @since 0.3.1
  */
 @Directive({
   selector: 'pct-data-table[pctTableRowMenu]',
@@ -78,7 +78,7 @@ export class PctTableRowMenu {
   /**
    * The menu the rows open: the application's `pct-menu`.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly menu = input.required<PctMenu>({ alias: 'pctTableRowMenu' });
 
@@ -87,7 +87,7 @@ export class PctTableRowMenu {
   /**
    * The id of the row the menu was last opened for; `null` before it was opened.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly id = this.current.asReadonly();
 
@@ -127,7 +127,7 @@ export class PctTableRowMenu {
   /**
    * Whether the menu is open for the row.
    *
-   * @since next
+   * @since 0.3.1
    */
   isOpenFor(id: PctRowId): boolean {
     return this.menu().open() && this.current() === id;
@@ -136,7 +136,7 @@ export class PctTableRowMenu {
   /**
    * Opens the menu for the row, from its button: focus on the first item, or the last.
    *
-   * @since next
+   * @since 0.3.1
    */
   openFor(
     id: PctRowId,
@@ -152,7 +152,7 @@ export class PctTableRowMenu {
   /**
    * The row's button pressed: the menu opens for its row, or closes if it is open for it.
    *
-   * @since next
+   * @since 0.3.1
    */
   toggleFor(id: PctRowId, button: HTMLElement): void {
     if (this.isOpenFor(id)) this.menu().closeTree('trigger', true);
@@ -282,7 +282,7 @@ export class PctTableRowMenu {
  * table draws in the places it keeps for them. Declared here, rendered there.
  * `pctTableRowMenu` makes it, so it has no selector.
  *
- * @since next
+ * @since 0.3.1
  */
 @Component({
   imports: [PctIcon],
@@ -298,14 +298,14 @@ export class PctTableRowMenuParts {
   /**
    * What the header of the trailing column holds: the word a row's button is named by.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly head = viewChild.required<TemplateRef<unknown>>('head');
 
   /**
    * What a row's cell of the column holds, given the row.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly cell = viewChild.required<TemplateRef<unknown>>('cell');
 

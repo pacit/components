@@ -23,7 +23,7 @@ import type { PctRowId } from './model/columns';
  * A move of a row the user asked for: the row's id, and the id of the row it goes in front
  * of — `null` for the end of the list.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctRowMove {
   readonly id: PctRowId;
@@ -56,7 +56,7 @@ const LINKS = /* @__PURE__ */ new WeakMap<PctTableRowOrder, Link>();
  * @example
  * <pct-data-table pctTableRowOrder (reorder)="move($event)" animateRows [rows]="rules()" [columns]="columns" [rowId]="byId" />
  *
- * @since next
+ * @since 0.3.1
  */
 @Directive({
   selector: 'pct-data-table[pctTableRowOrder]',
@@ -68,7 +68,7 @@ export class PctTableRowOrder {
   /**
    * No row moves: the handles are drawn, disabled.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly disabled = input(false, { transform: booleanAttribute });
 
@@ -77,7 +77,7 @@ export class PctTableRowOrder {
    * the next render: the table then finds the row at its new place, puts the focus back on
    * its handle and tells a reader its number. A move made later is drawn, and says nothing.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly reorder = output<PctRowMove>();
 
@@ -113,7 +113,7 @@ interface Drag {
  * table draws in the places it keeps for them, and the handlers of the handle. Declared here,
  * rendered there. `pctTableRowOrder` makes it, so it has no selector.
  *
- * @since next
+ * @since 0.3.1
  */
 @Component({
   imports: [PctIcon],
@@ -133,14 +133,14 @@ export class PctTableRowOrderParts {
   /**
    * What the header of the column of handles holds: the word a handle is named by.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly head = viewChild.required<TemplateRef<unknown>>('head');
 
   /**
    * What a row's cell of the column holds, given the row and whether a move is open to it.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly cell = viewChild.required<TemplateRef<unknown>>('cell');
 

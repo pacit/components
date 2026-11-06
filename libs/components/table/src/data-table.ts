@@ -312,7 +312,7 @@ interface Shown<T> {
  * The header's row of column headers: below the rows of header groups, above the row of
  * filters. `undefined` for a table with no header.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctHeadersRow(
   table: HTMLTableElement,
@@ -812,7 +812,7 @@ export class PctDataTable<
    * transition token's, twice over, so a user who asked for less motion sees none
    * ([0116](../../../../docs/decisions/0116-pinned-rows-stand-outside-the-lines-and-a-move-is-the-applications.md)).
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly animateRows = input(false, { transform: booleanAttribute });
 
@@ -1038,7 +1038,7 @@ export class PctDataTable<
    * The locale the table writes in: its own `locale`, or the application's. What an export
    * reads its separators from.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly resolvedLocale = computed(() => this.locale() || this.appLocale);
 
@@ -1268,7 +1268,7 @@ export class PctDataTable<
    * The rows the filter let through, in the order the table sorts them, groups or none: what
    * an export writes. From a remote source, those of the rows it has delivered.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly matchedRows = computed<readonly T[]>(
     () => this.tree()?.rows ?? this.ordered(),
@@ -1542,7 +1542,7 @@ export class PctDataTable<
    * The ids of a row's children the filter kept, in their order: what a cascading selection
    * picks below a branch. Empty for a leaf, for an id the tree does not hold, and without a tree.
    *
-   * @since next
+   * @since 0.3.1
    */
   childIds(id: PctRowId): readonly PctRowId[] {
     return this.treeChildren()?.get(id) ?? [];
@@ -1567,7 +1567,7 @@ export class PctDataTable<
    * The ids of every row of the tree with children the filter kept, in the tree's order: what
    * the tree directive's `expandAll` opens. Empty without a tree.
    *
-   * @since next
+   * @since 0.3.1
    */
   branchIds(): readonly PctRowId[] {
     const tree = this.tree();
@@ -1904,7 +1904,7 @@ export class PctDataTable<
    * body's rows — every row of the page or the window, not only those drawn — the rows
    * pinned above and below, and the foot of totals; `null` while a source has not said.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly rowCount = computed(() => {
     const rows = this.places().rows;

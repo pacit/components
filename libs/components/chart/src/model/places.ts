@@ -7,7 +7,7 @@ import type { PctSeriesSpec } from '../scene';
  * scene and the pie place their series by it, so a series keeps its colour when another leaves
  * ([0102](../../../../../docs/decisions/0102-a-series-owns-its-colour-and-the-colour-is-never-its-only-channel.md)).
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctPlaces(
   series: readonly PctSeriesSpec[],

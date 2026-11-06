@@ -23,7 +23,7 @@ interface PctRampView {
  * <pct-chart #chart ariaLabel="Power by hour and day"> <pct-heat … /> </pct-chart>
  * <pct-chart-ramp [chart]="chart" />
  *
- * @since next
+ * @since 0.3.1
  */
 @Component({
   selector: 'pct-chart-ramp',
@@ -35,7 +35,7 @@ export class PctChartRamp {
   /**
    * The chart whose colour scales the legend shows.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly chart = input.required<PctChart>();
 

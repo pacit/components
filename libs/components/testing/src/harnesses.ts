@@ -467,7 +467,7 @@ export class PctBoxHarness extends PctHarness<
 /**
  * `pct-heat` — `PctHeat`.
  *
- * @since next
+ * @since 0.3.1
  */
 export class PctHeatHarness extends PctHarness<'cell' | 'label' | 'swatch'> {
   static override hostSelector = 'pct-heat';
@@ -477,7 +477,7 @@ export class PctHeatHarness extends PctHarness<'cell' | 'label' | 'swatch'> {
 /**
  * `pct-chart-ramp` — `PctChartRamp`.
  *
- * @since next
+ * @since 0.3.1
  */
 export class PctChartRampHarness extends PctHarness<'item' | 'ramp' | 'label'> {
   static override hostSelector = 'pct-chart-ramp';
@@ -487,7 +487,7 @@ export class PctChartRampHarness extends PctHarness<'item' | 'ramp' | 'label'> {
 /**
  * `pct-pie` — `PctPie`: a scene of its own, so its parts stand in its own box.
  *
- * @since next
+ * @since 0.3.1
  */
 export class PctPieHarness extends PctHarness<
   | 'data'
@@ -517,7 +517,7 @@ export class PctPieHarness extends PctHarness<
 /**
  * `pct-gauge` — `PctGauge`.
  *
- * @since next
+ * @since 0.3.1
  */
 export class PctGaugeHarness extends PctHarness<
   | 'band'
@@ -1137,7 +1137,7 @@ export class PctSliderHarness extends PctHarness<
 /**
  * `pct-sparkline` — `PctSparkline`.
  *
- * @since next
+ * @since 0.3.1
  */
 export class PctSparklineHarness extends PctHarness<
   'area' | 'bar' | 'dot' | 'line' | 'picture' | 'slot'

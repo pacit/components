@@ -96,14 +96,14 @@ export interface PctTableRequest<Id extends string = string> {
    * The branch whose children are asked for, with `hasChildren` and `pctTableTree`; `null`
    * for the roots.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly parent: PctRowId | null;
   /**
    * The ids of the branches above the rows asked for, the outermost first and `parent` last;
    * empty for the roots.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly path: readonly PctRowId[];
   /** The first row of the block, counted in its list: the roots, or `parent`'s children. */
@@ -214,7 +214,7 @@ export class PctTableRemote<T, Id extends string = string> {
    * children are asked for when it opens, a block at a time as the view reaches them, under
    * `request.parent`; `null` leaves the tree to the rows that came, as `children` reads them.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly hasChildren = input<((row: T) => boolean) | null>(null);
 

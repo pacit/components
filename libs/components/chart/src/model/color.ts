@@ -5,7 +5,7 @@ import type { PctDomain } from './scale';
  * or diverging over two ends and a middle, on a ramp of `steps` colours, writing its values in
  * `unit`.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctColorScale {
   readonly kind: 'sequential' | 'diverging';
@@ -21,7 +21,7 @@ export interface PctColorScale {
  * two steps it falls between, one-based, `mix` the share of the second in the mix, and `step`
  * the nearer of the two — which decides the colour of a text written over the cell.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctRampStop {
   readonly from: number;
@@ -42,7 +42,7 @@ export interface PctRampStop {
  * t(20); // 0.5
  * t(40); // 1
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctSequential(
   domain: PctDomain,
@@ -66,7 +66,7 @@ export function pctSequential(
  * t(-5); // 0.25
  * t(20); // 0.75
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctDiverging(
   domain: readonly [low: number, mid: number, high: number],
@@ -91,7 +91,7 @@ export function pctDiverging(
  * pctRampStop(0.5, 3); // { from: 2, to: 2, mix: 0, step: 2 }
  * pctRampStop(0.3, 8); // { from: 3, to: 4, mix: 0.1, step: 3 }
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctRampStop(t: number, steps: number): PctRampStop {
   const place = Math.min(1, Math.max(0, t)) * (steps - 1);
@@ -109,7 +109,7 @@ export function pctRampStop(t: number, steps: number): PctRampStop {
  * the farther of them, so the same hue says the same distance on both. A domain given is
  * returned as it is.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctColorDomain(
   values: ArrayLike<number>,

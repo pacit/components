@@ -187,7 +187,7 @@ export class PctTableSelection implements FormValueControl<
    * whose rows below are picked and some not has a mixed checkbox. Off by default, so a press
    * picks the one row; nothing cascades in `single` mode, nor without `pctTableTree`.
    *
-   * @since next
+   * @since 0.3.1
    */
   readonly cascade = input(false, { transform: booleanAttribute });
 

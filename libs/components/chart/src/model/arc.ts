@@ -8,7 +8,7 @@
 /**
  * A slice of a pie: its share of the total and the angles it spans.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctSliceAngles {
   readonly share: number;
@@ -23,7 +23,7 @@ const TURN = 2 * Math.PI;
  * whole turn. A value that is not a positive finite number takes no angle and a share of zero;
  * with no positive value there are no slices.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctSlices(
   values: readonly number[],
@@ -46,7 +46,7 @@ export function pctSlices(
  * `most` largest stand; the rest fold where they are two or more, since a slice of the rest
  * that holds one value would only lose its name. The indices come back in the order given.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctFoldOthers(
   values: readonly number[],
@@ -66,7 +66,7 @@ export function pctFoldOthers(
 /**
  * The point at `angle` on a circle of `radius` around (`cx`, `cy`).
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctArcPoint(
   cx: number,
@@ -82,7 +82,7 @@ export function pctArcPoint(
  * wedge when `inner` is zero. A sector of the whole turn or more is the whole ring, drawn as
  * two half arcs since one arc of a full turn draws nothing.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctArcPath(
   cx: number,
@@ -123,7 +123,7 @@ export function pctArcPath(
 /**
  * A label asked for beside the rim: where its slice's middle is and how wide its text.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctPieLabelAsk {
   readonly angle: number;
@@ -134,7 +134,7 @@ export interface PctPieLabelAsk {
  * A label placed: the start of its text and its anchor, and the leader from the rim through
  * an elbow to the text.
  *
- * @since next
+ * @since 0.3.1
  */
 export interface PctPieLabel {
   readonly index: number;
@@ -151,7 +151,7 @@ export interface PctPieLabel {
  * the box, below or beside, is dropped; the table and the legend hold what the picture does
  * not write. The `box` is the picture's, with the circle at (`cx`, `cy`).
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctPieLabels(
   asks: readonly PctPieLabelAsk[],
@@ -217,7 +217,7 @@ export function pctPieLabels(
  * The angle of a value on a gauge whose arc sweeps `sweep` radians around twelve o'clock, from
  * `min` at the left end to `max` at the right, the value held at the ends.
  *
- * @since next
+ * @since 0.3.1
  */
 export function pctGaugeAngle(
   value: number,
