@@ -392,6 +392,7 @@
         [attr.data-pct-index]="row.line"
         [attr.aria-rowindex]="rowIndex()(row.line)"
         [attr.aria-busy]="row.failed === null ? 'true' : null"
+        [attr.aria-level]="treegrid() ? row.depth : null"
         [class.pct-data-table__even]="row.index % 2 === 1"
       >
         @if (row.failed === null) { @if (order()) {
@@ -719,7 +720,7 @@
     @if (failedEmpty()) {
     <ng-container
       [ngTemplateOutlet]="failure()"
-      [ngTemplateOutletContext]="{ $implicit: 0 }"
+      [ngTemplateOutletContext]="{ $implicit: failedFirst() }"
     />
     } @else if (emptySlot(); as slot) {
     <ng-container

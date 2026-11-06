@@ -10,6 +10,9 @@ import { PctDataTable } from './data-table';
 import type { PctColumns, PctRowId } from './model/columns';
 import { pctTree, pctTreeAbove } from './model/tree';
 
+/** No row has children: the tree a list is. */
+const leaf = (): undefined => undefined;
+
 /**
  * The rows as a tree: each row's children below it, one level deeper, behind a button in its
  * first cell ([0097](../../../../docs/decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md), D12;
@@ -30,6 +33,10 @@ import { pctTree, pctTreeAbove } from './model/tree';
  *
  * **Typed by the columns.** The list is the directive's own input, as a cell template's is,
  * so `children` reads the rows of the table's type.
+ *
+ * **The children can be the server's.** With `pctTableRemote` and its `hasChildren`, a
+ * branch's children are asked for when it opens, a block at a time, under `request.parent`
+ * — the roots alone come first, however deep the tree.
  *
  * @example
  * <pct-data-table [pctTableTree]="columns" [children]="kidsOf" [(expanded)]="open" …>
@@ -55,10 +62,12 @@ export class PctTableTree<T, M extends Record<string, unknown>> {
   /**
    * A row's children; `undefined` or an empty list for a leaf. Read once per row each time
    * the rows, the filter or the sort change, so a function that builds the list is fine.
+   * Left out, every row is a leaf — unless `pctTableRemote`'s `hasChildren` says which rows
+   * the source holds children of, and then the source gives them.
    *
    * @since next
    */
-  readonly children = input.required<(row: T) => readonly T[] | undefined>();
+  readonly children = input<(row: T) => readonly T[] | undefined>(leaf);
 
   /**
    * The ids of the rows whose children are shown. A row not among them is closed, so a new

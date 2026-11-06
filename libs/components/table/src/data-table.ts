@@ -188,16 +188,26 @@ export interface PctTableFeature {
     readonly total: Signal<number>;
   };
   /**
-   * The rows come from a remote source, a block at a time: every row of the source, `undefined`
-   * where its block has not come, which the table draws as a hole; whether a block is in
-   * flight; the failed block a hole stands in, `null` while its block loads; and the
-   * component the table makes for the failure, out of the paint, with what it draws given the
-   * block — the sentence and its retry. The source has sorted and filtered them.
+   * The rows come from a remote source, a block at a time: every root of the source,
+   * `undefined` where its block has not come, which the table draws as a hole; whether a block
+   * is in flight; the failed block a hole stands in, given the list it is of and its place in
+   * it, `null` while its block loads; a tree's children, when the source holds them, a
+   * branch's list as it came, holes and all; and the component the table makes for the
+   * failure, out of the paint, with what it draws given the failed block — the sentence and
+   * its retry. The source has sorted and filtered them.
    */
   readonly remote?: {
     readonly rows: Signal<readonly unknown[]>;
     readonly loading: Signal<boolean>;
-    readonly failed: Signal<(index: number) => number | null>;
+    readonly failed: Signal<
+      (hole: {
+        readonly parent: PctRowId | null;
+        readonly at: number;
+      }) => unknown
+    >;
+    readonly children: Signal<
+      ((row: never) => readonly unknown[] | undefined) | null
+    >;
     readonly parts: Type<unknown>;
     readonly failure: Signal<TemplateRef<unknown>>;
   };
@@ -372,8 +382,10 @@ interface Hole {
   readonly key: string;
   readonly index: number;
   readonly line: number;
+  /** Its depth in a tree, from 1, as a row's. */
+  readonly depth: number;
   /** The failed block the hole stands in, or `null` while its block loads. */
-  readonly failed: number | null;
+  readonly failed: unknown;
   /** The first hole drawn of its failed block, which says so and offers the retry. */
   readonly first: boolean;
 }
@@ -1184,20 +1196,21 @@ export class PctDataTable<
   /**
    * The rows as a tree, while the tree directive is on: pruned to the filter's matches and
    * their ancestors, each list of siblings ordered by `sort`. From a remote source, the tree
-   * inside the rows it delivered, as they came.
+   * inside the rows it delivered, as they came — or, with `hasChildren`, each branch's
+   * children as the source sends them, holes and all.
    */
   protected readonly tree = computed<PctTree<T> | null>(() => {
     const feature = this.treeFeature();
     if (!feature) return null;
-    return feature.read(
-      this.remote() ? this.present() : this.rows(),
-      this.rowId(),
-      {
-        children: feature.children() as (row: T) => readonly T[] | undefined,
-        matches: this.passes() ?? undefined,
-        order: this.sorter() ?? undefined,
-      },
-    );
+    const remote = this.remote();
+    return feature.read<T>(remote ? this.given() : this.rows(), this.rowId(), {
+      // A source that holds the children hands each branch's list as it came.
+      children: (remote?.children() ?? feature.children()) as (
+        row: T,
+      ) => readonly (T | undefined)[] | undefined,
+      matches: this.passes() ?? undefined,
+      order: this.sorter() ?? undefined,
+    });
   });
 
   /** The tree with the grid: the table is a treegrid, and each row says its level and place. */
@@ -1435,7 +1448,7 @@ export class PctDataTable<
     const top = this.window()?.first() ?? start;
     const sections: Section<T>[] = [];
     let current: Section<T> | null = null;
-    let before: number | null = null;
+    let before: unknown = null;
     for (let at = start; at < end; at++) {
       const heading = headings.get(at);
       if (heading !== undefined) {
@@ -1452,12 +1465,13 @@ export class PctDataTable<
       let row: Row<T> | Hole | undefined;
       if (line.kind === 'hole') {
         // Only a remote source writes a hole, and it says which have failed.
-        const block = (failed as (index: number) => number | null)(line.index);
+        const block = (failed as NonNullable<typeof failed>)(line) ?? null;
         row = {
           kind: 'hole',
           key: pctLineKey(line),
           index: line.index,
           line: at,
+          depth: line.level + 1,
           failed: block,
           // Read only of a failed hole: the first in view of its block.
           first: block !== before ? at >= top : at === top,
@@ -1542,7 +1556,9 @@ export class PctDataTable<
     return new Map(
       tree.rows.map((row) => [
         rowId(row),
-        (tree.children(row) ?? []).map((child) => rowId(child)),
+        (tree.children(row) ?? []).flatMap((child) =>
+          child === undefined ? [] : [rowId(child)],
+        ),
       ]),
     );
   });
@@ -2162,7 +2178,7 @@ export class PctDataTable<
     if (this.lines().length > 0) return null;
     if (this.busy()) return 'loading';
     // A remote source whose first block failed has no hole to say so in.
-    if (this.remote()?.failed()(0) === 0) return 'failed';
+    if (this.failedFirst() !== null) return 'failed';
     return pctQuestionWords(this.filter()).length > 0 || this.given().length > 0
       ? 'no-matches'
       : 'empty';
@@ -2171,6 +2187,11 @@ export class PctDataTable<
   /** The first block of a remote source failed: the message offers its retry. */
   protected readonly failedEmpty = computed(
     () => this.emptiness() === 'failed',
+  );
+
+  /** The failure of a remote source's first block of roots, `null` while it has none. */
+  protected readonly failedFirst = computed(
+    () => this.remote()?.failed()({ parent: null, at: 0 }) ?? null,
   );
 
   protected readonly message = computed(() => {
