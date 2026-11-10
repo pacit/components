@@ -148,6 +148,7 @@ const ENGLISH: PctTexts = {
   tableTo: '{column} to',
   tableColumnMenu: 'Options for {column}',
   tableResize: 'Resize {column}',
+  tableWidth: '{width} pixels',
   tableMoveStart: 'Move left',
   tableMoveEnd: 'Move right',
   tablePinStart: 'Pin to the start',

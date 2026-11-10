@@ -382,7 +382,11 @@ describe('PctTableColumns — the table laid out', () => {
   it('says a width of its own, or the share the table drew, in the separator', async () => {
     await render(Host);
     expect(separator('Room').getAttribute('aria-valuenow')).toBe('150');
+    expect(separator('Room').getAttribute('aria-valuetext')).toBe('150 pixels');
     expect(separator('Power').getAttribute('aria-valuenow')).toBe('130');
+    expect(separator('Power').getAttribute('aria-valuetext')).toBe(
+      '130 pixels',
+    );
   });
 
   it('reads the widths again when the table is resized, rounding a share to the pixel', async () => {
@@ -677,6 +681,7 @@ describe('PctTableColumns — the separator', () => {
     await press(fixture, separator('Room'), 'ArrowLeft');
     expect(fixture.componentInstance.layout().widths).toEqual({ room: 182 });
     expect(separator('Room').getAttribute('aria-valuenow')).toBe('182');
+    expect(separator('Room').getAttribute('aria-valuetext')).toBe('182 pixels');
     const other = await press(fixture, separator('Room'), 'ArrowUp');
     expect(other.defaultPrevented).toBe(false);
     expect(fixture.componentInstance.layout().widths).toEqual({ room: 182 });
