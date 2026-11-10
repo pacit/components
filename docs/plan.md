@@ -118,7 +118,7 @@ field (**1.4**) on 2026-10-12, as
 and the time panel's shape follow
 [0089](decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) of
 2026-10-08, the wheel first, and its runway was measured and written on 2026-10-14
-([0091](decisions/0091-the-rings-runway-is-the-cycle-three-times-in-the-tree.md)). Section 3 holds nothing since `0.2.0`. Section 4 holds seven open
+([0091](decisions/0091-the-rings-runway-is-the-cycle-three-times-in-the-tree.md)). Section 3 holds nothing since `0.2.0`. Section 4 holds six open
 findings, each held by a **binds at** rather than by anybody's mood.
 
 ## 1. Components
@@ -205,26 +205,17 @@ form exists and is a condition of entering a release. Forty-two cards are filled
     be a second name for the same call
   - three suites, one of them a sweep over seven zones; 177 mutants, every one killed
 
-- [~] **1.2 — the table** in `@pacit/components/table`, in two layers drawn by who writes the
-  rows, both under MIT ([0095](decisions/0095-every-component-is-mit-and-the-order-is-what-a-consumer-needs.md))
-  - `table[pctTable]` landed with [0096](decisions/0096-a-table-is-the-consumers-markup-or-the-librarys-rows.md);
-    `pct-data-table` is one typed engine that grows into a grid by directives
-    ([0097](decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md)), its window opt-in above 8,000 cells, drawn by the body's pseudo-elements
-    ([0098](decisions/0098-a-tables-window-is-opt-in-and-the-rows-it-skips-are-two-pseudo-rows.md))
-  - landed: the pure engine (typed columns, the order of several keys, the quick filter by
-    words, lines, the window over measured heights), then v1 on it — typed cell, header and
-    empty slots, Shift for a second key, `matched`, empty and loading states beside the table,
-    `scrolled`, `visible`, `scrollTo`; its card, `/datatable` in three engines; rows that say
-    more — stripes, numbers, tones by value or row, a cut cell's tooltip, marked matches,
-    a flash on a changed value; a harness that reads rows, a later key a reader hears, the
-    slots' types held in a consumer's build; a row's details, and columns that give way on a
-    narrow frame by priority; groups as bodies headed by rowgroup headers, columns summed up;
-    the rows picked as a field of a form
-  - phases, one pull request each, after it: the window to a million rows; the server's pages
-    and blocks; then column filters, the column layout as state, `role="grid"` with the keys,
-    editing in a cell, the clipboard, CSV and xlsx, the tree, header groups, pinned rows, the
-    row menu, a window over columns
-  - ends with: both cards, the sandbox in three engines, the readers' walk
+- [x] **1.2 — the table** in `@pacit/components/table` — **closed 2026-11-10**
+  - two layers drawn by who writes the rows, both under MIT: `table[pctTable]`
+    ([0096](decisions/0096-a-table-is-the-consumers-markup-or-the-librarys-rows.md)) and one typed
+    engine, `pct-data-table`, that grows into a grid by directives
+    ([0097](decisions/0097-a-data-table-is-a-typed-engine-under-the-first-layer-and-grows-into-a-grid-by-directives.md))
+  - v1 and fifteen phases after it, each its own pull request: the window to a million rows, the
+    server's pages, blocks, tree and groups, column filters and layout, the grid, editing, the
+    clipboard and the exports, the tree, header groups, pinned rows, the row menu
+  - both cards, `/datatable` in three engines, and the readers' walk of 2026-11-10 in ten of its
+    demos: a branch's button heard without its row by Orca and VoiceOver now carries it
+  - a window over columns waits for a consumer with hundreds of them, as 0097 accepted
 
 - [x] **1.9 — the card** `pct-card` in `@pacit/components/card` — **closed 2026-11-02**
   - a header of an icon, the title with its subtitle and actions, a body, and a footer of a
@@ -405,14 +396,9 @@ and every one is held by a **binds at** rather than by anybody's mood.
     Angular 22.2's `min()` and `max()` take numbers, and the rule a string bound would need is
     measured with the time field, which ships it with a case or not at all
 
-- [ ] **4.84 — the readers' log quotes the data table's Polish**
-  - `/datatable` formats its relative times with `locale="pl"` on purpose, and on 2026-11-02
-    NVDA read the frame of the scrolling table whole for the first time, a Polish relative time
-    included; `tools/language.policy.json` excused the verbatim log until the walk of 2026-11-04
-    read the frame as a region and nothing behind it, and the dead entry left
-  - the fix is the view's: a locale that writes no Polish word — `de` or `fr`, whose relative
-    times are the third language a record may quote — before a walk reads the frame whole
-  - binds at: **the next readers' walk**, whose log is written by the view as it then stands
+- [x] **4.84 — the readers' log quotes the data table's Polish** — **closed 2026-11-10**
+  - `/datatable`'s tables that wrote Polish relative times write French ones, the third
+    language a record may quote; the walk of 2026-11-10 read the frames and quoted none
 
 - [ ] **4.81 — the warning line is not heard on the stop it appears**
   - the dispatched pass on `/field` (2026-10-08, run 37733848017, the first reading of 0087's
