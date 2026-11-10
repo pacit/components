@@ -1362,6 +1362,7 @@ test.describe('PctTableColumns — the columns as the user lays them out', () =>
     await room.focus();
     await page.keyboard.press('ArrowRight');
     await expect(room).toHaveAttribute('aria-valuenow', '158');
+    await expect(room).toHaveAttribute('aria-valuetext', '158 pixels');
     await page.keyboard.press('Shift+ArrowRight');
     await expect(room).toHaveAttribute('aria-valuenow', '190');
     await page.keyboard.press('ArrowLeft');

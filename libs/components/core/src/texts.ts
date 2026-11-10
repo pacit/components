@@ -431,6 +431,11 @@ export interface PctTexts {
   /** Data table: the name of a column's separator, which sets its width. `{column}` stands for its header. */
   readonly tableResize: string;
   /**
+   * Data table: what a reader says of a separator's value, the column's width.
+   * `{width}` stands for it in CSS pixels.
+   */
+  readonly tableWidth: string;
+  /**
    * Data table: the command of a column's menu that moves it one place towards the start of
    * the line, the left in a left-to-right language; a right-to-left language's text says right.
    */
@@ -610,6 +615,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   tableTo: '{column} to',
   tableColumnMenu: 'Options for {column}',
   tableResize: 'Resize {column}',
+  tableWidth: '{width} pixels',
   tableMoveStart: 'Move left',
   tableMoveEnd: 'Move right',
   tablePinStart: 'Pin to the start',

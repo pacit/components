@@ -92,6 +92,7 @@
     aria-orientation="vertical"
     [attr.aria-label]="resizeOf(column)"
     [attr.aria-valuenow]="widthOf(column)"
+    [attr.aria-valuetext]="widthTextOf(column)"
     [attr.aria-valuemin]="boundsOf(column).min"
     [attr.aria-valuemax]="boundsOf(column).max"
     (keydown)="key(column, $event)"

@@ -66,7 +66,7 @@ const LINKS = /* @__PURE__ */ new WeakMap<object, Link>();
  *
  * **The separator is the APG's window splitter**
  * (https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/): `role="separator"`, its width
- * in `aria-valuenow`, the arrows move it by 8 px and by 32 with Shift, a pointer drags it,
+ * in `aria-valuenow` and said with its unit in `aria-valuetext`, the arrows move it by 8 px and by 32 with Shift, a pointer drags it,
  * and a double press fits the column to what it draws. The menu is the APG's menu button,
  * keyboard first: it moves the column one place towards either end, pins it to an edge or
  * takes it off, fits it, hides it. A column pinned to an edge stays there while the rest scroll
@@ -258,6 +258,13 @@ export class PctTableColumnParts {
   /** The separator's name: what it resizes. */
   protected resizeOf(column: PctAnyColumn<unknown>): string {
     return this.texts().tableResize.replace('{column}', () => column.header);
+  }
+
+  /** The separator's value as a reader says it: the width with its unit, not a bare number. */
+  protected widthTextOf(column: PctAnyColumn<unknown>): string {
+    return this.texts().tableWidth.replace('{width}', () =>
+      String(this.widthOf(column)),
+    );
   }
 
   /** The edge the column is pinned to. */
