@@ -707,7 +707,7 @@ the section: `activate`, `Escape` in `demo-filters`, to read a column's filter (
 
 the section: `Space` in `demo-filters`, to read the switch that draws the row of filters (the keys belong to `datatable.spec.ts › a row of filters under the headers, each control named by its column`).
 
-the section:  in `demo-filters`, to read the row of filters (the keys belong to `datatable.spec.ts › a row of filters under the headers, each control named by its column`).
+the section: in `demo-filters`, to read the row of filters (the keys belong to `datatable.spec.ts › a row of filters under the headers, each control named by its column`).
 
 The cap bit here: 12 stops of this view's own were read, and it has more.
 
