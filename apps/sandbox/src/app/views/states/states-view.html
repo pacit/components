@@ -53,6 +53,15 @@
       <pct-slider [(value)]="budget" data-testid="idle-slider" />
     </pct-field>
 
+    <pct-field label="Weekday">
+      <pct-wheel
+        [options]="days"
+        [(value)]="day"
+        rows="3"
+        data-testid="idle-wheel"
+      />
+    </pct-field>
+
     <pct-field label="Starts on">
       <pct-date [(value)]="startsOn" data-testid="idle-date" />
     </pct-field>
@@ -122,6 +131,16 @@
 
     <pct-field label="Budget">
       <pct-slider [value]="40" disabled data-testid="disabled-slider" />
+    </pct-field>
+
+    <pct-field label="Weekday">
+      <pct-wheel
+        [options]="days"
+        value="tue"
+        rows="3"
+        disabled
+        data-testid="disabled-wheel"
+      />
     </pct-field>
 
     <pct-field label="Starts on">
@@ -202,6 +221,16 @@
 
     <pct-field label="Budget">
       <pct-slider [value]="40" readonly data-testid="readonly-slider" />
+    </pct-field>
+
+    <pct-field label="Weekday">
+      <pct-wheel
+        [options]="days"
+        value="tue"
+        rows="3"
+        readonly
+        data-testid="readonly-wheel"
+      />
     </pct-field>
 
     <pct-field label="Starts on">
@@ -309,6 +338,18 @@
         [touched]="true"
         [errors]="errors"
         data-testid="invalid-slider"
+      />
+    </pct-field>
+
+    <pct-field label="Weekday">
+      <pct-wheel
+        [options]="days"
+        value="tue"
+        rows="3"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-wheel"
       />
     </pct-field>
 

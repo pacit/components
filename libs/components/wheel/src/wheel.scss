@@ -1,0 +1,254 @@
+/* The wheel is as wide as its widest row and stands in a line of text, so that several of
+   them — the fields of one value — sit side by side without a rule of their own. The two
+   private properties are the geometry everything below is written in: the height of a row,
+   which follows the size, and the distance from the edge of the list to the line, which is
+   the rows above it. */
+:host {
+  --_pct-wheel-row: var(--pct-wheel-option-height);
+  --_pct-wheel-edge: calc(
+    var(--_pct-wheel-row) * (var(--_pct-wheel-rows) - 1) / 2
+  );
+
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-family: inherit;
+  color: var(--pct-wheel-fg);
+}
+
+:host([data-pct-size='sm']) {
+  --_pct-wheel-row: var(--pct-wheel-option-height-sm);
+}
+
+:host([data-pct-size='lg']) {
+  --_pct-wheel-row: var(--pct-wheel-option-height-lg);
+}
+
+.pct-wheel__label {
+  color: var(--pct-wheel-label-fg);
+  font-size: var(--pct-font-size-sm);
+  font-weight: var(--pct-font-weight-medium);
+}
+
+.pct-wheel__required {
+  color: var(--pct-wheel-fg-invalid);
+  margin-inline-start: 2px;
+}
+
+/* The list and the band share this box: the band is placed against it, and `isolation` keeps
+   the pair's stacking order — the rows over the band — a matter between the two of them. */
+.pct-wheel__view {
+  position: relative;
+  isolation: isolate;
+  min-inline-size: var(--pct-wheel-min-width);
+}
+
+/* The listbox and the element that scrolls. The snap is mandatory, so the scroll never rests
+   between two rows, and the bar is hidden: the rows themselves say where the list stands.
+   `overscroll-behavior` keeps a wheel that reaches the end of a list from scrolling the page
+   under it. An odd count of rows gives the line a row to stand on (0089).
+
+   The mask fades the rows towards the two edges, from the line outwards. It is a mask and not
+   a gradient laid over the rows because the wheel does not know what it stands on — a card, a
+   panel, a page — and a mask needs no colour of the surface behind it. The band is another
+   element, so it is not faded with them. */
+.pct-wheel__list {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  block-size: calc(var(--_pct-wheel-row) * var(--_pct-wheel-rows));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / var(--pct-wheel-edge-alpha)),
+    #000 var(--_pct-wheel-edge),
+    #000 calc(100% - var(--_pct-wheel-edge)),
+    rgb(0 0 0 / var(--pct-wheel-edge-alpha))
+  );
+}
+
+/* The focus is on the list, and the band carries the ring (below). */
+.pct-wheel__list:focus {
+  outline: none;
+}
+
+/* The room above the first row and under the last one, so that both can come to the line.
+   Pseudo-elements and not padding: every engine counts a box in the flow into the scroll's
+   length, and they are no element — the first child of the list is its first row. */
+.pct-wheel__list::before,
+.pct-wheel__list::after {
+  content: '';
+  display: block;
+  block-size: var(--_pct-wheel-edge);
+}
+
+.pct-wheel__option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  block-size: var(--_pct-wheel-row);
+  padding-inline: var(--pct-wheel-option-padding-x);
+  font-size: var(--pct-wheel-option-font-size);
+  /* The digits of a wheel line up with the rows above and below them. */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  /* A row rests with its centre on the line's. `normal` and not `always`: a fling runs over
+     the rows it passes instead of stopping on the next one (0091 §3). */
+  scroll-snap-align: center;
+  scroll-snap-stop: normal;
+}
+
+:host([data-pct-size='sm']) .pct-wheel__option {
+  font-size: var(--pct-wheel-option-font-size-sm);
+}
+
+:host([data-pct-size='lg']) .pct-wheel__option {
+  font-size: var(--pct-wheel-option-font-size-lg);
+}
+
+/* The chosen row — and, with no value, the row under the line is NOT this one: it stands in
+   the band in the colour of every other row until a gesture chooses it. */
+.pct-wheel__option[data-pct-chosen] {
+  color: var(--pct-wheel-option-fg-selected);
+  font-weight: var(--pct-wheel-option-font-weight-selected);
+}
+
+/* A refused row that is also the chosen one — a value the form wrote — keeps the chosen
+   colour: `aria-disabled` still says it, and the cursor does. */
+.pct-wheel__option[data-pct-disabled] {
+  cursor: not-allowed;
+}
+
+.pct-wheel__option[data-pct-disabled]:not([data-pct-chosen]) {
+  color: var(--pct-wheel-option-fg-disabled);
+}
+
+/* The line: a band one row high where the middle row rests. It stands under the rows and
+   takes no pointer — a click in it is a click on the row over it. */
+.pct-wheel__band {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: var(--_pct-wheel-edge);
+  box-sizing: border-box;
+  block-size: var(--_pct-wheel-row);
+  border: 1px solid var(--pct-wheel-band-border);
+  border-radius: var(--pct-wheel-band-radius);
+  background: var(--pct-wheel-band-bg);
+  pointer-events: none;
+}
+
+/* The keyboard's ring, on the band: a ring around the list would be cut by the list's own
+   mask, and the row the keyboard stands on is the one in the band. */
+.pct-wheel__list:focus-visible + .pct-wheel__band {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+:host([data-pct-invalid]) .pct-wheel__band {
+  border-color: var(--pct-wheel-band-border-invalid);
+}
+
+/* A wheel that does not turn: the scroll is the list's still — the wheel centres its row by
+   it — and no gesture reaches it. */
+:host([data-pct-disabled]) .pct-wheel__list,
+:host([data-pct-readonly]) .pct-wheel__list {
+  overflow-y: hidden;
+}
+
+:host([data-pct-disabled]) .pct-wheel__option {
+  color: var(--pct-wheel-option-fg-disabled);
+  cursor: not-allowed;
+}
+
+:host([data-pct-readonly]) .pct-wheel__option {
+  cursor: default;
+}
+
+.pct-wheel__hint {
+  color: var(--pct-wheel-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-wheel__error {
+  color: var(--pct-wheel-fg-invalid);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* The warning line (0087): the tone's colour and its glyph before the text — the same third
+   branch the chrome draws, and the glyph is the channel that survives the palette's absence
+   (`req-a11y-forced-colors`). An inline flex, so the glyph sits on the first line of a
+   sentence that may wrap; the icon takes the text's own size, `pct-icon` being `1em`. */
+.pct-wheel__warning {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--pct-space-2);
+  color: var(--pct-wheel-fg-warning);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-wheel__warning-icon {
+  align-self: center;
+}
+
+/* The word a reader hears before the warning, kept in the accessibility tree by a clipped
+   1px box — `display: none` would take it out of the tree. */
+.pct-wheel__sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Forced-colors mode — every base rule with a colour repeated at its own specificity, because
+   `@media` adds none (lesson-70). The fade goes: a row drawn at part of its strength is a
+   contrast the mode exists to refuse. The chosen row takes the mode's own pair for a
+   selection, the band keeps its edge in the text's colour, the ring is `Highlight`, and a
+   refused row is `GrayText`. */
+@media (forced-colors: active) {
+  .pct-wheel__list {
+    mask-image: none;
+  }
+
+  .pct-wheel__option {
+    color: CanvasText;
+  }
+
+  .pct-wheel__option[data-pct-chosen] {
+    background: SelectedItem;
+    color: SelectedItemText;
+  }
+
+  .pct-wheel__option[data-pct-disabled]:not([data-pct-chosen]) {
+    color: GrayText;
+  }
+
+  .pct-wheel__band {
+    border-color: CanvasText;
+    background: Canvas;
+  }
+
+  .pct-wheel__list:focus-visible + .pct-wheel__band {
+    outline-color: Highlight;
+  }
+
+  :host([data-pct-invalid]) .pct-wheel__band {
+    border-color: CanvasText;
+  }
+
+  :host([data-pct-disabled]) .pct-wheel__option {
+    color: GrayText;
+  }
+
+  /* `GrayText` on the selection's surface is a pair the mode does not promise. */
+  :host([data-pct-disabled]) .pct-wheel__option[data-pct-chosen] {
+    background: Canvas;
+  }
+}

@@ -326,6 +326,53 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * The wheel says three things by colour and one by opacity: the row on the line, the chosen
+   * row's ink, a row that cannot be chosen — and the rows fading towards the edges, which is
+   * the mask. After the swap the mask is gone (a row at part of its strength is a contrast the
+   * mode exists to refuse), the chosen row takes the mode's own pair for a selection, the
+   * keyboard's ring on the band is `Highlight`, and a refused row says `GrayText`.
+   */
+  test('the wheel drops its fade and keeps the chosen row, the ring and a refused row apart', async ({
+    page,
+  }) => {
+    await visit(page, '/wheel', { media: FORCED });
+    const sys = await systemColors(page);
+    const wheel = page.getByTestId('wheel-day');
+    const list = wheel.getByRole('listbox');
+
+    expect(await styleOf(list, 'mask-image')).toBe('none');
+
+    const chosen = wheel.getByRole('option', { selected: true });
+    await expect(chosen).toHaveText('Wednesday');
+    expect(await styleOf(chosen, 'background-color')).toBe(sys.SelectedItem);
+    expect(await styleOf(chosen, 'color')).toBe(sys.SelectedItemText);
+    expect(sys.SelectedItemText).not.toBe(sys.SelectedItem);
+
+    const idle = wheel.getByRole('option', { name: 'Tuesday' });
+    expect(await styleOf(idle, 'color')).toBe(sys.CanvasText);
+    const refused = wheel.getByRole('option', { name: 'Saturday' });
+    expect(await styleOf(refused, 'color')).toBe(sys.GrayText);
+    expect(sys.GrayText).not.toBe(sys.CanvasText);
+
+    // The band keeps an edge once its fill is the page's own surface, and carries the ring.
+    const band = wheel.locator('[data-pct-part="band"]');
+    expect(await styleOf(band, 'border-top-color')).toBe(sys.CanvasText);
+    await list.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(wheel.getByRole('option', { selected: true })).toHaveText(
+      'Thursday',
+    );
+    expect(await styleOf(band, 'outline-style')).toBe('solid');
+    expect(await styleOf(band, 'outline-color')).toBe(sys.Highlight);
+
+    // A wheel that is off says so in every row, the chosen one included.
+    const off = page.getByTestId('wheel-disabled');
+    const offChosen = off.getByRole('option', { selected: true });
+    expect(await styleOf(offChosen, 'color')).toBe(sys.GrayText);
+    expect(await styleOf(offChosen, 'background-color')).toBe(sys.Canvas);
+  });
+
+  /**
    * The datetime field says a half is not one by a SHAPE — the row's edge drawn twice as thick,
    * the date and the time fields' own answer — because the error's colour is exactly what this
    * mode takes away; and its panel, a dialog over the page, keeps an edge of the system's own

@@ -19,6 +19,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctRadioGroup`](radio.md)      | `@pacit/components/radio`      | group of mutually exclusive options       |
 | [`PctSwitch`](switch.md)         | `@pacit/components/switch`     | a setting that takes effect at once       |
 | [`PctSlider`](slider.md)         | `@pacit/components/slider`     | a position on a numeric continuum         |
+| [`PctWheel`](wheel.md)           | `@pacit/components/wheel`      | one value turned under a line             |
 | [`PctDate`](date.md)             | `@pacit/components/date`       | a calendar day, typed or picked           |
 | [`PctCalendar`](calendar.md)     | `@pacit/components/date`       | one month of days as a grid               |
 | [`PctTime`](time.md)             | `@pacit/components/time`       | a wall-clock time, typed or picked        |

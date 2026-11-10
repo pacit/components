@@ -118,4 +118,24 @@ export const SECTIONS: Readonly<Record<string, readonly Section[]>> = {
         'chart.spec.ts › a reading added at the end is drawn, and the window follows the meter',
     },
   ],
+  // A wheel's listbox is a Tab stop the walk does reach — and all it hears there is the
+  // arrival. What a reader says when the LINE moves is the component, so the keys are pressed.
+  '/wheel': [
+    {
+      block: 'demo-list',
+      what: 'the row a key brings to the line',
+      on: '[role="listbox"]',
+      keys: ['ArrowDown', 'ArrowDown', 'End'],
+      owner:
+        'wheel.spec.ts › a key moves the line, the row becomes the value, and the scroll follows',
+    },
+    {
+      block: 'demo-ring',
+      what: 'a ring coming round at its ends',
+      on: '[role="listbox"]',
+      keys: ['Home', 'ArrowUp'],
+      owner:
+        'wheel.spec.ts › the keys come round at the ends, and the scroll is put back on the middle turn',
+    },
+  ],
 };

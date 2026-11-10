@@ -1,0 +1,161 @@
+# `PctWheel` — wheel
+
+**Summary:** One value chosen by turning a list under a line — the row that comes to rest there is the value.
+**Entrypoint:** `@pacit/components/wheel`
+**Selector:** `pct-wheel`
+**Status:** released
+**Category:** Choices
+**ARIA APG pattern:** [Listbox](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/) — one tab
+stop that points at its row with `aria-activedescendant`, on a list the platform scrolls.
+Named in the class JSDoc.
+
+**A second control for a value the select already holds.** The item shape, `compareWith` and
+`T | null` are the select's, so a list of options moves from one to the other by changing
+the tag — a select folds the list into a panel, a wheel leaves it standing where a finger
+turns it ([0089](../decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md)).
+It is for a short list read in order, and above all for a cycle: hours, minutes, weekdays.
+
+## Usage
+
+```html
+<pct-wheel label="Weekday" [options]="weekdays" [formField]="form.day" />
+```
+
+## Contract
+
+|                 |                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value**       | `T \| null` through `value` (`model`); `T` is inferred from `options`, and entities are matched by `compareWith` ([`req-api-generic`](../requirements/api.md#req-api-generic))                                                                                                                                                   |
+| **Inputs**      | `value` (`model`), `options`, `compareWith`, `wrap`, `rows`, `size`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, `warnings` ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)), plus `FormUiControl`                                                                                                       |
+| **Options**     | `PctWheelOption<T>` — `value`, `label`, `disabled`. The select's item shape, flat: a heading does not snap under a line, so a wheel has no groups. A `disabled` row is drawn, `aria-disabled`, passed over by the keys, refused by a click, and a scroll that settles on it goes on to the nearest row that can be chosen        |
+| **Writes**      | **only a gesture** — a key, a click, a wheel, a finger. The row the scroll settles on becomes the value; the wheel's own centring, when it opens or when the form writes, writes nothing. With no value the line holds the first row, **active and not chosen**, until somebody turns it or presses `Enter`                      |
+| **Ring**        | `wrap` — the keys and the scroll come round at the ends. The rows stand three times in the tree and the scroll is put back on the middle turn each time it settles; the outer two turns are `aria-hidden` and carry no id ([0091](../decisions/0091-the-rings-runway-is-the-cycle-three-times-in-the-tree.md))                   |
+| **Rows**        | `rows` — how many the wheel shows, `5` by default. The line is the middle row, so an even count takes the next odd one. The height is that many rows of `--pct-wheel-option-height`, never a length of its own                                                                                                                   |
+| **Travel**      | a value written from outside travels to the line smoothly where the motion axis has a duration and is placed at once where it has none — `prefers-reduced-motion`, or a scope that sets `--pct-motion-transition-duration` to `0s`. The opening is always a placement                                                            |
+| **Naming**      | `label`, or `ariaLabel` / `ariaLabelledby` as **inputs**: the role sits on the list inside, and an ARIA name on the roleless host would be ignored. Inside `pct-field` the wrapper names it by `aria-labelledby` — a listbox is no native control a `<label for>` could name                                                     |
+| **Name**        | `name` is written on the listbox, where the select writes it on its trigger. A wheel is no native control, so nothing is submitted under it                                                                                                                                                                                      |
+| **Parts**       | `label`, `view`, `list`, `option`, `band`, `hint`, `warning`, `error`                                                                                                                                                                                                                                                            |
+| **Reset**       | `reset()` takes nothing back — the row under the line is the value — and it never writes the value, so a signal form's `reset()` keeps the value the form holds, `reset(value)` shows that one, and the form comes out of its reset pristine ([0092](../decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md)) |
+| **Harness**     | `PctWheelHarness`                                                                                                                                                                                                                                                                                                                |
+| **Tokens**      | `--pct-wheel-*` — 21, a tier of its own                                                                                                                                                                                                                                                                                          |
+| **Strings**     | none of its own. The rows' text is the consumer's; the hidden word before a warning is the field's `fieldWarning`                                                                                                                                                                                                                |
+| **DI contract** | `PCT_FIELD`, `PCT_CONFIG`, `PCT_TEXTS`; `fieldAppearance: 'bare'` — the wheel draws its own line, and a field's border around it would be a second frame                                                                                                                                                                         |
+
+**The scroll is the platform's, and that is the whole design.** The list is an element with
+`overflow-y: auto` and `scroll-snap-type: y mandatory`; every row snaps to the centre. A
+finger's flick, its inertia, a trackpad, a mouse wheel and a reader's own gestures are the
+engine's, and the wheel reads one thing off them — the row under the line when `scrollend`
+says the scroll has settled. There is no pointer handler that moves the rows, no animation
+frame and no physics of ours.
+
+**The line is a band that stands still.** It is drawn by an element under the list, so the
+rows travel over it; the rows fade towards the two edges through a mask, which needs no
+colour of the surface behind it. The keyboard's ring is drawn on the band and not on the
+list the mask would cut — the row the listbox points at is always the one in it.
+
+## Parts
+
+| part      | what it is                                                                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`   | the label of the control                                                                                                                                  |
+| `view`    | the window: the list and the band under it                                                                                                                |
+| `list`    | the listbox — the one tab stop, and the element that scrolls                                                                                              |
+| `option`  | one row; `data-pct-chosen`, `data-pct-active` and `data-pct-disabled` on it                                                                               |
+| `band`    | the line the rows come to rest on — and what carries the keyboard's ring                                                                                  |
+| `hint`    | the hint under the control                                                                                                                                |
+| `error`   | the message when invalid                                                                                                                                  |
+| `warning` | the message when the value is allowed and suspect — after the error, before the hint ([0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md)) |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-wheel-band-bg: #ccfbf1;
+  --pct-wheel-band-border: #0f766e;
+  --pct-wheel-option-fg-selected: #134e4a;
+  --pct-wheel-option-height: 40px;
+}
+```
+
+## Keyboard map
+
+| key                     | effect                                                                                          | test                                      |
+| ----------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `ArrowDown` / `ArrowUp` | the next / previous row that can be chosen; round the ends with `wrap`                          | `apps/sandbox-e2e/src/wheel.spec.ts`      |
+| `PageDown` / `PageUp`   | as many rows as the wheel shows                                                                 | `libs/components/wheel/src/wheel.spec.ts` |
+| `Home` / `End`          | the first / last row that can be chosen                                                         | `apps/sandbox-e2e/src/wheel.spec.ts`      |
+| a character             | the next row whose text begins with what was typed                                              | `apps/sandbox-e2e/src/wheel.spec.ts`      |
+| `Enter` / `Space`       | takes the row under the line as it stands — what chooses the first row of a wheel with no value | `libs/components/wheel/src/wheel.spec.ts` |
+| `Tab`                   | leaves the wheel — one stop, the rows are never focusable                                       | `libs/components/wheel/src/wheel.spec.ts` |
+
+Every key that moves the line moves the VALUE: a wheel has no cursor apart from its choice,
+because the row under the line is the choice. A key that moves nothing writes nothing — an
+arrow at the end of a list that is no ring, a character no row begins with — and that
+character, like a key with `Ctrl`, `Meta` or `Alt`, is left to the page. A disabled wheel
+and a read-only one take no key; the read-only one stays a tab stop.
+
+## Checks
+
+| criterion                       | evidence                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARIA APG pattern in the JSDoc   | `libs/components/wheel/src/wheel.ts` — the pattern is named and linked in the class comment                                                                                                                                                                                                                                                                    |
+| Keyboard map                    | `libs/components/wheel/src/wheel.spec.ts` key by key, and `apps/sandbox-e2e/src/wheel.spec.ts` — the keys with the scroll following them, in three engines                                                                                                                                                                                                     |
+| axe audit                       | `apps/sandbox-e2e/src/a11y.spec.ts` — the `/wheel` view and `/all`, in both directions. The listbox is the element that scrolls AND the one that holds the focus, so `scrollable-region-focusable` has nothing to say                                                                                                                                          |
+| Visual screenshot               | `apps/sandbox-e2e/src/visual.spec.ts` — `wheel-list` and `wheel-states`                                                                                                                                                                                                                                                                                        |
+| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts` — the fade goes (a row at part of its strength is a colour the palette did not choose), the chosen row takes `SelectedItem` / `SelectedItemText`, the band's edge `CanvasText`, the keyboard's ring `Highlight` and a refused row `GrayText`                                                                      |
+| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/wheel.spec.ts` — a written value is PLACED under the preference and travels without it; the behaviour is read off `--pct-motion-transition-duration` by `pctScrollBehavior` (`libs/components/core/src/core.spec.ts`), because a scroll is not a transition a token could shorten                                                        |
+| Touch target ≥ 24×24 px         | `apps/sandbox-e2e/src/wheel.spec.ts` — a row is `--pct-wheel-option-height` (32 px at `md`, 28 at `sm`, 36 at `lg`) across a wheel at least `--pct-wheel-min-width` (56 px) wide; the heights are read off three wheels                                                                                                                                        |
+| Size axis                       | `--pct-wheel-option-height-sm` / `-lg` and the font sizes beside them; the wheel's height is `rows` of them, so it is a count and never a length                                                                                                                                                                                                               |
+| Density axis                    | none — gap ([`req-token-density`](../requirements/tokens.md#req-token-density))                                                                                                                                                                                                                                                                                |
+| RTL                             | `tools/check-styles.mjs` (point 5, [`req-token-logical`](../requirements/tokens.md#req-token-logical)) — logical properties only, and nothing to mirror: the rows are centred and the wheel turns on the block axis, so it has no `-rtl` baseline by the rule `visual.spec.ts` states for symmetric cards                                                      |
+| SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts` — the `/wheel` view is in `SBX_ROUTES`; the rows render on the server and the centring waits for the browser                                                                                                                                                                                                          |
+| Forms                           | `libs/components/wheel/src/wheel.spec.ts` — signal forms, `[formControl]` and `[(ngModel)]`; a form's reset — `reset()` keeping the value, `reset(value)` showing it, the form pristine. `apps/sandbox-e2e/src/wheel.spec.ts` — the error waiting for the wheel to be left; `apps/sandbox-e2e/src/states.spec.ts` — the four states beside every other control |
+| Message announced               | `tools/check-aria.mjs` (point 7, target `check-aria`) — the error part carries `role="alert"`, the warning `role="status"`                                                                                                                                                                                                                                     |
+| Parts in the inventory          | `libs/components/parts.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`)                                                                                                                                                                                                                                                                            |
+| Tokens + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json` — 10 pairs: the row, the row at the edge's alpha, the row and the chosen row on the band, the refused row, the band's edge in both states, the label, the hint and the message                                                                                                                                          |
+| Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — no key of its own; `fieldWarning` is the field's                                                                                                                                                                                                                                                                                     |
+| Size budget                     | `libs/components/size.snapshot.md`, `tools/check-bundle.mjs` (target `check-bundle`)                                                                                                                                                                                                                                                                           |
+| Screen-reader log               | none — gap: the walk of `/wheel` is dispatched on this pull request and read into this row before it merges                                                                                                                                                                                                                                                    |
+| docs page                       | `/components/wheel` on the published site — prerendered, the demo's own source is the code tab                                                                                                                                                                                                                                                                 |
+
+## The edge is a mask, and the policy holds its weakest row
+
+A row away from the line is drawn through a mask that falls to `--pct-wheel-edge-alpha`
+(60%) at the two edges. A mask is not `opacity` on a state — nothing here says _disabled_ by
+being faint ([`req-token-no-opacity`](../requirements/tokens.md#req-token-no-opacity)) — but
+it does thin the text, so the pair is in `contrast.policy.json` as what it is: the row's
+colour at 60% over the surface, **4.70:1** in the light theme and 7.00:1 in the dark one.
+The row on the line is never masked: 16.3:1 on the band, the chosen one 6.12:1.
+
+## Decisions
+
+[0089](../decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) (a
+value can have more than one control; the wheel is a listbox on the platform's scroll),
+[0091](../decisions/0091-the-rings-runway-is-the-cycle-three-times-in-the-tree.md) (the
+ring's runway is the cycle three times in the tree),
+[0032](../decisions/0032-a-menu-moves-focus-a-listbox-points-at-it.md) (the listbox points
+at its row), [0092](../decisions/0092-a-controls-reset-takes-back-what-the-form-cannot-see.md),
+[0087](../decisions/0087-a-warning-is-a-verdict-without-a-veto.md),
+[0005](../decisions/0005-signal-forms-without-cva.md),
+[0003](../decisions/0003-wrapper-and-control.md)
+
+## Known limitations
+
+- **It needs `scrollend`.** The value is read when the scroll has settled, and the wheel
+  listens for nothing else — no timer guessing at the end of a fling. Every engine the
+  library is measured in has the event (0089); in one that has not, the keys and a click
+  still choose, and a scroll moves the rows without writing.
+- **`wrap` is for a cycle, and costs its rows three times.** Sixty minutes are 180 rows in
+  the tree, two thirds of them hidden from a reader. A long list that is no cycle — countries,
+  a year of days — does not want a ring, and at that length wants a `PctSelect` with its
+  filter instead of a wheel.
+- **How far one gesture goes is the engine's.** `scroll-snap-stop` is `normal`: a tick of a
+  mouse wheel is three rows and a burst of twelve is 24 or 25 in all three engines (0091 §3).
+  A finger's flick is the compositor's and no headless engine flings, so rows per flick are
+  not a number this card has.
+- **No groups and no headings.** A heading has no place under a line; options that need
+  them are a `PctSelect`.
+- **No drum.** The rows are flat. Turning them by their distance to the line is a variant
+  for scroll-driven animations, measured before it is promised (plan, 1.6).
+- **One value.** A wheel is a line and a line rests on one row; several wheels side by side
+  are the consumer's composition, as the time panel's will be (plan, 1.7).

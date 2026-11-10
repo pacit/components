@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+
+/* Wheels in a line: each is as wide as its widest row. */
+.wheel-view__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--pct-space-5);
+}
+
+.wheel-view__clock {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-2);
+}

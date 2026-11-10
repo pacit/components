@@ -168,7 +168,7 @@ form exists and is a condition of entering a release. Forty-two cards are filled
   - the AT walk on `/field` is dispatched after the merge, and its record lands with the
     next pass
 
-- [ ] **1.6 — the wheel** `PctWheel<T>` in `@pacit/components/wheel`, as
+- [x] **1.6 — the wheel** `PctWheel<T>` in `@pacit/components/wheel`, landed 2026-11-10 as
       [0089](decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md) decided it:
       a listbox on the platform's scroll, and the row under the line is the value
   - the runway's own record landed 2026-10-14 as
@@ -179,15 +179,17 @@ form exists and is a condition of entering a release. Forty-two cards are filled
     `[formField]` and `warnings`, a label and a hint without a wrapper; a settle a gesture
     started writes, the opening and `null` write nothing; `wrap` ringing on keys and on
     scroll; the band, the fade, an odd row count from the row-height token, the bar hidden;
-    the centring read off the motion duration by a reader `./core` exports beside
-    `pctAfterTransition`; the tier `--pct-wheel-*`, its texts, a card under Choices on the
-    APG listbox
+    the centring read off the motion duration by `pctScrollBehavior`, which `./core` exports
+    beside `pctAfterTransition`; the tier `--pct-wheel-*` of 21 tokens and ten contrast
+    pairs, no text key of its own, a card under Choices on the APG listbox
   - `scroll-snap-stop: normal`, as 0091 §3 measured it: `always` is one row per tick in two
     engines and three rows, or none, in chromium 153; a burst is 24 or 25 rows in all three
   - the drum (rows turned by their distance to the line) comes after, by scroll-driven
     animations where they are (chromium, webkit) — a variant measured, not promised
-  - ends with: the card filled in, the wheel in the sandbox in three engines, the readers'
-    walk recorded; the select's long list is not this runway's consumer (0091 §6)
+  - ended with: the card [`wheel.md`](components/wheel.md), the wheel in the sandbox in three
+    engines and in the `/states` view beside every other control, the readers' walk of
+    `/wheel` with its keys pressed (`at/sections.ts`); the select's long list is not this
+    runway's consumer (0091 §6)
 
 - [ ] **1.7 — the time panel's shape** — `picker` (`'list' | 'wheel'`, default `'list'`) on
       `PctTime` and `PctTimeColumns`, after 1.6: the `wheel` shape composes `PctWheel` per
