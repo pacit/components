@@ -61,6 +61,10 @@ export class TimeView {
   protected readonly office = signal<PctTimeOfDay | null>('13:00');
   protected readonly night = signal<PctTimeOfDay | null>('23:30');
   protected readonly inline = signal<PctTimeOfDay | null>('13:05');
+  protected readonly short = signal<PctTimeOfDay | null>('08:15');
+  protected readonly wheelTime = signal<PctTimeOfDay | null>('13:05');
+  protected readonly wheelOffice = signal<PctTimeOfDay | null>('13:00');
+  protected readonly wheelInline = signal<PctTimeOfDay | null>('06:30');
 
   /**
    * The thirty-eight locales 0086 measured the hour cycle over (C1), for the round trip the e2e

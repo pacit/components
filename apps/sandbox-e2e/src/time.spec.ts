@@ -42,6 +42,24 @@ const activeIn = (column: Locator) =>
 const inputOf = (page: Page, id: string) =>
   page.getByTestId(id).locator('input').first();
 
+/** The listbox of a column drawn as a wheel — the element its keys and its scroll are on. */
+const wheelOf = (scope: Locator, field: string) =>
+  scope.locator(`pct-wheel[data-pct-field="${field}"] [data-pct-part="list"]`);
+
+/** Whether the row a wheel points at rests on its line — the band drawn behind the list. */
+const onLine = (wheel: Locator) =>
+  wheel.evaluate((list) => {
+    const middle = (element: Element): number => {
+      const box = element.getBoundingClientRect();
+      return box.top + box.height / 2;
+    };
+    const row = list.ownerDocument.getElementById(
+      list.getAttribute('aria-activedescendant') ?? '',
+    );
+    const band = list.parentElement?.querySelector('[data-pct-part="band"]');
+    return !!row && !!band && Math.abs(middle(row) - middle(band)) < 1;
+  });
+
 test.describe('Time — the field', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/time');
@@ -196,39 +214,48 @@ test.describe('Time — the panel', () => {
   });
 
   /**
-   * A column opens with its chosen row in view — centred, the first time — and not at the top
-   * of a list of sixty where the eye would have to go looking for it.
+   * A column is a window of seven rows — a count, so its middle is a row — and it opens with
+   * its chosen row on that middle, not at the top of a list of sixty where the eye would have
+   * to go looking for it. The walk keeps its row there, and the snap rests the scroll on a
+   * row's start, so no row is cut at either edge wherever the list stands (0089, point 5).
    */
-  test('opens with the chosen rows in view, centred, and keeps the walk in view', async ({
+  test('opens with the chosen rows on the middle of seven, and the walk stays there', async ({
     page,
   }) => {
     await partOf(page.getByTestId('time-standalone'), 'toggle').click();
-    // Hour `13` is the fourteenth row, twice the column's window down: a column that did not
-    // scroll would open with it out of sight, and one that scrolled the least it could would
-    // open with it on the bottom edge.
-    const column = columnOf(panelOf(page), 'hour');
-    await expect(column).toBeFocused();
-    const placed = (selector: string) =>
-      column.evaluate((list, sel) => {
+    const panel = panelOf(page);
+    await expect(columnOf(panel, 'hour')).toBeFocused();
+    const placed = (field: string, selector: string) =>
+      columnOf(panel, field).evaluate((list, sel) => {
         const row = list.querySelector(sel) as HTMLElement;
         const a = row.getBoundingClientRect();
         const b = list.getBoundingClientRect();
+        const turns = list.scrollTop / a.height;
         return {
+          rows: Math.round((list.clientHeight / a.height) * 100) / 100,
           inside: a.top >= b.top - 0.5 && a.bottom <= b.bottom + 0.5,
-          offCentre: Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)),
-          height: a.height,
+          centred: Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)) < 1,
+          whole: Math.abs(turns - Math.round(turns)) < 0.02,
         };
       }, selector);
-    const opened = await placed('[aria-selected="true"]');
-    expect(opened.inside).toBe(true);
-    expect(opened.offCentre).toBeLessThanOrEqual(opened.height);
+    // Hour `13` is the fourteenth row and minute `05` the sixth: both can stand on the middle,
+    // and both do at once — the opening is placed, not travelled to.
+    const all = { rows: 7, inside: true, centred: true, whole: true };
+    expect(await placed('hour', '[aria-selected="true"]')).toEqual(all);
+    expect(await placed('minute', '[aria-selected="true"]')).toEqual(all);
 
-    // The last hour is ten rows on: the walk takes the column with it.
+    // A step on, and the column travels a row to keep the walk on the middle.
+    await page.keyboard.press('ArrowDown');
+    await expect(inputOf(page, 'time-standalone')).toHaveValue('14:05');
+    await expect.poll(() => placed('hour', '[data-pct-active]')).toEqual(all);
+
+    // The last hour cannot be on the middle — the list ends three rows short of that — so the
+    // column rests at its end, with the row whole and in view.
     await page.keyboard.press('End');
     await expect(inputOf(page, 'time-standalone')).toHaveValue('23:05');
     await expect
-      .poll(async () => (await placed('[data-pct-active]')).inside)
-      .toBe(true);
+      .poll(() => placed('hour', '[data-pct-active]'))
+      .toEqual({ ...all, centred: false });
   });
 
   /**
@@ -386,6 +413,240 @@ test.describe('Time — the panel', () => {
     expect(fields).toEqual(['dayPeriod', 'hour', 'minute']);
     // The panel still opens on the hour, wherever the language puts it.
     await expect(columnOf(panelOf(page), 'hour')).toBeFocused();
+  });
+});
+
+/**
+ * `picker="wheel"`: the same columns, a `PctWheel` each (0089, point 2). What only a browser
+ * answers is where the focus goes, whether the row a key asks for arrives under the line, and
+ * what a turn of the platform's scroll writes — jsdom scrolls nothing.
+ */
+test.describe('Time — the panel as wheels', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/time');
+  });
+
+  test('opens with a wheel per column, the time on the lines, and focus on the hour wheel', async ({
+    page,
+  }) => {
+    await partOf(page.getByTestId('time-wheel'), 'toggle').click();
+    const panel = panelOf(page);
+    await expect(wheelOf(panel, 'hour')).toBeFocused();
+    await expect(panel.locator('[data-pct-part="column"]')).toHaveCount(0);
+
+    // One stop per wheel, and the stop is its listbox — the rows are never stops (0086, E1).
+    const stops = await panel.evaluate((root) =>
+      [...root.querySelectorAll('button:not(:disabled), [tabindex="0"]')].map(
+        (el) =>
+          `${el.getAttribute('role')}:${el.closest('pct-wheel')?.getAttribute('data-pct-field')}`,
+      ),
+    );
+    expect(stops).toEqual([
+      'listbox:hour',
+      'listbox:minute',
+      'listbox:dayPeriod',
+    ]);
+    await expect(panel.locator('[role="option"][tabindex]')).toHaveCount(0);
+
+    for (const [field, label] of [
+      ['hour', '1'],
+      ['minute', '05'],
+      ['dayPeriod', 'PM'],
+    ]) {
+      const wheel = wheelOf(panel, field);
+      expect(await activeIn(wheel)).toBe(label);
+      await expect(wheel.locator('[aria-selected="true"]')).toHaveText(label);
+      await expect.poll(() => onLine(wheel)).toBe(true);
+    }
+  });
+
+  /**
+   * The keys are the columns' own in both shapes: a wheel left to its own keys would stop at
+   * its end where a column comes round, and would not know a typed hour.
+   */
+  test('the keys are the columns’ own — an arrow comes round, a digit goes to its row, Enter takes the time', async ({
+    page,
+  }) => {
+    const input = inputOf(page, 'time-wheel');
+    await partOf(page.getByTestId('time-wheel'), 'toggle').click();
+    const panel = panelOf(page);
+    const hour = wheelOf(panel, 'hour');
+    await expect(hour).toBeFocused();
+
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toHaveValue('2:05 PM');
+    // The row the key asked for travels to the line.
+    await expect.poll(() => onLine(hour)).toBe(true);
+    expect(await activeIn(hour)).toBe('2');
+
+    await page.keyboard.press('9');
+    await expect(input).toHaveValue('9:05 PM');
+    await expect.poll(() => onLine(hour)).toBe(true);
+
+    await page.keyboard.press('Tab');
+    const minute = wheelOf(panel, 'minute');
+    await expect(minute).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(input).toHaveValue('9:59 PM');
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toHaveValue('9:00 PM');
+    await expect.poll(() => onLine(minute)).toBe(true);
+
+    // Two rows are no ring to turn, and the walk comes round all the same.
+    await page.keyboard.press('Tab');
+    const period = wheelOf(panel, 'dayPeriod');
+    await expect(period).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toHaveValue('9:00 AM');
+    await expect.poll(() => onLine(period)).toBe(true);
+
+    await expect(panel).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(panelOf(page)).toHaveCount(0);
+    await expect(input).toHaveValue('9:00 AM');
+    await expect(input).toBeFocused();
+  });
+
+  /**
+   * The wheel's own way in: the platform's scroll, read where it settles. The row the settle
+   * leaves under the line is written as a key's would be, and the panel stays open.
+   */
+  test('a turn settles on a row and writes it, and the panel stays open', async ({
+    page,
+  }) => {
+    const input = inputOf(page, 'time-wheel');
+    await partOf(page.getByTestId('time-wheel'), 'toggle').click();
+    const panel = panelOf(page);
+    await expect(wheelOf(panel, 'hour')).toBeFocused();
+
+    const minute = wheelOf(panel, 'minute');
+    const row = await minute.evaluate(
+      (list) => (list.firstElementChild as HTMLElement).offsetHeight,
+    );
+    await minute.hover();
+    await page.mouse.wheel(0, 3 * row);
+    await expect(input).toHaveValue('1:08 PM');
+    await expect.poll(() => onLine(minute)).toBe(true);
+    expect(await activeIn(minute)).toBe('08');
+    await expect(panel).toBeVisible();
+    // The hour was not turned, and was not moved.
+    expect(await activeIn(wheelOf(panel, 'hour'))).toBe('1');
+  });
+
+  test('a row outside the bounds is said refused, and the walk passes it over', async ({
+    page,
+  }) => {
+    const input = inputOf(page, 'time-wheel-bounded');
+    await partOf(page.getByTestId('time-wheel-bounded'), 'toggle').click();
+    const panel = panelOf(page);
+    const hour = wheelOf(panel, 'hour');
+    await expect(hour).toBeFocused();
+
+    // Twenty-four hours are a ring — the cycle three times in the tree, one of them a reader's
+    // — and four quarters are shorter than the window, so they are a list.
+    await expect(hour.locator('[role="option"]')).toHaveCount(72);
+    await expect(
+      hour.locator('[role="option"]:not([aria-hidden="true"])'),
+    ).toHaveCount(24);
+    await expect(
+      hour.locator(
+        '[role="option"][aria-disabled="true"]:not([aria-hidden="true"])',
+      ),
+    ).toHaveCount(15);
+    await expect(
+      wheelOf(panel, 'minute').locator('[role="option"]'),
+    ).toHaveCount(4);
+
+    await page.keyboard.press('End');
+    await expect(input).toHaveValue('17:00');
+    await expect.poll(() => onLine(hour)).toBe(true);
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toHaveValue('09:00');
+    await expect.poll(() => onLine(hour)).toBe(true);
+  });
+
+  test('Tab walks the wheels, one stop each, and then comes back to the field', async ({
+    page,
+  }) => {
+    await partOf(page.getByTestId('time-wheel-bounded'), 'toggle').click();
+    const panel = panelOf(page);
+    await expect(wheelOf(panel, 'hour')).toBeFocused();
+
+    await page.keyboard.press('Tab');
+    await expect(wheelOf(panel, 'minute')).toBeFocused();
+
+    await page.keyboard.press('Tab');
+    await expect(panelOf(page)).toHaveCount(0);
+    await expect(inputOf(page, 'time-wheel-bounded')).toBeFocused();
+  });
+
+  test('the columns on their own are wheels too, and a press on a row takes it', async ({
+    page,
+  }) => {
+    const columns = page.getByTestId('time-columns-wheel');
+    const hour = wheelOf(columns, 'hour');
+    await expect(columns.locator('pct-wheel')).toHaveCount(2);
+    await expect(hour.locator('[aria-selected="true"]')).toHaveText('06');
+    await expect.poll(() => onLine(hour)).toBe(true);
+
+    await hour
+      .locator('[role="option"]:not([aria-hidden="true"])', { hasText: '07' })
+      .click();
+    await expect(hour.locator('[aria-selected="true"]')).toHaveText('07');
+    await expect.poll(() => onLine(hour)).toBe(true);
+    await expect(
+      wheelOf(columns, 'minute').locator('[aria-selected="true"]'),
+    ).toHaveText('30');
+  });
+});
+
+test.describe('Time — the window', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/time');
+  });
+
+  /**
+   * The window is a count of rows, the columns' `rows`, so its middle is a row at every size.
+   * Before it was a count it was a height, `--pct-time-column-height`, and that token shipped:
+   * a skin that wrote it keeps the height it wrote until the token goes, and the height the
+   * skin ships it with is read as nobody having written it (`docs/support.md`).
+   */
+  test('shows the count of rows it is given, and the height a skin wrote before there was a count', async ({
+    page,
+  }) => {
+    const columns = page.getByTestId('time-columns-short');
+    const hour = columnOf(columns, 'hour');
+    const shown = () =>
+      hour.evaluate((list) => {
+        const row = list.querySelector('[aria-selected="true"]') as HTMLElement;
+        const a = row.getBoundingClientRect();
+        const b = list.getBoundingClientRect();
+        return {
+          rows: Math.round((b.height / a.height) * 100) / 100,
+          height: Math.round(b.height),
+          centred: Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)) < 1,
+        };
+      });
+    const write = (height: string | null) =>
+      columns.evaluate((host, value) => {
+        if (value === null)
+          host.style.removeProperty('--pct-time-column-height');
+        else host.style.setProperty('--pct-time-column-height', value);
+      }, height);
+    await hour.scrollIntoViewIfNeeded();
+    await expect.poll(shown).toEqual({ rows: 5, height: 160, centred: true });
+
+    await write('120px');
+    await expect.poll(async () => (await shown()).height).toBe(120);
+    await write('300px');
+    await expect.poll(async () => (await shown()).height).toBe(300);
+    // The height the skin ships: untouched, as far as a stylesheet can tell.
+    await write('224px');
+    await expect.poll(async () => (await shown()).height).toBe(160);
+    await write('96px');
+    await expect.poll(async () => (await shown()).height).toBe(96);
+    await write(null);
+    await expect.poll(async () => (await shown()).rows).toBe(5);
   });
 });
 

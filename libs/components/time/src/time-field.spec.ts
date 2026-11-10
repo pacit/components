@@ -18,6 +18,7 @@ import { providePctTexts } from '@pacit/components/core';
 import { PctField } from '@pacit/components/field';
 
 import { PctTimeOfDay } from './time';
+import { PctTimePicker } from './time-columns';
 import { PctTime, pctTimeBounds } from './time-field';
 
 const controlOf = (f: ComponentFixture<unknown>) =>
@@ -99,6 +100,7 @@ async function open(f: ComponentFixture<unknown>) {
     [min]="min()"
     [max]="max()"
     [step]="step()"
+    [picker]="picker()"
     [disabled]="disabled()"
     [readonly]="readonly()"
     [required]="required()"
@@ -117,6 +119,7 @@ class Host {
   readonly min = signal<string | undefined>(undefined);
   readonly max = signal<string | undefined>(undefined);
   readonly step = signal(60);
+  readonly picker = signal<PctTimePicker>('list');
   readonly disabled = signal(false);
   readonly readonly = signal(false);
   readonly required = signal(false);
@@ -771,6 +774,134 @@ describe('PctTime — the panel', () => {
     await settle(f);
     expect(toggleOf(f).disabled).toBe(true);
     expect(controlOf(f).readOnly).toBe(true);
+  });
+});
+
+describe('PctTime — the panel as wheels (0089)', () => {
+  /** The listbox of a wheel in the panel — the element its keys and the focus are on. */
+  const wheelIn = (field: string) =>
+    document.querySelector(
+      `[data-pct-part="panel"] pct-wheel[data-pct-field="${field}"] [data-pct-part="list"]`,
+    ) as HTMLElement;
+
+  const wheelsIn = () =>
+    Array.from(
+      document.querySelectorAll<HTMLElement>(
+        '[data-pct-part="panel"] pct-wheel',
+      ),
+    );
+
+  const stopsIn = (root: HTMLElement) =>
+    Array.from(
+      root.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), [tabindex="0"]',
+      ),
+    );
+
+  const asWheels = async () => {
+    const f = await render(Host);
+    f.componentInstance.picker.set('wheel');
+    await settle(f);
+    await open(f);
+    return f;
+  };
+
+  const press = async (
+    f: ComponentFixture<unknown>,
+    from: HTMLElement,
+    key: string,
+    shiftKey = false,
+  ) => {
+    const event = new KeyboardEvent('keydown', {
+      key,
+      shiftKey,
+      bubbles: true,
+      cancelable: true,
+    });
+    from.dispatchEvent(event);
+    await settle(f);
+    return event;
+  };
+
+  it('draws lists until it is asked for wheels', async () => {
+    expect(TestBed.createComponent(PctTime).componentInstance.picker()).toBe(
+      'list',
+    );
+    const f = await render(Host);
+    await open(f);
+    expect(wheelsIn()).toEqual([]);
+    expect(columnIn('hour')).not.toBeNull();
+    await open(f);
+
+    f.componentInstance.picker.set('wheel');
+    await settle(f);
+    await open(f);
+    expect(wheelsIn().map((w) => w.dataset['pctField'])).toEqual([
+      'hour',
+      'minute',
+      'dayPeriod',
+    ]);
+    expect(columnIn('hour')).toBeNull();
+    expect(
+      panel()
+        ?.querySelector('pct-time-columns')
+        ?.getAttribute('data-pct-picker'),
+    ).toBe('wheel');
+  });
+
+  it('opens on the time the field holds, with focus on the hour wheel', async () => {
+    await asWheels();
+    expect(activeIn(wheelIn('hour'))).toBe('1');
+    expect(activeIn(wheelIn('minute'))).toBe('05');
+    expect(activeIn(wheelIn('dayPeriod'))).toBe('PM');
+    expect(document.activeElement).toBe(wheelIn('hour'));
+  });
+
+  it('writes the time a wheel’s key moves to, and closes on Enter with focus back', async () => {
+    const f = await asWheels();
+    await press(f, wheelIn('minute'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('13:06');
+    expect(shown(f)).toBe('1:06 PM');
+    expect(panel()).not.toBeNull();
+
+    await press(f, wheelIn('minute'), 'Enter');
+    expect(f.componentInstance.value()).toBe('13:06');
+    expect(panel()).toBeNull();
+    expect(document.activeElement).toBe(controlOf(f));
+  });
+
+  it('closes on Escape pressed in a wheel, the time as the wheels left it', async () => {
+    const f = await asWheels();
+    await press(f, wheelIn('hour'), 'ArrowDown');
+    const escape = await press(f, wheelIn('hour'), 'Escape');
+    expect(panel()).toBeNull();
+    expect(escape.defaultPrevented).toBe(true);
+    expect(f.componentInstance.value()).toBe('14:05');
+    expect(document.activeElement).toBe(controlOf(f));
+  });
+
+  it('has a stop per wheel — its listbox — and Tab leaves off the ends only', async () => {
+    const f = await asWheels();
+    const stops = stopsIn(panel() as HTMLElement);
+    expect(stops).toEqual([
+      wheelIn('hour'),
+      wheelIn('minute'),
+      wheelIn('dayPeriod'),
+    ]);
+
+    const inside = await press(f, stops[0], 'Tab');
+    expect(inside.defaultPrevented).toBe(false);
+    await press(f, stops[2], 'Tab', true);
+    expect(panel()).not.toBeNull();
+
+    const forward = await press(f, stops[2], 'Tab');
+    expect(forward.defaultPrevented).toBe(true);
+    expect(panel()).toBeNull();
+    expect(document.activeElement).toBe(controlOf(f));
+
+    await open(f);
+    await press(f, wheelIn('hour'), 'Tab', true);
+    expect(panel()).toBeNull();
   });
 });
 

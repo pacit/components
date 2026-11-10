@@ -164,6 +164,7 @@ function layout(): { calls: ScrollCall[]; restore: () => void } {
     [wrap]="wrap()"
     [rows]="rows()"
     [size]="size()"
+    [startAt]="startAt()"
     [(value)]="value"
     (touch)="touchCount = touchCount + 1"
   />`,
@@ -184,6 +185,7 @@ class Host {
   wrap = signal(false);
   rows = signal<unknown>(5);
   size = signal<PctSize>('md');
+  startAt = signal<string | null>(null);
   value = signal<string | null>(null);
   touchCount = 0;
 }
@@ -287,6 +289,7 @@ interface Speed {
     ariaLabel="Speed"
     [options]="options"
     [compareWith]="same"
+    [startAt]="start()"
     [(value)]="value"
   />`,
 })
@@ -300,6 +303,7 @@ class EntityHost {
     this.asked++;
     return a?.id === b?.id;
   };
+  start = signal<Speed | null>(null);
   // Another object than the option's own — equal by key alone.
   value = signal<Speed | null>({ id: 2, name: 'Fast, read from a server' });
 }
@@ -401,6 +405,152 @@ describe('PctWheel', () => {
       expect(listOf(fixture).getAttribute('aria-activedescendant')).toBe(
         rows[0].id,
       );
+    });
+
+    it('with no value the line holds the row `startAt` names — active, not chosen, nothing written', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.startAt.set('thu');
+      await settle(fixture);
+      const rows = rowsOf(fixture);
+
+      expect(listOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        rows[3].id,
+      );
+      expect(rows.map((row) => row.hasAttribute('data-pct-active'))).toEqual([
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+      ]);
+      expect(rows.map((row) => row.getAttribute('aria-selected'))).toEqual(
+        DAYS.map(() => 'false'),
+      );
+      expect(rows.some((row) => row.hasAttribute('data-pct-chosen'))).toBe(
+        false,
+      );
+      expect(fixture.componentInstance.value()).toBeNull();
+    });
+
+    it('the row `startAt` names is where a key starts from, and Enter takes it as it stands', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.startAt.set('thu');
+      await settle(fixture);
+
+      press(fixture, 'ArrowDown');
+      await settle(fixture);
+      expect(fixture.componentInstance.value()).toBe('fri');
+
+      fixture.componentInstance.value.set(null);
+      await settle(fixture);
+      expect(press(fixture, 'Enter').defaultPrevented).toBe(true);
+      await settle(fixture);
+      expect(fixture.componentInstance.value()).toBe('thu');
+    });
+
+    it('a value that names a row wins over `startAt`, and one that names none leaves it the line', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.startAt.set('thu');
+      fixture.componentInstance.value.set('tue');
+      await settle(fixture);
+      const rows = rowsOf(fixture);
+      expect(listOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        rows[1].id,
+      );
+      expect(rows[3].hasAttribute('data-pct-active')).toBe(false);
+
+      fixture.componentInstance.value.set('someday');
+      await settle(fixture);
+      expect(listOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        rows[3].id,
+      );
+      expect(rows.some((row) => row.hasAttribute('data-pct-chosen'))).toBe(
+        false,
+      );
+    });
+
+    it('a `startAt` no row stands for leaves the line on the first row that can be chosen', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.options.set([
+        { value: 'mon', label: 'Monday', disabled: true },
+        { value: 'tue', label: 'Tuesday' },
+        { value: 'wed', label: 'Wednesday' },
+      ]);
+      fixture.componentInstance.startAt.set('someday');
+      await settle(fixture);
+
+      expect(listOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        rowsOf(fixture)[1].id,
+      );
+    });
+
+    it('a `startAt` row that cannot be chosen hands the line to the nearest that can — the one after first', async () => {
+      const fixture = await render(Host);
+      const days = (...off: string[]): PctWheelOption[] =>
+        DAYS.map((day) => ({ ...day, disabled: off.includes(day.value) }));
+      fixture.componentInstance.startAt.set('thu');
+
+      fixture.componentInstance.options.set(days('thu'));
+      await settle(fixture);
+      expect(listOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        rowsOf(fixture)[4].id,
+      );
+
+      fixture.componentInstance.options.set(days('thu', 'fri'));
+      await settle(fixture);
+      expect(listOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        rowsOf(fixture)[2].id,
+      );
+
+      // No row at all to hand it to: the listbox points at nothing.
+      fixture.componentInstance.options.set(
+        days(...DAYS.map((day) => day.value)),
+      );
+      await settle(fixture);
+      expect(listOf(fixture).hasAttribute('aria-activedescendant')).toBe(false);
+    });
+
+    it('entities are found for `startAt` by `compareWith`', async () => {
+      const fixture = TestBed.createComponent(EntityHost);
+      fixture.componentInstance.value.set(null);
+      fixture.componentInstance.start.set({ id: 2, name: 'Another object' });
+      await settle(fixture);
+
+      expect(listOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        rowsOf(fixture)[1].id,
+      );
+      expect(fixture.componentInstance.value()).toBeNull();
+    });
+
+    it.each([null, undefined])(
+      'a `startAt` of %s is compared with no row',
+      async (empty) => {
+        const fixture = TestBed.createComponent(EntityHost);
+        fixture.componentInstance.value.set(null);
+        fixture.componentInstance.start.set(empty as null);
+        await settle(fixture);
+
+        expect(fixture.componentInstance.asked).toBe(0);
+        expect(listOf(fixture).getAttribute('aria-activedescendant')).toBe(
+          rowsOf(fixture)[0].id,
+        );
+      },
+    );
+
+    it('a `startAt` no row stands for leaves a ring on its first row as well, not on its last', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.wrap.set(true);
+      fixture.componentInstance.startAt.set('someday');
+      await settle(fixture);
+
+      const id = listOf(fixture).getAttribute('aria-activedescendant');
+      expect(
+        rowsOf(fixture)
+          .find((row) => row.id === id)
+          ?.textContent?.trim(),
+      ).toBe('Monday');
     });
 
     it('a row that cannot be chosen says so, and the line starts on the first that can', async () => {
@@ -1171,6 +1321,13 @@ describe('PctWheel', () => {
       it('with no value the first row is already under the line, and nothing scrolls', async () => {
         await at(null);
         expect(screen.calls).toEqual([]);
+      });
+
+      it('with no value and a `startAt` the wheel opens on that row, placed at once', async () => {
+        const fixture = await at(null, (host) => host.startAt.set('fri'));
+
+        expect(screen.calls).toEqual([{ top: 4 * ROW, behavior: 'instant' }]);
+        expect(fixture.componentInstance.value()).toBeNull();
       });
 
       it('a ring opens on its middle turn', async () => {

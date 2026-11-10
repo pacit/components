@@ -92,8 +92,8 @@ function visibleRows(value: unknown): number {
  *
  * **Only a gesture writes.** A key, a click, a wheel, a finger: the row the scroll settles on
  * becomes the value. The wheel's own centring — when it opens, when the form writes — writes
- * nothing, and a wheel with no value holds its first row under the line, active and not
- * chosen, until somebody turns it.
+ * nothing, and a wheel with no value holds its first row under the line — or the one `startAt`
+ * names — active and not chosen, until somebody turns it.
  *
  * `wrap` makes the list a ring: the rows stand three times in the tree and the scroll is put
  * back on the middle turn each time it settles
@@ -135,7 +135,8 @@ export class PctWheel<T = string>
 {
   /**
    * The chosen value — a required field of the `FormValueControl` contract. `null` means no row
-   * is chosen: the line holds the first row, and nothing is written until a gesture.
+   * is chosen: the line holds the first row, or the one `startAt` names, and nothing is written
+   * until a gesture.
    *
    * @since next
    */
@@ -244,6 +245,13 @@ export class PctWheel<T = string>
    * @since next
    */
   readonly rows = input(VISIBLE_ROWS, { transform: visibleRows });
+
+  /**
+   * The value of the row the line holds while the wheel's value names no row — the hour it is now, in a wheel of hours. Active and not chosen: it is where the wheel opens and a key starts from, and nothing is written until a gesture. A row that cannot be chosen hands the line to the nearest one that can; a value no row stands for, to the first.
+   *
+   * @since next
+   */
+  readonly startAt = input<T | null>(null);
 
   private readonly config = inject(PCT_CONFIG);
 
@@ -421,13 +429,21 @@ export class PctWheel<T = string>
 
   /**
    * The row under the line. **Derived, not kept**: it is the chosen row, and with none chosen
-   * the first row a gesture could choose — so a value the form writes moves the line without
-   * anybody telling the walk, and there is no second cursor to fall out of step with the first.
+   * the row `startAt` names or the first — in both cases one a gesture could choose — so a
+   * value the form writes moves the line without anybody telling the walk, and there is no
+   * second cursor to fall out of step with the first.
    */
   protected readonly active = computed(() => {
     const chosen = this.chosen();
     if (chosen !== -1) return chosen;
-    return this.options().findIndex((option) => option.disabled !== true);
+    const options = this.options();
+    const start = this.startAt();
+    if (start !== null && start !== undefined) {
+      const same = this.compareWith();
+      const at = options.findIndex((option) => same(option.value, start));
+      if (at !== -1) return this.nearest(at);
+    }
+    return options.findIndex((option) => option.disabled !== true);
   });
 
   /** The id of the row under the line — what the listbox points at. */

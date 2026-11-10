@@ -13,17 +13,21 @@ import {
   model,
   numberAttribute,
   output,
+  Signal,
   untracked,
   viewChildren,
 } from '@angular/core';
 import {
   nextPctId,
   PCT_CONFIG,
+  PCT_FIELD,
   PCT_TEXTS,
   pctListNavigation,
+  pctScrollBehavior,
   PctListNavigation,
   PctSize,
 } from '@pacit/components/core';
+import { PctWheel, PctWheelOption } from '@pacit/components/wheel';
 
 import {
   pctLattice,
@@ -85,6 +89,51 @@ export interface PctTimeColumn {
  */
 export type PctTimePredicate = (time: PctTimeOfDay) => boolean;
 
+/**
+ * The shape the columns are drawn in: `list`, a column of rows the walk moves over, or `wheel`,
+ * a `PctWheel` per field — the rows turned under a line
+ * ([0089](../../../../docs/decisions/0089-one-value-more-than-one-control-and-the-consumer-chooses.md)).
+ *
+ * @since next
+ */
+export type PctTimePicker = 'list' | 'wheel';
+
+/** How many rows a column shows when nobody says, in both shapes. */
+const VISIBLE_ROWS = 7;
+
+/**
+ * The count of rows a column shows, as an odd whole number: the middle of the window is a row
+ * and not the gap between two, so an even count takes the next odd one; a count that is no
+ * count falls back to the default.
+ */
+function visibleRows(value: unknown): number {
+  const count = Math.floor(numberAttribute(value, VISIBLE_ROWS));
+  if (!(count >= 1)) return VISIBLE_ROWS;
+  return count % 2 === 0 ? count + 1 : count;
+}
+
+/** The fields a column can hold, for the maps kept by field. */
+const FIELDS = ['hour', 'minute', 'second', 'dayPeriod'] as const;
+
+/**
+ * Two lists of a wheel's rows that draw and refuse the same. The value is not compared: a
+ * column writes each of its values in a way of its own, so two lists with the same labels in
+ * the same places hold the same values.
+ */
+function sameOptions(
+  a: readonly PctWheelOption<number>[],
+  b: readonly PctWheelOption<number>[],
+): boolean {
+  return (
+    a.length === b.length &&
+    a.every(
+      (option, index) =>
+        option.label === b[index].label &&
+        option.disabled === b[index].disabled,
+    )
+  );
+}
+
 /** A time input written as an attribute is a string; one bound from a model may be anything. */
 function optionalTime(value: unknown): PctTimeOfDay | undefined {
   return isPctTimeOfDay(value) ? value : undefined;
@@ -133,22 +182,37 @@ const MINUTE = 60;
  * The digits, the day-period words and the order of the columns are the locale's, off the
  * formatter the field writes with (`pctTimeFormat`), so the panel and the field never disagree.
  *
+ * **`picker` chooses the shape, and nothing else.** `wheel` draws each column as a `PctWheel`:
+ * the row under its line is the row the walk stands on, the rows the bounds refuse are the
+ * wheel's disabled rows, and a column with at least as many rows as its window shows is a ring.
+ * The keys are the columns' own in both shapes — a typed number is read whole in a wheel as in
+ * a list — and a scroll that settles moves the value as a key does.
+ *
  * @example
  * <pct-time-columns [(value)]="time" step="900" min="09:00" max="17:00" />
+ *
+ * @example
+ * <pct-time-columns picker="wheel" [(value)]="time" />
  *
  * @since 0.3.0
  */
 @Component({
   selector: 'pct-time-columns',
+  imports: [PctWheel],
   templateUrl: './time-columns.html',
   styleUrl: './time-columns.scss',
+  // A wheel attaches itself to the `pct-field` it finds above it, and the wheels here are no
+  // field's control: the field above the panel — the time field's own — is cut off for them.
+  providers: [{ provide: PCT_FIELD, useValue: null }],
   host: {
     class: 'pct-time-columns',
     role: 'group',
     '[attr.aria-label]': 'ariaLabel() || null',
     '[attr.aria-labelledby]': 'ariaLabelledby() || null',
     '[attr.data-pct-size]': 'size()',
+    '[attr.data-pct-picker]': 'picker()',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
+    '[style.--_pct-time-rows]': 'rows()',
   },
 })
 export class PctTimeColumns {
@@ -217,6 +281,20 @@ export class PctTimeColumns {
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**
+   * The shape of a column: `list`, the rows in a window the walk keeps centred, or `wheel`, a `PctWheel` per field — the rows turned under a line, a ring where the column fills its window (0089).
+   *
+   * @since next
+   */
+  readonly picker = input<PctTimePicker>('list');
+
+  /**
+   * How many rows a column shows at once, in both shapes — the list's window and the wheel's `rows`: an odd count, an even one taking the next odd, so the middle is a row. The window is this count of the row's height, whatever the size.
+   *
+   * @since next
+   */
+  readonly rows = input(VISIBLE_ROWS, { transform: visibleRows });
+
+  /**
    * The accessible name of the group the columns stand in; a panel that owns them names itself instead.
    *
    * @since 0.3.0
@@ -238,6 +316,11 @@ export class PctTimeColumns {
   readonly timePicked = output<PctTimeOfDay>();
 
   private readonly lists = viewChildren<ElementRef<HTMLElement>>('column');
+  private readonly wheels = viewChildren(PctWheel);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /** The rows a column shows at once — the list's window and the wheel's `rows`. */
+  protected readonly window = VISIBLE_ROWS;
 
   private readonly uid = nextPctId('pct-time-columns');
 
@@ -334,7 +417,7 @@ export class PctTimeColumns {
 
   /** The walk of each column, by field — the core list machinery over that column's rows. */
   private readonly walks = new Map<PctTimeField, PctListNavigation>(
-    (['hour', 'minute', 'second', 'dayPeriod'] as const).map((field) => [
+    FIELDS.map((field) => [
       field,
       pctListNavigation<PctTimeRow>({
         items: computed(
@@ -351,7 +434,36 @@ export class PctTimeColumns {
     ]),
   );
 
-  /** Whether the next scroll is the first one — the panel opening centres the rows it opens on. */
+  /**
+   * The rows of each column as a wheel takes them, by field. **The same list while nothing in
+   * it changed**: every movement redraws the columns, and a wheel places a new list at once
+   * where it travels to a new row of the one it has — so a list that only looks new would turn
+   * a wheel's travel into a jump.
+   */
+  private readonly options = new Map<
+    PctTimeField,
+    Signal<readonly PctWheelOption<number>[]>
+  >(
+    FIELDS.map((field) => [
+      field,
+      computed(
+        () =>
+          // Read for a column that is drawn, and so one there is.
+          (
+            this.columns().find(
+              (column) => column.field === field,
+            ) as PctTimeColumn
+          ).rows.map((row) => ({
+            value: row.value,
+            label: row.label,
+            disabled: row.disabled,
+          })),
+        { equal: sameOptions },
+      ),
+    ]),
+  );
+
+  /** Whether the next scroll is the first one — the panel opening places the rows it opens on. */
   private placed = false;
 
   /**
@@ -370,12 +482,26 @@ export class PctTimeColumns {
     // The active row is kept in view after the render that moved it, because the walk REWRITES
     // the rows (their disabled state follows the other columns) and a hook running before the
     // render would be measuring the rows being replaced.
+    // The shape is read too: lists that come back from being wheels are new elements, and
+    // open where the walk stands as the first ones did.
     afterRenderEffect(() => {
       this.columns();
+      this.picker();
       untracked(() => this.keepInView());
     });
 
     inject(DestroyRef).onDestroy(() => this.forget());
+
+    // On the way DOWN to a wheel, and so not written in the template: a wheel has a key map of
+    // its own, and a key the columns read must not be read a second time under them. Listened
+    // for while there are wheels, and not a moment longer: lists pay for no listener of theirs.
+    afterRenderEffect((onCleanup) => {
+      if (this.picker() !== 'wheel') return;
+      const host = this.host.nativeElement;
+      const onKeydown = (event: KeyboardEvent) => this.onWheelKeydown(event);
+      host.addEventListener('keydown', onKeydown, true);
+      onCleanup(() => host.removeEventListener('keydown', onKeydown, true));
+    });
 
     if (isDevMode()) this.warnOnUnsupportedStep();
   }
@@ -387,9 +513,64 @@ export class PctTimeColumns {
    * @since 0.3.0
    */
   focusCursor(): void {
+    if (this.picker() === 'wheel') {
+      // The wheels stand in the columns' order, one each.
+      const at = this.columns().findIndex((column) => column.field === 'hour');
+      this.wheels()[at]?.focus();
+      return;
+    }
     const lists = this.lists().map((ref) => ref.nativeElement);
     const hour = lists.find((list) => list.dataset['pctField'] === 'hour');
     hour?.focus();
+  }
+
+  /** The rows of a column as its wheel takes them. */
+  protected optionsOf(field: PctTimeField): readonly PctWheelOption<number>[] {
+    return (
+      this.options.get(field) as Signal<readonly PctWheelOption<number>[]>
+    )();
+  }
+
+  /**
+   * The value a column's wheel holds: the row the walk stands on where the value is in it, and
+   * `null` where it is not — no value yet, or one the bounds refuse, which the walk starts
+   * beside. The wheel's line is on the walk's row either way (`lineOf`).
+   */
+  protected valueOf(column: PctTimeColumn): number | null {
+    const row = column.rows[column.active];
+    return row.chosen ? row.value : null;
+  }
+
+  /** The row a column's wheel holds under its line: the one the walk stands on. */
+  protected lineOf(column: PctTimeColumn): number {
+    return column.rows[column.active].value;
+  }
+
+  /**
+   * A wheel came to rest on a row, and a row is a field: the value moves as it does under a
+   * key — onto the time inside the bounds nearest to the one composed from that row and the
+   * other columns.
+   */
+  protected turned(column: PctTimeColumn, value: number | null): void {
+    const row = column.rows.find((candidate) => candidate.value === value);
+    if (row !== undefined) this.pick(column, row);
+  }
+
+  /**
+   * A key on its way down to a wheel. The keys of the columns' own map are read here and go no
+   * further — the wheel turns to the value they wrote, as it turns to one a form writes — and
+   * the rest are the wheel's: `PageUp` and `PageDown`, which a list leaves to the scroll.
+   */
+  private onWheelKeydown(event: KeyboardEvent): void {
+    const field =
+      event.target instanceof Element
+        ? event.target
+            .closest('[data-pct-field]')
+            ?.getAttribute('data-pct-field')
+        : null;
+    const column = this.columns().find((live) => live.field === field);
+    if (column !== undefined && this.read(column, event))
+      event.stopPropagation();
   }
 
   protected columnId(field: PctTimeField): string {
@@ -411,7 +592,15 @@ export class PctTimeColumns {
    * not an instruction (`pctListNavigation`'s reading of typeahead).
    */
   protected onKeydown(drawn: PctTimeColumn, event: KeyboardEvent): void {
-    if (this.disabled()) return;
+    this.read(drawn, event);
+  }
+
+  /**
+   * Reads a key in a column, and says whether it is one of the map's — answered or not, which
+   * is what a shape with a key map under this one has to know.
+   */
+  private read(drawn: PctTimeColumn, event: KeyboardEvent): boolean {
+    if (this.disabled()) return false;
     // The column as it stands NOW, not as the last render drew it: two keys can arrive before a
     // render — a busy page queues input ahead of change detection — and a walk that started the
     // second from the row the first one left would lose a row, or read a digit that moved the
@@ -440,7 +629,8 @@ export class PctTimeColumns {
       case 'Enter':
       case ' ':
         event.preventDefault();
-        return this.take();
+        this.take();
+        return true;
       default: {
         if (
           event.key.length !== 1 ||
@@ -448,7 +638,7 @@ export class PctTimeColumns {
           event.metaKey ||
           event.altKey
         )
-          return;
+          return false;
         const found = this.seek(column, event.key);
         answered = found !== -1;
         if (answered) walk.setActive(found);
@@ -456,11 +646,12 @@ export class PctTimeColumns {
     }
     // A key the column answered is the column's, even when the answer is the row it stands on;
     // one it did not answer — a letter or a digit no row begins with — is left to the page.
-    if (!answered) return;
+    if (!answered) return true;
     event.preventDefault();
     const row = column.rows[walk.activeIndex()];
     if (row !== undefined && walk.activeIndex() !== column.active)
       this.moveTo(column.field, row);
+    return true;
   }
 
   /** Ends what is being typed. */
@@ -654,26 +845,37 @@ export class PctTimeColumns {
   }
 
   /**
-   * The active row of every column brought into view — centred the first time, when the panel
-   * opens on a time somewhere down a column, and `block: 'nearest'` written out after that, so a
-   * walk moves the column only when the row would leave it. Written out rather than called
-   * through `scrollIntoView`, which also scrolls every ancestor that can — the page included.
+   * The active row of every list brought to the middle of its window — placed there the first
+   * time, when the panel opens on a time somewhere down a column, and travelled to after that,
+   * smooth or not as the motion axis says, so the rows on both sides of the walk stay in sight.
+   * The window is an odd count of rows and the list snaps to a row's start, so the middle is a
+   * row; near either end of a list the scroll has no further to go, and the row stands as near
+   * the middle as the list lets it. Written out rather than called through `scrollIntoView`,
+   * which also scrolls every ancestor that can — the page included. A wheel keeps its own row
+   * under its line, and there are no lists to place in that shape.
    */
   private keepInView(): void {
-    const centre = !this.placed;
+    const afresh = !this.placed;
     for (const ref of this.lists()) {
       const list = ref.nativeElement;
       const id = list.getAttribute('aria-activedescendant');
       const row =
         id === null ? null : list.querySelector<HTMLElement>(`#${id}`);
       if (row === null) continue;
-      const top = row.offsetTop;
-      const height = row.offsetHeight;
-      const view = list.clientHeight;
-      if (centre) list.scrollTop = top - (view - height) / 2;
-      else if (top < list.scrollTop) list.scrollTop = top;
-      else if (top + height > list.scrollTop + view)
-        list.scrollTop = top + height - view;
+      // Held to what the list can scroll to: near an end the middle is out of its reach, and a
+      // place it cannot be at is one it would be sent to at every move.
+      const top = Math.max(
+        0,
+        Math.min(
+          row.offsetTop - (list.clientHeight - row.offsetHeight) / 2,
+          list.scrollHeight - list.clientHeight,
+        ),
+      );
+      if (afresh) list.scrollTop = top;
+      // A list already there is not sent there again: a travel that moves nothing still
+      // stops the one under way.
+      else if (Math.abs(top - list.scrollTop) >= 1)
+        list.scrollTo({ top, behavior: pctScrollBehavior(list) });
     }
     this.placed = this.lists().length > 0;
   }
