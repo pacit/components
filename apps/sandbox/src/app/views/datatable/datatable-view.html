@@ -26,7 +26,7 @@
     class="datatable__rules"
     data-testid="table-rules"
     caption="Polling rules"
-    locale="pl"
+    locale="fr"
     [rows]="rules()"
     [columns]="columns"
     [rowId]="byId"
@@ -136,7 +136,7 @@
     #grouped="pctTableGroups"
     data-testid="table-groups"
     caption="Rules by room"
-    locale="pl"
+    locale="fr"
     [pctTableGroups]="groupColumns"
     [groupBy]="groupBy()"
     [(collapsed)]="closedGroups"
@@ -174,7 +174,7 @@
       #details="pctDataTable"
       data-testid="table-details"
       caption="Rules in detail"
-      locale="pl"
+      locale="fr"
       pctTableDetails
       [(details)]="openRules"
       [rows]="detailRules()"
@@ -234,7 +234,7 @@
     #picks="pctTableSelection"
     data-testid="table-selection"
     caption="Rules to move"
-    locale="pl"
+    locale="fr"
     pctTableSelection
     [formField]="moveForm.rules"
     hint="Pick the rules to move to the new controller."
@@ -278,7 +278,7 @@
   <pct-data-table
     data-testid="table-single"
     caption="The rule a new device copies"
-    locale="pl"
+    locale="fr"
     pctTableSelection
     mode="single"
     [(value)]="template"
@@ -575,7 +575,7 @@
   <pct-data-table
     data-testid="table-live"
     caption="Live readings"
-    locale="pl"
+    locale="fr"
     [rows]="live()"
     [columns]="columns"
     [rowId]="byId"

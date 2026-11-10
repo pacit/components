@@ -40,12 +40,73 @@ export const SECTIONS: Readonly<Record<string, readonly Section[]>> = {
         'datatable.spec.ts › a header’s button opens its filter, a text keeps the rows it is found in, and Escape goes back to the button',
     },
     {
+      block: 'demo-filters',
+      what: 'the switch that draws the row of filters',
+      on: '[data-testid="filters-row"] input',
+      keys: ['Space'],
+      owner:
+        'datatable.spec.ts › a row of filters under the headers, each control named by its column',
+    },
+    {
+      block: 'demo-filters',
+      what: 'the row of filters',
+      // Drawn by the section above; the Tabs from the switch spend the cap on the headers.
+      on: 'thead tr:nth-child(2) :is(input, button)',
+      keys: [],
+      owner:
+        'datatable.spec.ts › a row of filters under the headers, each control named by its column',
+    },
+    {
+      block: 'demo-layout',
+      what: "a column's separator and its menu",
+      on: '[data-pct-part="separator"]',
+      keys: ['ArrowRight', 'Shift+Tab'],
+      owner:
+        'datatable.spec.ts › a separator widens its column by the arrows, by 32 with Shift, and stops at its narrowest',
+    },
+    {
       block: 'demo-grid',
       what: 'the grid',
       on: '[role="grid"] [tabindex="0"]',
       keys: ['ArrowRight', 'ArrowDown', 'End'],
       owner:
         'datatable.spec.ts › the arrows move cell to cell, Home and End along the row, Ctrl with them to the ends',
+    },
+    {
+      block: 'demo-editing',
+      what: "a cell's editor",
+      // Enter and not `activate`: on a cell of the grid it is the key that opens the editor.
+      on: '[role="grid"] [tabindex="0"]',
+      keys: ['Enter', 'Escape', 'ArrowDown'],
+      owner:
+        'datatable.spec.ts › opens a cell on Enter, commits on Enter and goes a row down, and the page applies it',
+    },
+    {
+      block: 'demo-tree',
+      what: 'the treegrid',
+      // Ground floor, open; the arrow down is the kitchen, closed, and the next one its kettle.
+      on: '[role="treegrid"] [tabindex="0"]',
+      keys: ['ArrowDown', 'ArrowRight', 'ArrowDown', 'ArrowLeft'],
+      owner:
+        'datatable.spec.ts › on a first cell the arrow out of the line closes a branch or goes to the parent, the arrow into it opens one',
+    },
+    {
+      block: 'demo-remote-tree',
+      what: 'a tree the server holds',
+      // Each branch is asked for as it opens and comes a third of a second later, inside a dwell.
+      on: '[role="treegrid"] [tabindex="0"]',
+      keys: ['ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowDown'],
+      owner:
+        'datatable.spec.ts › a branch asks the server for its children when it opens, a placeholder standing in for them',
+    },
+    {
+      block: 'demo-remote-groups',
+      what: 'the groups a server made',
+      // Collapsed, the first meter lets the window draw the next one's heading.
+      on: '[data-pct-part="disclosure"]',
+      keys: ['activate'],
+      owner:
+        'datatable.spec.ts › a collapsed group asks nothing, and shows its readings when it opens',
     },
     {
       block: 'demo-row-menu',
