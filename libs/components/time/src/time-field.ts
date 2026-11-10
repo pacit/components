@@ -60,7 +60,7 @@ import {
   PctTimeOfDay,
   pctTimeOfDayParts,
 } from './time';
-import { PctTimeColumns } from './time-columns';
+import { PctTimeColumns, PctTimePicker } from './time-columns';
 
 /**
  * A time input written as an attribute is a string; one bound from a model may be anything.
@@ -240,6 +240,13 @@ export class PctTime
    * @since 0.3.0
    */
   readonly step = input(60, { transform: numberAttribute });
+
+  /**
+   * The shape of the panel's columns: `list`, or `wheel` — a `PctWheel` per field, the rows turned under a line (0089). The field, what it parses and what it writes are the same in both.
+   *
+   * @since next
+   */
+  readonly picker = input<PctTimePicker>('list');
 
   /**
    * Emitted on blur — lets the form mark the field as touched.
@@ -642,7 +649,8 @@ export class PctTime
    * the control it belongs to, because an overlay is a child of `body` and its content therefore
    * stands at the END of the document's tab order however near the field it is drawn
    * ([0031](../../../../docs/decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)).
-   * The stops are the columns, one each, all of them in this entrypoint's templates.
+   * The stops are the columns, one each — a list of this entrypoint's templates, or the listbox
+   * of the wheel a column is drawn as.
    */
   protected onPanelKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {

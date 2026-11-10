@@ -121,6 +121,22 @@ the line itself.
    no release, and the columns card's sentence that the window is a height and not a count
    — a snap to the row's start, and the walk kept centred.
 
+   _Amended 2026-11-10: **the token shipped, so it is deprecated and not retired.**_
+   `--pct-time-column-height` is in the skin of 0.3.0, which the sentence above did not know.
+   The window is a count all the same — `rows` on `PctTimeColumns`, seven by default, in both
+   shapes — and a skin that wrote the token keeps the height it wrote in the `list` shape
+   until the token goes, no earlier than two minors on ([support](../support.md)). And `wrap`
+   is on where a column has at least as many rows as its window shows: a ring of the two
+   halves of a day would show a row twice.
+
+   _And the price in bytes, which "What this costs us" does not name:_ a shape that is an
+   input is a shape every consumer carries. Measured on 2026-11-10, the `./time` row grew by
+   19 970 bytes and the `./datetime` row by 19 989 — the wheel, in an application that draws
+   lists. The two ways out were weighed and not taken: a deferred block opens the panel
+   empty and hands the focus to an hour that is not there yet, and a wheel the application
+   provides makes `picker="wheel"` two steps where point 2 decided one. The columns card
+   says so under its limits.
+
 ## Consequences
 
 - Two plan items: **1.6**, the wheel, with the runway's record as its first step; **1.7**, the

@@ -188,6 +188,45 @@
     ariaLabel="Meeting time"
     data-testid="time-columns-inline"
   />
+  <pct-time-columns
+    rows="5"
+    [(value)]="short"
+    locale="en-US"
+    ariaLabel="Reminder"
+    data-testid="time-columns-short"
+  />
+</sbx-demo>
+
+<sbx-demo
+  heading="The same columns as wheels"
+  summary='picker="wheel" draws each column as a wheel: the row under the line is the time, a turn settles on a row and writes it, and the keys stay the columns&apos; own — an arrow comes round, a digit goes to its row, Enter takes the time. A row outside the bounds is passed over.'
+  [reqs]="['req-a11y-built-in', 'req-a11y-touch', 'req-api-time']"
+  data-testid="demo-wheel"
+>
+  <div class="time-view__row">
+    <pct-time
+      label="Starts at"
+      locale="en-US"
+      picker="wheel"
+      [(value)]="wheelTime"
+      data-testid="time-wheel"
+    />
+    <pct-time
+      label="Office hours, by the quarter"
+      picker="wheel"
+      min="09:00"
+      max="17:00"
+      step="900"
+      [(value)]="wheelOffice"
+      data-testid="time-wheel-bounded"
+    />
+    <pct-time-columns
+      picker="wheel"
+      [(value)]="wheelInline"
+      ariaLabel="Alarm"
+      data-testid="time-columns-wheel"
+    />
+  </div>
 </sbx-demo>
 
 <sbx-demo

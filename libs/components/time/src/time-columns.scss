@@ -1,6 +1,9 @@
 /* The columns stand side by side along the INLINE axis, so a page written right to left draws
    the first field on the right without a rule of its own (`req-token-logical`). */
 :host {
+  /* The height of a row, which follows the size — what the window below is counted in. */
+  --_pct-time-row: var(--pct-time-option-height);
+
   display: inline-flex;
   align-items: stretch;
   gap: var(--pct-time-panel-gap);
@@ -8,17 +11,49 @@
   color: var(--pct-time-fg);
 }
 
+:host([data-pct-size='sm']) {
+  --_pct-time-row: var(--pct-time-option-height-sm);
+}
+
+:host([data-pct-size='lg']) {
+  --_pct-time-row: var(--pct-time-option-height-lg);
+}
+
 /* A column is the listbox and the element that scrolls. `position: relative` makes it the
-   rows' offset parent, which is what the walk measures a row against to keep it in view;
+   rows' offset parent, which is what the walk measures a row against to keep it centred;
    `overscroll-behavior` keeps a wheel that reaches the end of a column from scrolling the
-   page under the panel. */
+   page under the panel.
+
+   The window is a COUNT of rows and not a height: an odd count at every size, so its middle is
+   a row, and the snap rests the scroll on a row's start, so no row is cut at either edge.
+
+   `--pct-time-column-height` was the window before it was a count, and it shipped in 0.3.0, so
+   a skin that wrote it keeps the height it wrote until the token goes (`docs/support.md`). A
+   stylesheet cannot ask whether a property was written, only what it holds: `--_pct-time-moved`
+   is how far the token stands from the 224px the skin ships, a thousand times over and without
+   its sign — nothing while it is untouched, longer than any column once it is not — and the
+   clamp lets through that much of the way from the window to the token: none of it, or all. */
 .pct-time-columns__column {
+  --_pct-time-window: calc(var(--_pct-time-row) * var(--_pct-time-rows));
+  --_pct-time-moved: max(
+    (var(--pct-time-column-height) - 224px) * 1000,
+    (224px - var(--pct-time-column-height)) * 1000
+  );
+
   position: relative;
   box-sizing: border-box;
   min-inline-size: var(--pct-time-column-min-width);
-  block-size: var(--pct-time-column-height);
+  block-size: calc(
+    var(--_pct-time-window) +
+      clamp(
+        -1 * var(--_pct-time-moved),
+        var(--pct-time-column-height) - var(--_pct-time-window),
+        var(--_pct-time-moved)
+      )
+  );
   overflow-y: auto;
   overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
   scrollbar-width: thin;
   border-radius: var(--pct-time-option-radius);
 }
@@ -34,7 +69,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  block-size: var(--pct-time-option-height);
+  block-size: var(--_pct-time-row);
   padding-inline: var(--pct-time-option-padding-x);
   border-radius: var(--pct-time-option-radius);
   font-size: var(--pct-time-option-font-size);
@@ -43,6 +78,7 @@
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
+  scroll-snap-align: start;
   transition:
     background-color var(--pct-motion-transition-duration)
       var(--pct-motion-transition-easing),
@@ -98,12 +134,10 @@
 
 /* Sizes: the rows scale with the field they open from (req-api-size). */
 :host([data-pct-size='sm']) .pct-time-columns__option {
-  block-size: var(--pct-time-option-height-sm);
   font-size: var(--pct-time-option-font-size-sm);
 }
 
 :host([data-pct-size='lg']) .pct-time-columns__option {
-  block-size: var(--pct-time-option-height-lg);
   font-size: var(--pct-time-option-font-size-lg);
 }
 

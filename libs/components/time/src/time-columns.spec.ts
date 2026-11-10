@@ -1,13 +1,21 @@
 import {
   Component,
+  ErrorHandler,
   provideZonelessChangeDetection,
   signal,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { providePctTexts } from '@pacit/components/core';
+import { PctField } from '@pacit/components/field';
+import { PctWheel } from '@pacit/components/wheel';
 
 import { PctTimeOfDay } from './time';
-import { PctTimeColumns, PctTimePredicate } from './time-columns';
+import {
+  PctTimeColumns,
+  PctTimePicker,
+  PctTimePredicate,
+} from './time-columns';
 
 @Component({
   imports: [PctTimeColumns],
@@ -20,6 +28,8 @@ import { PctTimeColumns, PctTimePredicate } from './time-columns';
     [disabled]="disabled()"
     [timeDisabled]="timeDisabled()"
     [ariaLabel]="ariaLabel()"
+    [picker]="picker()"
+    [rows]="rows()"
     (timePicked)="picked.push($event)"
   />`,
 })
@@ -32,6 +42,8 @@ class Host {
   readonly disabled = signal(false);
   readonly timeDisabled = signal<PctTimePredicate | null>(null);
   readonly ariaLabel = signal('');
+  readonly picker = signal<PctTimePicker>('list');
+  readonly rows = signal<unknown>(7);
   readonly picked: PctTimeOfDay[] = [];
 }
 
@@ -96,6 +108,133 @@ async function press(
   list.dispatchEvent(event);
   await settle(f);
   return event;
+}
+
+const hostOf = (f: ComponentFixture<unknown>) =>
+  (f.nativeElement as HTMLElement).querySelector(
+    'pct-time-columns',
+  ) as HTMLElement;
+
+const wheelsOf = (f: ComponentFixture<unknown>) =>
+  Array.from(
+    (f.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('pct-wheel'),
+  );
+
+/** The listbox of a column drawn as a wheel — the element its keys and its scroll are on. */
+const wheel = (f: ComponentFixture<unknown>, field: string) =>
+  (f.nativeElement as HTMLElement).querySelector<HTMLElement>(
+    `pct-wheel[data-pct-field="${field}"] [data-pct-part="list"]`,
+  ) as HTMLElement;
+
+/** The rows of a wheel a reader meets: a ring's runway copies are left out. */
+const turn = (list: HTMLElement) =>
+  rowsOf(list).filter((row) => row.getAttribute('aria-hidden') !== 'true');
+
+const turnLabels = (list: HTMLElement) =>
+  turn(list).map((row) => row.textContent?.trim());
+
+const wheelAsked = (f: ComponentFixture<unknown>, field: string) =>
+  (
+    f.debugElement.query(By.css(`pct-wheel[data-pct-field="${field}"]`))
+      .componentInstance as PctWheel<number>
+  ).options();
+
+/** The height the layout stub gives every row, in pixels. */
+const ROW = 32;
+
+interface ScrollCall {
+  readonly list: Element;
+  readonly top: number;
+  readonly behavior: ScrollBehavior;
+}
+
+/**
+ * jsdom lays nothing out, so the scroll code finds columns that are not on the screen. This
+ * gives it one — every row `ROW` high and stacked in its parent, a window of seven rows, a
+ * `scrollTop` that keeps what is written and a `scrollTo` that moves it at once — and takes
+ * it back.
+ */
+function layout(): { calls: ScrollCall[]; restore: () => void } {
+  const calls: ScrollCall[] = [];
+  const tops = new WeakMap<Element, number>();
+  const stubs: readonly (readonly [object, string, PropertyDescriptor])[] = [
+    [HTMLElement.prototype, 'offsetHeight', { get: () => ROW }],
+    [
+      HTMLElement.prototype,
+      'offsetTop',
+      {
+        get(this: HTMLElement) {
+          return (
+            Array.from(this.parentElement?.children ?? []).indexOf(this) * ROW
+          );
+        },
+      },
+    ],
+    [Element.prototype, 'clientHeight', { get: () => 7 * ROW }],
+    [
+      Element.prototype,
+      'scrollHeight',
+      {
+        get(this: Element) {
+          return this.children.length * ROW;
+        },
+      },
+    ],
+    [
+      Element.prototype,
+      'scrollTop',
+      {
+        get(this: Element) {
+          return tops.get(this) ?? 0;
+        },
+        set(this: Element, top: number) {
+          tops.set(this, top);
+        },
+      },
+    ],
+    [
+      Element.prototype,
+      'scrollTo',
+      {
+        writable: true,
+        value(this: Element, options: ScrollToOptions) {
+          calls.push({
+            list: this,
+            top: options.top as number,
+            behavior: options.behavior as ScrollBehavior,
+          });
+          tops.set(this, options.top as number);
+        },
+      },
+    ],
+  ];
+  const kept = stubs.map(([target, name]) =>
+    Object.getOwnPropertyDescriptor(target, name),
+  );
+  for (const [target, name, descriptor] of stubs)
+    Object.defineProperty(target, name, { configurable: true, ...descriptor });
+  return {
+    calls,
+    restore: () =>
+      stubs.forEach(([target, name], index) => {
+        const descriptor = kept[index];
+        if (descriptor) Object.defineProperty(target, name, descriptor);
+        else delete (target as Record<string, unknown>)[name];
+      }),
+  };
+}
+
+/** The motion axis with a duration on it, for as long as `run` takes. */
+async function moving(run: () => Promise<void>): Promise<void> {
+  const style = vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+    getPropertyValue: (name: string) =>
+      name === '--pct-motion-transition-duration' ? '150ms' : '',
+  } as CSSStyleDeclaration);
+  try {
+    await run();
+  } finally {
+    style.mockRestore();
+  }
 }
 
 beforeEach(() => {
@@ -1083,5 +1222,690 @@ describe('PctTimeColumns — focus', () => {
     f.componentInstance.focusCursor();
     expect(document.activeElement?.getAttribute('data-pct-field')).toBe('hour');
     f.nativeElement.remove();
+  });
+
+  it('focuses nothing while there is no column drawn yet', () => {
+    const f = TestBed.createComponent(PctTimeColumns);
+    expect(() => f.componentInstance.focusCursor()).not.toThrow();
+  });
+});
+
+describe('PctTimeColumns — the list in view', () => {
+  let screen: ReturnType<typeof layout>;
+
+  beforeEach(() => {
+    screen = layout();
+  });
+  afterEach(() => {
+    screen.restore();
+  });
+
+  it('shows seven rows at every size, and says which shape it is drawn in', async () => {
+    const f = await render();
+    expect(hostOf(f).style.getPropertyValue('--_pct-time-rows')).toBe('7');
+    expect(hostOf(f).getAttribute('data-pct-picker')).toBe('list');
+  });
+
+  it('shows seven rows where nobody says how many', async () => {
+    @Component({
+      imports: [PctTimeColumns],
+      template: `<pct-time-columns ariaLabel="Alarm" />`,
+    })
+    class Bare {}
+    const f = TestBed.createComponent(Bare);
+    f.detectChanges();
+    await f.whenStable();
+    expect(hostOf(f).style.getPropertyValue('--_pct-time-rows')).toBe('7');
+  });
+
+  it('shows the count of rows it is given: an odd one, an even one taking the next odd', async () => {
+    const f = await render((h) => h.rows.set(5));
+    const shown = async (rows: unknown) => {
+      f.componentInstance.rows.set(rows);
+      f.detectChanges();
+      await f.whenStable();
+      return hostOf(f).style.getPropertyValue('--_pct-time-rows');
+    };
+    expect(hostOf(f).style.getPropertyValue('--_pct-time-rows')).toBe('5');
+    expect(await shown('9')).toBe('9');
+    expect(await shown(4)).toBe('5');
+    expect(await shown(2.9)).toBe('3');
+    expect(await shown(1)).toBe('1');
+    // No count: nothing, a word, none and fewer than none.
+    expect(await shown(undefined)).toBe('7');
+    expect(await shown('many')).toBe('7');
+    expect(await shown(0)).toBe('7');
+    expect(await shown(-3)).toBe('7');
+  });
+
+  it('opens with the walk’s row in the middle of its window, placed at once', async () => {
+    const f = await render();
+    // Three rows above the middle one: 13 stands with 10 at the top, 05 with 02.
+    expect(column(f, 'hour').scrollTop).toBe(10 * ROW);
+    expect(column(f, 'minute').scrollTop).toBe(2 * ROW);
+    expect(screen.calls).toEqual([]);
+  });
+
+  it('stands a row near an end as near the middle as the list lets it', async () => {
+    const f = await render((h) => h.value.set('01:59'));
+    expect(column(f, 'hour').scrollTop).toBe(0);
+    // Sixty rows and a window of seven: the last place the list can be at.
+    expect(column(f, 'minute').scrollTop).toBe(53 * ROW);
+  });
+
+  it('travels the row a walk lands on to the middle, as the motion axis says', async () => {
+    const f = await render();
+    const hour = column(f, 'hour');
+
+    // No duration on the axis here: the travel is a placement.
+    await press(f, hour, 'ArrowDown');
+    expect(screen.calls).toEqual([
+      { list: hour, top: 11 * ROW, behavior: 'instant' },
+    ]);
+
+    await moving(async () => {
+      await press(f, hour, 'ArrowUp');
+      expect(screen.calls[1]).toEqual({
+        list: hour,
+        top: 10 * ROW,
+        behavior: 'smooth',
+      });
+      expect(window.getComputedStyle).toHaveBeenCalledWith(hour);
+    });
+    // The column nobody moved was where it should be, and is not sent there again.
+    expect(screen.calls).toHaveLength(2);
+  });
+
+  it('does not send a list to a place it cannot be at', async () => {
+    const top = await render((h) => h.value.set('01:05'));
+    await press(top, column(top, 'hour'), 'ArrowDown');
+    expect(top.componentInstance.value()).toBe('02:05');
+    expect(screen.calls).toEqual([]);
+
+    const end = await render((h) => h.value.set('21:05'));
+    await press(end, column(end, 'hour'), 'ArrowDown');
+    expect(end.componentInstance.value()).toBe('22:05');
+    expect(screen.calls).toEqual([]);
+    expect(column(end, 'hour').scrollTop).toBe(17 * ROW);
+  });
+
+  it('leaves a list that rests within a pixel of its place, and sends one that is a pixel off', async () => {
+    const f = await render();
+    const hour = column(f, 'hour');
+    const minute = column(f, 'minute');
+
+    hour.scrollTop = 10 * ROW + 0.5;
+    await press(f, minute, 'ArrowDown');
+    expect(screen.calls.filter((call) => call.list === hour)).toEqual([]);
+
+    hour.scrollTop = 10 * ROW + 1;
+    await press(f, minute, 'ArrowDown');
+    expect(screen.calls.filter((call) => call.list === hour)).toEqual([
+      { list: hour, top: 10 * ROW, behavior: 'instant' },
+    ]);
+
+    hour.scrollTop = 10 * ROW - 1;
+    await press(f, minute, 'ArrowDown');
+    expect(screen.calls.filter((call) => call.list === hour)).toHaveLength(2);
+  });
+
+  it('places the lists afresh when the shape comes back to them', async () => {
+    const f = await render();
+    f.componentInstance.picker.set('wheel');
+    await settle(f);
+    expect(columnsOf(f)).toEqual([]);
+
+    f.componentInstance.picker.set('list');
+    await settle(f);
+    expect(column(f, 'hour').scrollTop).toBe(10 * ROW);
+    expect(
+      screen.calls.filter((call) =>
+        call.list.matches('[data-pct-part="column"]'),
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe('PctTimeColumns — the wheel shape', () => {
+  const asWheels = (setup: (host: Host) => void = () => undefined) =>
+    render((h) => {
+      h.picker.set('wheel');
+      setup(h);
+    });
+
+  /** What a listener above the columns hears of the keys pressed in them. */
+  function overhear(f: ComponentFixture<unknown>): string[] {
+    const heard: string[] = [];
+    (f.nativeElement as HTMLElement).addEventListener('keydown', (event) =>
+      heard.push(event.key),
+    );
+    return heard;
+  }
+
+  describe('the wheels there are', () => {
+    it('is lists until it is asked for wheels', () => {
+      const f = TestBed.createComponent(PctTimeColumns);
+      expect(f.componentInstance.picker()).toBe('list');
+    });
+
+    it('draws a wheel for every column, in the columns’ order, and no list', async () => {
+      const f = await asWheels((h) => h.locale.set('en-US'));
+
+      expect(hostOf(f).getAttribute('data-pct-picker')).toBe('wheel');
+      expect(columnsOf(f)).toEqual([]);
+      expect(wheelsOf(f).map((host) => host.dataset['pctField'])).toEqual([
+        'hour',
+        'minute',
+        'dayPeriod',
+      ]);
+      for (const host of wheelsOf(f)) {
+        expect(host.classList.contains('pct-time-columns__wheel')).toBe(true);
+        expect(host.style.getPropertyValue('--_pct-wheel-rows')).toBe('7');
+        expect(host.getAttribute('data-pct-size')).toBe('md');
+      }
+    });
+
+    it('names every wheel as the list is named, and gives it no label of its own', async () => {
+      const f = await asWheels((h) => h.locale.set('en-US'));
+      const lists = ['hour', 'minute', 'dayPeriod'].map((field) =>
+        wheel(f, field),
+      );
+
+      expect(lists.map((list) => list.getAttribute('aria-label'))).toEqual([
+        'Hours',
+        'Minutes',
+        'AM/PM',
+      ]);
+      for (const list of lists) {
+        expect(list.getAttribute('role')).toBe('listbox');
+        expect(list.getAttribute('tabindex')).toBe('0');
+        expect(list.hasAttribute('aria-labelledby')).toBe(false);
+      }
+      expect(
+        f.nativeElement.querySelector('pct-wheel [data-pct-part="label"]'),
+      ).toBeNull();
+    });
+
+    it('carries its size to the wheels', async () => {
+      const f = TestBed.createComponent(PctTimeColumns);
+      f.componentRef.setInput('picker', 'wheel');
+      f.componentRef.setInput('locale', 'en-GB');
+      f.componentRef.setInput('size', 'lg');
+      f.detectChanges();
+      await f.whenStable();
+      expect(
+        wheelsOf(f).map((host) => host.getAttribute('data-pct-size')),
+      ).toEqual(['lg', 'lg']);
+    });
+
+    it('turns the rows of the column, the refused ones drawn and disabled', async () => {
+      const f = await asWheels((h) => {
+        h.min.set('09:00');
+        h.max.set('17:30');
+      });
+      const hours = turn(wheel(f, 'hour'));
+
+      expect(turnLabels(wheel(f, 'hour'))).toHaveLength(24);
+      expect(turnLabels(wheel(f, 'hour'))[9]).toBe('09');
+      expect(
+        hours
+          .filter((row) => row.getAttribute('aria-disabled') !== 'true')
+          .map((row) => row.textContent?.trim()),
+      ).toEqual(['09', '10', '11', '12', '13', '14', '15', '16', '17']);
+    });
+
+    it('is a ring where a column fills its window, and a list where it does not', async () => {
+      const f = await asWheels((h) => {
+        h.locale.set('en-US');
+        h.step.set(600);
+      });
+      // Twelve hours: the cycle three times in the tree, one turn of it a reader’s.
+      expect(rowsOf(wheel(f, 'hour'))).toHaveLength(36);
+      expect(turn(wheel(f, 'hour'))).toHaveLength(12);
+      // Six minutes and two halves of a day: a ring of them would show a row twice.
+      expect(rowsOf(wheel(f, 'minute'))).toHaveLength(6);
+      expect(rowsOf(wheel(f, 'dayPeriod'))).toHaveLength(2);
+
+      // Eight hours on a three-hour step: one row more than the window.
+      const eight = await asWheels((h) => h.step.set(10800));
+      expect(turn(wheel(eight, 'hour'))).toHaveLength(8);
+      expect(rowsOf(wheel(eight, 'hour'))).toHaveLength(24);
+    });
+
+    it('hands the wheels the count of rows it is given, and a ring is counted against it', async () => {
+      const f = await asWheels((h) => {
+        h.locale.set('en-US');
+        h.step.set(600);
+        h.rows.set(5);
+      });
+      const shown = (field: string) =>
+        (
+          wheel(f, field).closest('pct-wheel') as HTMLElement
+        ).style.getPropertyValue('--_pct-wheel-rows');
+      expect(shown('hour')).toBe('5');
+      expect(shown('minute')).toBe('5');
+      // Six minutes fill a window of five and not one of seven; two halves of a day fill neither.
+      expect(rowsOf(wheel(f, 'minute'))).toHaveLength(18);
+      expect(rowsOf(wheel(f, 'dayPeriod'))).toHaveLength(2);
+
+      // A window as long as the column is a ring still; one row longer is not.
+      f.componentInstance.rows.set(6);
+      f.detectChanges();
+      await f.whenStable();
+      expect(shown('minute')).toBe('7');
+      expect(rowsOf(wheel(f, 'minute'))).toHaveLength(6);
+      expect(rowsOf(wheel(f, 'hour'))).toHaveLength(36);
+    });
+
+    it('is no field’s control inside a field: the chrome names nothing here', async () => {
+      @Component({
+        imports: [PctField, PctTimeColumns],
+        template: `<pct-field label="Meeting" hint="Any time">
+          <pct-time-columns picker="wheel" />
+        </pct-field>`,
+      })
+      class InField {}
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        const f = TestBed.createComponent(InField);
+        f.detectChanges();
+        await f.whenStable();
+
+        // Every wheel, the last one too — the one a chrome would describe.
+        const lists = wheelsOf(f).map(
+          (host) => host.querySelector('[data-pct-part="list"]') as HTMLElement,
+        );
+        expect(lists.length).toBeGreaterThan(1);
+        for (const list of lists) {
+          expect(list.hasAttribute('aria-labelledby')).toBe(false);
+          expect(list.hasAttribute('aria-describedby')).toBe(false);
+        }
+        expect(wheel(f, 'hour').getAttribute('aria-label')).toBe('Hours');
+        // And the chrome was not told of two controls.
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    });
+  });
+
+  describe('the line and the value', () => {
+    it('holds the row of the value under every line, chosen', async () => {
+      const f = await asWheels();
+      expect(active(wheel(f, 'hour'))).toBe('13');
+      expect(chosen(wheel(f, 'hour'))).toEqual(['13']);
+      expect(active(wheel(f, 'minute'))).toBe('05');
+      expect(chosen(wheel(f, 'minute'))).toEqual(['05']);
+
+      f.componentInstance.value.set('07:40');
+      await settle(f);
+      expect(chosen(wheel(f, 'hour'))).toEqual(['07']);
+      expect(chosen(wheel(f, 'minute'))).toEqual(['40']);
+    });
+
+    it('with no value holds the rows of now, active and not chosen — and writes nothing', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 8, 14, 22, 0));
+      try {
+        const f = await asWheels((h) => h.value.set(null));
+        expect(active(wheel(f, 'hour'))).toBe('14');
+        expect(active(wheel(f, 'minute'))).toBe('22');
+        expect(chosen(wheel(f, 'hour'))).toEqual([]);
+        expect(chosen(wheel(f, 'minute'))).toEqual([]);
+        expect(f.componentInstance.value()).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('holds the rows the walk starts on for a value the bounds refuse, and chooses none it is not in', async () => {
+      const f = await asWheels((h) => {
+        h.value.set('07:30');
+        h.min.set('09:00');
+      });
+      expect(active(wheel(f, 'hour'))).toBe('09');
+      expect(chosen(wheel(f, 'hour'))).toEqual([]);
+      expect(active(wheel(f, 'minute'))).toBe('00');
+      expect(chosen(wheel(f, 'minute'))).toEqual([]);
+      expect(f.componentInstance.value()).toBe('07:30');
+    });
+
+    it('hands a wheel the same list while nothing in it changed', async () => {
+      const f = await asWheels();
+      const hours = wheelAsked(f, 'hour');
+      const minutes = wheelAsked(f, 'minute');
+
+      await press(f, wheel(f, 'hour'), 'ArrowDown');
+      expect(f.componentInstance.value()).toBe('14:05');
+      expect(wheelAsked(f, 'hour')).toBe(hours);
+      expect(wheelAsked(f, 'minute')).toBe(minutes);
+    });
+
+    it('hands a wheel a new list when a row is refused, written otherwise, or added', async () => {
+      const f = await asWheels((h) => h.step.set(3600));
+      expect(turnLabels(wheel(f, 'minute'))).toEqual(['00']);
+
+      // A row more, after rows that stay as they were.
+      f.componentInstance.step.set(1800);
+      await settle(f);
+      expect(turnLabels(wheel(f, 'minute'))).toEqual(['00', '30']);
+
+      // The same rows, one of them refused.
+      f.componentInstance.max.set('13:10');
+      await settle(f);
+      expect(
+        turn(wheel(f, 'minute')).map((row) =>
+          row.getAttribute('aria-disabled'),
+        ),
+      ).toEqual([null, 'true']);
+
+      // The same rows, written in other digits.
+      f.componentInstance.locale.set('en-GB-u-nu-arab');
+      await settle(f);
+      expect(turnLabels(wheel(f, 'minute'))).toEqual(['٠٠', '٣٠']);
+    });
+  });
+
+  describe('the keys', () => {
+    it('reads an arrow as the columns do, and the key goes no further', async () => {
+      const f = await asWheels();
+      const heard = overhear(f);
+
+      const down = await press(f, wheel(f, 'hour'), 'ArrowDown');
+      expect(f.componentInstance.value()).toBe('14:05');
+      expect(down.defaultPrevented).toBe(true);
+      expect(active(wheel(f, 'hour'))).toBe('14');
+      expect(chosen(wheel(f, 'hour'))).toEqual(['14']);
+
+      await press(f, wheel(f, 'minute'), 'ArrowUp');
+      expect(f.componentInstance.value()).toBe('14:04');
+      expect(heard).toEqual([]);
+      expect(f.componentInstance.picked).toEqual([]);
+    });
+
+    it('comes round at the end of a column that is no ring', async () => {
+      const f = await asWheels((h) => h.locale.set('en-US'));
+      await press(f, wheel(f, 'dayPeriod'), 'ArrowDown');
+      expect(f.componentInstance.value()).toBe('01:05');
+      await press(f, wheel(f, 'dayPeriod'), 'ArrowUp');
+      expect(f.componentInstance.value()).toBe('13:05');
+    });
+
+    it('goes to the first and the last row with Home and End', async () => {
+      const f = await asWheels();
+      await press(f, wheel(f, 'minute'), 'End');
+      expect(f.componentInstance.value()).toBe('13:59');
+      await press(f, wheel(f, 'minute'), 'Home');
+      expect(f.componentInstance.value()).toBe('13:00');
+    });
+
+    it('reads typed digits whole, where a wheel of its own would read the start of a label', async () => {
+      const f = await asWheels();
+      // No row of padded hours begins with `9`.
+      await press(f, wheel(f, 'hour'), '9');
+      expect(f.componentInstance.value()).toBe('09:05');
+      await press(f, wheel(f, 'minute'), '4');
+      await press(f, wheel(f, 'minute'), '5');
+      expect(f.componentInstance.value()).toBe('09:45');
+
+      // Rows `12, 1, 2 … 11`: a prefix would take `1` to twelve and never reach one.
+      const twelve = await asWheels((h) => {
+        h.locale.set('en-US');
+        h.value.set('15:05');
+      });
+      await press(twelve, wheel(twelve, 'hour'), '1');
+      expect(twelve.componentInstance.value()).toBe('13:05');
+    });
+
+    it('keeps a key that matches no row from the wheel under it, and leaves it to the page', async () => {
+      const f = await asWheels();
+      const heard = overhear(f);
+      const miss = await press(f, wheel(f, 'hour'), 'x');
+
+      expect(miss.defaultPrevented).toBe(false);
+      expect(heard).toEqual([]);
+      expect(f.componentInstance.value()).toBe('13:05');
+    });
+
+    it('takes the time with Enter and Space, and says it was picked', async () => {
+      const f = await asWheels();
+      const heard = overhear(f);
+      const enter = await press(f, wheel(f, 'hour'), 'Enter');
+      await press(f, wheel(f, 'minute'), ' ');
+
+      expect(enter.defaultPrevented).toBe(true);
+      expect(f.componentInstance.picked).toEqual(['13:05', '13:05']);
+      expect(heard).toEqual([]);
+    });
+
+    it('takes the rows under the lines when there is no value', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 8, 14, 22, 0));
+      try {
+        const f = await asWheels((h) => h.value.set(null));
+        await press(f, wheel(f, 'hour'), 'Enter');
+        expect(f.componentInstance.value()).toBe('14:22');
+        expect(f.componentInstance.picked).toEqual(['14:22']);
+        expect(chosen(wheel(f, 'hour'))).toEqual(['14']);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('leaves PageDown and PageUp to the wheel, which moves by its window', async () => {
+      const f = await asWheels();
+      const heard = overhear(f);
+
+      await press(f, wheel(f, 'hour'), 'PageDown');
+      expect(f.componentInstance.value()).toBe('20:05');
+      await press(f, wheel(f, 'minute'), 'PageUp');
+      // Seven rows back from `05` is past the first: a wide move stops at the end, in a ring
+      // as in a list.
+      expect(f.componentInstance.value()).toBe('20:00');
+      expect(heard).toEqual(['PageDown', 'PageUp']);
+      expect(f.componentInstance.picked).toEqual([]);
+    });
+
+    it('leaves a modified key, and a key it has no use for, to whoever owns it', async () => {
+      const f = await asWheels();
+      const heard = overhear(f);
+      const copy = await press(f, wheel(f, 'hour'), 'c', { ctrlKey: true });
+      const tab = await press(f, wheel(f, 'hour'), 'Tab');
+
+      expect(copy.defaultPrevented).toBe(false);
+      expect(tab.defaultPrevented).toBe(false);
+      expect(heard).toEqual(['c', 'Tab']);
+      expect(f.componentInstance.value()).toBe('13:05');
+    });
+
+    it('reads no key pressed outside every wheel, and has nothing to say about it', async () => {
+      const f = await asWheels();
+      const heard = overhear(f);
+      const errors: unknown[] = [];
+      const onError = (event: ErrorEvent) => {
+        errors.push(event.error);
+        event.preventDefault();
+      };
+      window.addEventListener('error', onError);
+      const down = await press(f, hostOf(f), 'ArrowDown');
+      window.removeEventListener('error', onError);
+
+      expect(errors).toEqual([]);
+      expect(down.defaultPrevented).toBe(false);
+      expect(heard).toEqual(['ArrowDown']);
+      expect(f.componentInstance.value()).toBe('13:05');
+    });
+
+    it('reads no key of a wheel while the shape is a list', async () => {
+      const f = await render();
+      const heard = overhear(f);
+      await press(f, column(f, 'hour'), 'ArrowDown');
+      // The list's own handler answered it, on the way up — and it went on up.
+      expect(f.componentInstance.value()).toBe('14:05');
+      expect(heard).toEqual(['ArrowDown']);
+    });
+
+    it('stops listening when the wheels go back to being lists', async () => {
+      const f = await asWheels();
+      f.componentInstance.picker.set('list');
+      await settle(f);
+      const heard = overhear(f);
+
+      await press(f, column(f, 'hour'), 'ArrowDown');
+
+      expect(f.componentInstance.value()).toBe('14:05');
+      expect(heard).toEqual(['ArrowDown']);
+    });
+
+    it('freezes when disabled: the wheels leave the tab order, and no key moves or takes', async () => {
+      const f = await asWheels((h) => h.disabled.set(true));
+      const heard = overhear(f);
+      for (const field of ['hour', 'minute']) {
+        expect(wheel(f, field).getAttribute('tabindex')).toBe('-1');
+        expect(wheel(f, field).getAttribute('aria-disabled')).toBe('true');
+      }
+
+      const down = await press(f, wheel(f, 'minute'), 'ArrowDown');
+      await press(f, wheel(f, 'minute'), 'Enter');
+      await press(f, wheel(f, 'minute'), 'PageDown');
+      turn(wheel(f, 'minute'))[30].click();
+      await settle(f);
+
+      expect(down.defaultPrevented).toBe(false);
+      expect(heard).toEqual(['ArrowDown', 'Enter', 'PageDown']);
+      expect(f.componentInstance.value()).toBe('13:05');
+      expect(f.componentInstance.picked).toEqual([]);
+    });
+  });
+
+  describe('a press and a turn', () => {
+    let screen: ReturnType<typeof layout>;
+
+    beforeEach(() => {
+      screen = layout();
+    });
+    afterEach(() => {
+      screen.restore();
+    });
+
+    it('moves the value on a press, and does not say it was picked', async () => {
+      const f = await asWheels();
+      turn(wheel(f, 'minute'))[30].click();
+      await settle(f);
+      expect(f.componentInstance.value()).toBe('13:30');
+      expect(f.componentInstance.picked).toEqual([]);
+    });
+
+    it('opens every wheel on the row under its line, placed at once', async () => {
+      const f = await asWheels();
+      // Rings, on their middle turn.
+      expect(wheel(f, 'hour').scrollTop).toBe((24 + 13) * ROW);
+      expect(wheel(f, 'minute').scrollTop).toBe((60 + 5) * ROW);
+      expect(screen.calls.map((call) => call.behavior)).toEqual([
+        'instant',
+        'instant',
+      ]);
+    });
+
+    it('opens on the rows of now when there is no value', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 8, 14, 22, 0));
+      try {
+        const f = await asWheels((h) => h.value.set(null));
+        expect(wheel(f, 'hour').scrollTop).toBe((24 + 14) * ROW);
+        expect(wheel(f, 'minute').scrollTop).toBe((60 + 22) * ROW);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('moves the value when a wheel comes to rest, as a press does', async () => {
+      const f = await asWheels();
+      const hour = wheel(f, 'hour');
+
+      hour.dispatchEvent(new Event('pointerdown'));
+      hour.scrollTop = (24 + 20) * ROW;
+      hour.dispatchEvent(new Event('scrollend'));
+      await settle(f);
+
+      expect(f.componentInstance.value()).toBe('20:05');
+      expect(chosen(hour)).toEqual(['20']);
+      expect(f.componentInstance.picked).toEqual([]);
+    });
+
+    it('writes nothing when a wheel is emptied: no row stands for no value', async () => {
+      const f = await asWheels();
+      const hour = f.debugElement.query(
+        By.css('pct-wheel[data-pct-field="hour"]'),
+      ).componentInstance as PctWheel<number>;
+      // An error under a wheel's output goes to the handler, and not to whoever set the value.
+      const handled = vi
+        .spyOn(TestBed.inject(ErrorHandler), 'handleError')
+        .mockImplementation(() => undefined);
+
+      hour.value.set(null);
+      await settle(f);
+
+      expect(handled).not.toHaveBeenCalled();
+      expect(f.componentInstance.value()).toBe('13:05');
+      expect(f.componentInstance.picked).toEqual([]);
+    });
+
+    it('takes the other wheels to meet a bound the turned one runs into', async () => {
+      const f = await asWheels((h) => {
+        h.value.set('16:45');
+        h.max.set('17:30');
+      });
+      const hour = wheel(f, 'hour');
+
+      hour.dispatchEvent(new Event('pointerdown'));
+      hour.scrollTop = (24 + 17) * ROW;
+      hour.dispatchEvent(new Event('scrollend'));
+      await settle(f);
+
+      expect(f.componentInstance.value()).toBe('17:30');
+      expect(active(wheel(f, 'minute'))).toBe('30');
+    });
+
+    it('turns a wheel to the row a key wrote — travelled, the list being the one it had', async () => {
+      const f = await asWheels();
+      const hour = wheel(f, 'hour');
+      screen.calls.length = 0;
+
+      await moving(async () => {
+        await press(f, hour, 'ArrowDown');
+        expect(screen.calls).toEqual([
+          { list: hour, top: (24 + 14) * ROW, behavior: 'smooth' },
+        ]);
+      });
+    });
+  });
+
+  describe('focus', () => {
+    it('hands the focus to the hour wheel, wherever the language puts it', async () => {
+      const f = TestBed.createComponent(PctTimeColumns);
+      f.componentRef.setInput('locale', 'ko-KR');
+      f.componentRef.setInput('picker', 'wheel');
+      document.body.append(f.nativeElement);
+      f.detectChanges();
+      await f.whenStable();
+      f.componentInstance.focusCursor();
+
+      expect(document.activeElement).toBe(wheel(f, 'hour'));
+      expect(wheelsOf(f).map((host) => host.dataset['pctField'])).toEqual([
+        'dayPeriod',
+        'hour',
+        'minute',
+      ]);
+      f.nativeElement.remove();
+    });
+
+    it('focuses nothing while there is no wheel drawn yet', () => {
+      const f = TestBed.createComponent(PctTimeColumns);
+      f.componentRef.setInput('picker', 'wheel');
+      expect(() => f.componentInstance.focusCursor()).not.toThrow();
+    });
   });
 });

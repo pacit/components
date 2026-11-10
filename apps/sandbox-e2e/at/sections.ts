@@ -199,4 +199,16 @@ export const SECTIONS: Readonly<Record<string, readonly Section[]>> = {
         'wheel.spec.ts › the keys come round at the ends, and the scroll is put back on the middle turn',
     },
   ],
+  // The columns of a time as wheels: the keys are the columns' and the listbox is the wheel's,
+  // so what a reader says of an hour a key brings is neither card's until it is read here.
+  '/time': [
+    {
+      block: 'demo-wheel',
+      what: 'an hour a key brings to the line of its wheel',
+      on: '[data-testid="time-columns-wheel"] [role="listbox"]',
+      keys: ['ArrowDown', 'Home', 'ArrowUp'],
+      owner:
+        'time.spec.ts › the keys are the columns’ own — an arrow comes round, a digit goes to its row, Enter takes the time',
+    },
+  ],
 };
