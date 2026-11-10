@@ -107,6 +107,8 @@ const CARDS: ReadonlyArray<
   ['/checkbox', 'demo-in-field', 'checkbox-in-wrapper'],
   ['/radio', 'demo-in-field', 'radio-in-wrapper'],
   ['/slider', 'demo-standalone', 'slider-states'],
+  ['/wheel', 'demo-list', 'wheel-list'],
+  ['/wheel', 'demo-states', 'wheel-states'],
   ['/switch', 'demo-standalone', 'switch-states'],
   ['/date', 'demo-standalone', 'date-field'],
   ['/date', 'demo-inline', 'date-calendar'],

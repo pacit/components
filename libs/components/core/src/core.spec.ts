@@ -20,7 +20,7 @@ import { PctFocusStays } from './focus';
 import { nextPctId, PctIdCounter } from './id';
 import { pctListNavigation, PctListSource } from './list';
 import { PctModalBackground } from './modal';
-import { pctAfterTransition } from './motion';
+import { pctAfterTransition, pctScrollBehavior } from './motion';
 import { pctOverlay, PctOverlayInherited, PctOverlayPanel } from './overlay';
 import { pctPlacementPositions } from './placement';
 import { PCT_REGIONS } from './regions';
@@ -1072,6 +1072,55 @@ describe('@pacit/components/core', () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+  });
+
+  describe('pctScrollBehavior', () => {
+    /** An element whose cascade answers `duration` for the motion axis's transition. */
+    const element = (duration: string | undefined) => {
+      const asked: string[] = [];
+      const node = {
+        ownerDocument: {
+          defaultView: {
+            getComputedStyle: () => ({
+              getPropertyValue: (name: string) => {
+                asked.push(name);
+                return duration;
+              },
+            }),
+          },
+        },
+      };
+      return { node: node as unknown as HTMLElement, asked };
+    };
+
+    it('is smooth where the motion axis gives a transition a duration', () => {
+      const el = element('150ms');
+
+      expect(pctScrollBehavior(el.node)).toBe('smooth');
+      // The one property the token build answers the preference in — not a transition the
+      // element happens to carry.
+      expect(el.asked).toEqual(['--pct-motion-transition-duration']);
+    });
+
+    it('is instant under the reduced duration, which is not zero', () => {
+      expect(pctScrollBehavior(element('0.01ms').node)).toBe('instant');
+    });
+
+    it('draws the line at a millisecond', () => {
+      expect(pctScrollBehavior(element('1ms').node)).toBe('smooth');
+      expect(pctScrollBehavior(element('0.99ms').node)).toBe('instant');
+      expect(pctScrollBehavior(element('0.001s').node)).toBe('smooth');
+    });
+
+    it('is instant where nothing answers', () => {
+      expect(pctScrollBehavior(element('').node)).toBe('instant');
+      expect(pctScrollBehavior(element(undefined).node)).toBe('instant');
+      // A detached node has no document to ask, and no view behind one.
+      expect(pctScrollBehavior({} as HTMLElement)).toBe('instant');
+      expect(
+        pctScrollBehavior({ ownerDocument: {} } as unknown as HTMLElement),
+      ).toBe('instant');
     });
   });
 

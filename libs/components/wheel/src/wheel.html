@@ -1,0 +1,116 @@
+@if (label() && !inField) {
+<span class="pct-wheel__label" data-pct-part="label" [id]="labelId">
+  {{ label() }} @if (required()) {
+  <span class="pct-wheel__required" aria-hidden="true">*</span>
+  }
+</span>
+}
+
+<!--
+  The listbox is the element that SCROLLS and the one that holds the focus: one tab stop, the
+  row under the line pointed at by `aria-activedescendant` (0032 — a listbox points at its
+  option), the rows never focusable. Being focusable, it leaves axe's
+  `scrollable-region-focusable` nothing to say.
+
+  The line is drawn by the element AFTER the list and under it: the rows travel over a band
+  that stands still, and the band is what carries the keyboard's ring — the row the listbox
+  points at is always the one in it.
+-->
+<div class="pct-wheel__view" data-pct-part="view">
+  <div
+    #list
+    class="pct-wheel__list"
+    data-pct-part="list"
+    role="listbox"
+    [id]="controlId"
+    [attr.name]="name() || null"
+    [attr.tabindex]="disabled() ? -1 : 0"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ownLabelledBy() ?? (ariaLabelledby() || null)"
+    [attr.aria-describedby]="describedBy()"
+    [attr.aria-activedescendant]="activeId()"
+    [attr.aria-invalid]="showInvalid() ? 'true' : null"
+    [attr.aria-required]="required() ? 'true' : null"
+    [attr.aria-readonly]="readonly() ? 'true' : null"
+    [attr.aria-disabled]="disabled() ? 'true' : null"
+    (keydown)="onKeydown($event)"
+    (scrollend)="onScrollEnd()"
+    (blur)="touch.emit()"
+  >
+    @for (row of runway(); track row.at) {
+    <!--
+      The ARIA listbox pattern: the keyboard lives on the list, so a row has no key handling of
+      its own and is never a tab stop — both template rules below are the pattern's false
+      positives. A copy of a row outside the middle turn of a ring is runway and nothing else
+      (0091 §1): hidden from a reader, without an id, and a click on it is a click on the row
+      it copies. The STATE attribute is `data-pct-chosen` and not `data-pct-selected` for the
+      calendar's reason: `pct-selected` contains `pct-select`, the marker `check-bundle` reads
+      the select's presence in a bundle by.
+    -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <div
+      class="pct-wheel__option"
+      data-pct-part="option"
+      role="option"
+      [attr.id]="row.copy ? null : rowId(row.index)"
+      [attr.aria-hidden]="row.copy ? 'true' : null"
+      [attr.aria-selected]="
+        row.copy ? null : row.index === chosen() ? 'true' : 'false'
+      "
+      [attr.aria-disabled]="row.option.disabled ? 'true' : null"
+      [attr.data-pct-chosen]="row.index === chosen() ? '' : null"
+      [attr.data-pct-active]="!row.copy && row.index === active() ? '' : null"
+      [attr.data-pct-disabled]="row.option.disabled ? '' : null"
+      (click)="pick(row)"
+    >
+      {{ row.option.label }}
+    </div>
+    }
+  </div>
+  <div class="pct-wheel__band" data-pct-part="band" aria-hidden="true"></div>
+</div>
+
+<!-- One message line, and the error takes it (`req-api-message`). -->
+@if (showError()) {
+<span
+  class="pct-wheel__error"
+  data-pct-part="error"
+  [id]="errorId"
+  role="alert"
+>
+  {{ errorText() }}
+</span>
+} @else if (showWarning()) {
+<!-- A verdict without a veto (0087): the same third branch the chrome draws — the tone's glyph
+     before the text, a hidden word for a reader, `status` where the error is `alert` (0026). -->
+<span
+  class="pct-wheel__warning"
+  data-pct-part="warning"
+  [id]="warningId"
+  role="status"
+>
+  <pct-icon class="pct-wheel__warning-icon" name="warning">
+    <svg
+      viewBox="0 0 16 16"
+      width="100%"
+      height="100%"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+    >
+      <path d="M8 2.6L14.5 13.4h-13z" />
+      <path d="M8 6.6v2.6" />
+      <path d="M8 11.4h.01" />
+    </svg>
+  </pct-icon>
+  <span class="pct-wheel__sr">{{ texts().fieldWarning }}</span>
+  {{ warningText() }}
+</span>
+} @else if (hint() && !inField) {
+<span class="pct-wheel__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
+</span>
+}

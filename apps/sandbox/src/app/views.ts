@@ -117,6 +117,13 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/slider/slider-view').then((m) => m.SliderView),
   },
   {
+    path: 'wheel',
+    title: 'Wheel',
+    summary: 'One value out of a list — the row that rests on the line.',
+    group: 'components',
+    load: () => import('./views/wheel/wheel-view').then((m) => m.WheelView),
+  },
+  {
     path: 'switch',
     title: 'Switch',
     summary: 'A setting that takes effect the moment it is moved.',

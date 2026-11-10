@@ -1378,6 +1378,76 @@
       "severity": "warn"
     },
     {
+      "name": "wheel — a row",
+      "fg": "pct.wheel.fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "wheel — the row under the line",
+      "fg": "pct.wheel.fg",
+      "bg": "pct.wheel.band-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "wheel — the chosen row, in the band",
+      "fg": "pct.wheel.option-fg-selected",
+      "bg": "pct.wheel.band-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "wheel — a row the line never rests on",
+      "fg": "pct.wheel.option-fg-disabled",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: the wheel's band against the page",
+      "fg": "pct.wheel.band-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the wheel's band (invalid)",
+      "fg": "pct.wheel.band-border-invalid",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "wheel — label",
+      "fg": "pct.wheel.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "wheel — hint",
+      "fg": "pct.wheel.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "wheel — error message",
+      "fg": "pct.wheel.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "wheel — warning message",
+      "fg": "pct.wheel.fg-warning",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "select — selected value text",
       "fg": "pct.select.fg",
       "bg": "pct.select.bg",

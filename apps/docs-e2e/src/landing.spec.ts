@@ -85,7 +85,7 @@ test.describe('The landing', () => {
   }) => {
     await visit(page, '/');
     const rows = page.getByTestId('gallery').locator('a');
-    await expect(rows).toHaveCount(46);
+    await expect(rows).toHaveCount(47);
 
     const floor = Number.parseInt(FLOOR, 10);
     const boxes = await rows.evaluateAll((els) =>

@@ -1,0 +1,111 @@
+{
+  "pct": {
+    "wheel": {
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of a row."
+      },
+      "min-width": {
+        "$type": "dimension",
+        "$value": "56px",
+        "$description": "Minimum width of the wheel — a row wider than this widens it."
+      },
+      "option-height": {
+        "$type": "dimension",
+        "$value": "32px",
+        "$description": "Height of a row — and, times the count of rows shown, of the wheel."
+      },
+      "option-height-sm": {
+        "$type": "dimension",
+        "$value": "28px",
+        "$description": "Height of a row, small size."
+      },
+      "option-height-lg": {
+        "$type": "dimension",
+        "$value": "36px",
+        "$description": "Height of a row, large size."
+      },
+      "option-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Inline padding of a row."
+      },
+      "option-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Text size of a row."
+      },
+      "option-font-size-sm": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Text size of a row, small size."
+      },
+      "option-font-size-lg": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "Text size of a row, large size."
+      },
+      "option-fg-selected": {
+        "$type": "color",
+        "$value": "{pct.on-primary-100}",
+        "$description": "Text colour of the chosen row, which rests in the band."
+      },
+      "option-font-weight-selected": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Text weight of the chosen row."
+      },
+      "option-fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of a row the line never rests on, and of every row of a disabled wheel."
+      },
+      "band-bg": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the band — the line the middle row rests under."
+      },
+      "band-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the band."
+      },
+      "band-border-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the band when invalid."
+      },
+      "band-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the band."
+      },
+      "edge-alpha": {
+        "$type": "dimension",
+        "$value": "60%",
+        "$description": "How much of a row's colour is left at the two edges of the wheel; the rows fade to it from the band outwards."
+      },
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the label."
+      },
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint."
+      },
+      "fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Text colour of the error message and the required sign."
+      },
+      "fg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}",
+        "$description": "Text colour of the warning line (0087); the band keeps its edge, a warning being no fault of the control."
+      }
+    }
+  }
+}

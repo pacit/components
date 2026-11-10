@@ -31,6 +31,7 @@
       "@pacit/components/radio": ["./libs/components/radio/src/index.ts"],
       "@pacit/components/date": ["./libs/components/date/src/index.ts"],
       "@pacit/components/time": ["./libs/components/time/src/index.ts"],
+      "@pacit/components/wheel": ["./libs/components/wheel/src/index.ts"],
       "@pacit/components/chart": ["./libs/components/chart/src/index.ts"],
       "@pacit/components/datetime": ["./libs/components/datetime/src/index.ts"],
       "@pacit/components/slider": ["./libs/components/slider/src/index.ts"],

@@ -8,6 +8,7 @@ import { PctField, PctNumber, PctText } from '@pacit/components/field';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import { PctSelect } from '@pacit/components/select';
 import { PctSlider } from '@pacit/components/slider';
+import { PctWheel, PctWheelOption } from '@pacit/components/wheel';
 import { PctSwitch } from '@pacit/components/switch';
 import { COUNTRIES } from '../../ui/data';
 import { SbxDemo } from '../../ui/demo';
@@ -29,6 +30,7 @@ import { SbxDemo } from '../../ui/demo';
     PctNumber,
     PctSelect,
     PctSlider,
+    PctWheel,
     PctDate,
     PctTime,
     PctDatetime,
@@ -43,6 +45,13 @@ import { SbxDemo } from '../../ui/demo';
 })
 export class StatesView {
   protected readonly countries = COUNTRIES;
+  protected readonly days: readonly PctWheelOption[] = [
+    { value: 'mon', label: 'Monday' },
+    { value: 'tue', label: 'Tuesday' },
+    { value: 'wed', label: 'Wednesday' },
+    { value: 'thu', label: 'Thursday' },
+    { value: 'fri', label: 'Friday' },
+  ];
 
   /**
    * A message injected outright, with no form schema. `kind` belongs to the
@@ -59,6 +68,7 @@ export class StatesView {
   protected readonly plan = signal<string | null>('a');
   protected readonly backups = signal(true);
   protected readonly budget = signal(40);
+  protected readonly day = signal<string | null>('tue');
   protected readonly startsOn = signal<PctDay | null>('2026-08-27');
   protected readonly startsAt = signal<PctTimeOfDay | null>('13:05');
   protected readonly startsAtDay = signal<PctDateTime | null>(
