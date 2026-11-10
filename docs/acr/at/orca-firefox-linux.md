@@ -18,7 +18,7 @@ person has made it.
 
 - Orca version 50.3, AT-SPI2 version: 2.60.4
 - Firefox 155.0 (the Playwright build), drawn on gnome-shell 50.1 headless, virtual monitor 1280x900, its own Wayland socket (wayland-at) — the browser's connection to it read off ss(8); speech synthesised into a null device
-- 759 steps over 58 views, at most 12 stops of a view's own
+- 821 steps over 63 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -30,17 +30,17 @@ for, and the row beneath it is what leaving sounds like. A block deeper in a vie
 cap reaches is a heading of its own, `/view#block`: `enter` puts focus on its first stop,
 the keys a person presses there follow under their names, then Tab stops while focus stays
 inside it. `(silence)` is a stop the reader said nothing
-at — 7 of 759 here. 16 view(s) hit the cap, and each says so.
+at — 8 of 821 here. 18 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 3109
-phrases, and 3106 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 3390
+phrases, and 3384 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
 
-**Every view spoke.** No view of the 58 went unread, so nothing below is
+**Every view spoke.** No view of the 63 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
-16 view(s) have more stops than the 12 taken, and each says so where it bit.
+18 view(s) have more stops than the 12 taken, and each says so where it bit.
 
 ### `/`
 
@@ -250,7 +250,7 @@ tab 16  input[time-control]                                  Polish Heure · ent
 tab 17  button[toggle] "Choisir une date et une heure"       Choisir une date et une heure · collapsed button. · opens dialog
 reach   button[toggle] "Choisir une date et une heure"       leaving panel. · Starts · panel · Choisir une date et une heure · collapsed button. · opens dialog
 open    td[day] "mardi 1 décembre 2026"                      Choisir une date et une heure · dialog · décembre 2026. · table with 7 rows 7 columns · mardi column header 1 · row 2 column 2
-close   input[date-control]                                  Starts Jour · entry · 01/12/2026. · The sandbox runs under fr-FR, so the clock counts to 24.
+close   input[date-control]                                  leaving table. · main content · Starts · panel · Starts Jour · entry · 01/12/2026. · The sandbox runs under fr-FR, so the clock counts to 24.
 ```
 
 the act: `Enter` on `[data-testid="datetime-standalone"] [data-pct-part="toggle"]`, to open a calendar and the columns of a time (the gesture belongs to `apps/sandbox-e2e/src/datetime.spec.ts`).
@@ -330,8 +330,8 @@ tab 24  input[control]                                       leaving panel. · S
 ### `/wheel#demo-list`
 
 ```
-enter   div[list] "Monday"                                   Weekday · List with 7 items · Wednesday · Focus mode
-down    div[list] "Monday"                                   Thursday
+enter   div[list] "Monday"                                   leaving panel. · Weekday · List with 7 items · Wednesday · Focus mode
+down    div[list] "Monday"                                   Weekday · List with 7 items · Thursday
 down    div[list] "Monday"                                   Friday
 end     div[list] "Monday"                                   Sunday
 tab 1   div[list] "Monday"                                   No value yet · List with 7 items · Monday · not selected.
@@ -345,8 +345,8 @@ the section: `ArrowDown`, `ArrowDown`, `End` in `demo-list`, to read the row a k
 ### `/wheel#demo-ring`
 
 ```
-enter   div[list] "Hour"                                     Hour · List with 24 items · 09 · Focus mode
-home    div[list] "Hour"                                     00
+enter   div[list] "Hour"                                     leaving panel. · Hour · List with 24 items · 09 · Focus mode
+home    div[list] "Hour"                                     Hour · List with 24 items · 00
 up      div[list] "Hour"                                     23
 tab 1   div[list] "Minute"                                   Minute · List with 60 items · 30
 tab 2   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
@@ -457,7 +457,7 @@ the act: `Enter` on `[data-testid="panel-trigger"]`, to open a non-modal dialog 
 ### `/menu`
 
 ```
-arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 40 items · Menu · visited link. · Browse mode
+arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 40 items · Menu · link. · Browse mode
 enter   button "Actions"                                     Actions · collapsed button. · opens menu · Focus mode
 tab 1   button "Count up"                                    Count up · button. · Browse mode
 tab 2   button "File"                                        File · collapsed button. · opens menu · Focus mode
@@ -477,7 +477,7 @@ the act: `Enter` on `[data-testid="actions-trigger"]`, to open a menu (the gestu
 ### `/drawer`
 
 ```
-arrive  a "Drawer"                                           leaving main content. · navigation · Sandbox views · List with 40 items · Drawer · visited link. · Browse mode
+arrive  a "Drawer"                                           leaving main content. · navigation · Sandbox views · List with 40 items · Drawer · link. · Browse mode
 enter   button "Sections"                                    Sections · collapsed button. · Focus mode
 tab 1   button "Sections, from further down"                 Sections, from further down · collapsed button.
 tab 2   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
@@ -490,7 +490,7 @@ tab 8   input[control]                                       leaving panel. · S
 tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 10  button "Open the bare one"                           leaving panel. · Open the bare one · collapsed button. · Focus mode
 tab 11  button "Open the bare one"                           Drawer · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Sections"                                    main content · A panel docked to an edge of the window. It is not an overlay: it is drawn where it stands in · Browse mode · Sections · collapsed button. · Focus mode
+reach   button "Sections"                                    main content · Sections · collapsed button. · Focus mode
 open    button "Sections"                                    expanded
 close   button "Sections"                                    (silence)
 ```
@@ -544,7 +544,7 @@ the act: `Enter` on `[data-testid="item-payment"] [data-pct-part="heading"]`, to
 ### `/tabs`
 
 ```
-arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 40 items · Tabs · visited link. · Browse mode
+arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 40 items · Tabs · link. · Browse mode
 enter   button[tab] "General"                                General · page tab. · Focus mode
 tab 1   pct-tab[panel] "The general settings, and a word that…" General · scroll pane clickable. · Browse mode
 tab 2   pct-tab[panel]                                       Network · scroll pane clickable.
@@ -759,7 +759,7 @@ Tab moved nothing — focus had left the page.
 ### `/badge`
 
 ```
-arrive  a "Badge"                                            navigation · Sandbox views · List with 40 items · Badge · visited link. · Browse mode
+arrive  a "Badge"                                            navigation · Sandbox views · List with 40 items · Badge · link. · Browse mode
 enter   input[control]                                       Theme · panel · light · selected radio button.
 tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
@@ -952,8 +952,8 @@ Tab moved nothing — focus had left the page.
 ### `/table`
 
 ```
-arrive  a "Table"                                            navigation · Sandbox views · List with 40 items · Table · visited link. · Browse mode
-enter   button[toggle] "Name"                                table with 5 rows 3 columns · column header. · row 1. · column 1 · Name · button.
+arrive  a "Table"                                            navigation · Sandbox views · List with 40 items · Table · link. · Browse mode
+enter   button[toggle] "Name"                                Polling rules. · table with 5 rows 3 columns · column header. · row 1. · column 1 · Name · button.
 tab 1   button[toggle] "Address"                             column header. · column 2 · Address · button.
 tab 2   input[control]                                       leaving table. · Theme · panel · light · selected radio button.
 tab 3   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -1004,14 +1004,70 @@ tab 8   button[filter] "Filter Next run"                     Filter Next run · 
 tab 9   button[toggle] "Enabled"                             column header. · column 6 · Enabled · button. · Browse mode
 tab 10  button[filter] "Filter Enabled"                      Filter Enabled · collapsed button. · opens dialog · Focus mode
 tab 11  input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
+enter   input[control]                                       A row of filters · switch not pressed.
+space   input[control]                                       pressed
+tab 1   pct-table-frame "Rules"                              Rules. · clickable.
+tab 2   button[toggle] "Name"                                table with 22 rows 6 columns · column header. · row 1. · column 1 · Name · button.
+tab 3   button[filter] "Filter Name"                         Filter Name · collapsed button. · opens dialog · Focus mode
+tab 4   button[toggle] "Room"                                column header. · column 2 · Room · button. · Browse mode
+tab 5   button[filter] "Filter Room"                         Filter Room · collapsed button. · opens dialog · Focus mode
+tab 6   button[toggle] "Address"                             column header. · column 3 · Address · button. · Browse mode
+tab 7   button[filter] "Filter Address"                      Filter Address · collapsed button. · opens dialog · Focus mode
+tab 8   button[toggle] "Energy"                              column header. · column 4 · Energy · button. · Browse mode
+tab 9   button[filter] "Filter Energy"                       Filter Energy · collapsed button. · opens dialog · Focus mode
+tab 10  button[toggle] "Next run"                            column header. · column 5 · Next run · button. · Browse mode
+tab 11  button[filter] "Filter Next run"                     Filter Next run · collapsed button. · opens dialog · Focus mode
+tab 12  button[toggle] "Enabled"                             column header. · column 6 · Enabled · button. · Browse mode
+enter   input "Filter Name"                                  table with 22 rows 6 columns · Name column header. · row 2. · column 1 · Filter Name · entry. · Focus mode
+tab 1   button[trigger] "Filter Room"                        Room column header. · column 2 · Filter Room · combo box. · opens listbox.
+tab 2   button "Below 4128"                                  Address column header. · column 3 · Address · panel · Below 4128 · toggle button not pressed. · Browse mode
+tab 3   button "From 4128"                                   From 4128 · toggle button not pressed.
+tab 4   input "Energy from"                                  leaving panel. · Energy column header. · column 4 · Energy from · spin button · 0. · Focus mode
+tab 5   input "Energy to"                                    Energy to · spin button · 0.
+tab 6   input[control] "Next run from"                       Next run column header. · column 5 · Next run from · entry · jj/mm/aaaa.
+tab 7   button[toggle] "Choisir une date"                    Choisir une date · collapsed button. · opens dialog.
+tab 8   input[control] "Next run to"                         Next run to · entry · jj/mm/aaaa.
+tab 9   button[toggle] "Choisir une date"                    Choisir une date · collapsed button. · opens dialog.
+tab 10  button[trigger] "Filter Enabled"                     Enabled column header. · column 6 · Filter Enabled · combo box. · opens listbox.
+tab 11  input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
 ```
 
 the section: `activate`, `Escape` in `demo-filters`, to read a column's filter (the keys belong to `datatable.spec.ts › a header’s button opens its filter, a text keeps the rows it is found in, and Escape goes back to the button`).
 
+the section: `Space` in `demo-filters`, to read the switch that draws the row of filters (the keys belong to `datatable.spec.ts › a row of filters under the headers, each control named by its column`).
+
+the section: in `demo-filters`, to read the row of filters (the keys belong to `datatable.spec.ts › a row of filters under the headers, each control named by its column`).
+
+The cap bit here: 12 stops of this view's own were read, and it has more.
+
+### `/datatable#demo-layout`
+
+```
+enter   div[separator] "Resize Name"                         table with 21 rows 8 columns · Name · column header. · row 1. · column 3 · vertical splitter · Resize Name. · clickable.
+right   div[separator] "Resize Name"                         (silence)
+back    button[options] "Options for Name"                   Options for Name · collapsed button. · opens menu · Focus mode
+tab 1   div[separator] "Resize Name"                         vertical splitter · Resize Name. · clickable. · Browse mode
+tab 2   button[toggle] "Room"                                column header. · column 4 · Room · button.
+tab 3   button[options] "Options for Room"                   Options for Room · collapsed button. · opens menu · Focus mode
+tab 4   div[separator] "Resize Room"                         vertical splitter · Resize Room. · clickable. · Browse mode
+tab 5   button[toggle] "Address"                             column header. · column 5 · Address · button.
+tab 6   button[options] "Options for Address"                Options for Address · collapsed button. · opens menu · Focus mode
+tab 7   div[separator] "Resize Address"                      vertical splitter · Resize Address. · clickable. · Browse mode
+tab 8   button[toggle] "Energy"                              column header. · column 6 · Energy · button.
+tab 9   button[options] "Options for Energy"                 Options for Energy · collapsed button. · opens menu · Focus mode
+tab 10  div[separator] "Resize Energy"                       vertical splitter · Resize Energy. · clickable. · Browse mode
+tab 11  button[toggle] "Next run"                            column header. · column 7 · Next run · button.
+tab 12  button[options] "Options for Next run"               Options for Next run · collapsed button. · opens menu · Focus mode
+```
+
+the section: `ArrowRight`, `Shift+Tab` in `demo-layout`, to read a column's separator and its menu (the keys belong to `datatable.spec.ts › a separator widens its column by the arrows, by 32 with Shift, and stops at its narrowest`).
+
+The cap bit here: 12 stops of this view's own were read, and it has more.
+
 ### `/datatable#demo-grid`
 
 ```
-enter   input[select]                                        table with 21 rows 9 columns · Select column header. · row 2. · column 1 · Select Supply fan · check box not checked. · Focus mode
+enter   input[select]                                        table with 21 rows 9 columns · Select column header. · row 2. · column 1 · Select Supply fan · check box not checked.
 right   button[disclosure] "Show details"                    Details column header. · column 2 · Show details · collapsed button.
 down    button[disclosure] "Show details"                    row 3. · Show details · collapsed button.
 end     input[control] "Enabled: Heater"                     Enabled column header. · column 9 · Enabled: Heater · switch not pressed.
@@ -1019,6 +1075,55 @@ tab 1   input[control]                                       leaving table. · T
 ```
 
 the section: `ArrowRight`, `ArrowDown`, `End` in `demo-grid`, to read the grid (the keys belong to `datatable.spec.ts › the arrows move cell to cell, Home and End along the row, Ctrl with them to the ends`).
+
+### `/datatable#demo-editing`
+
+```
+enter   td "Supply fan"                                      table with 7 rows 4 columns · Supply fan · Kitchen · 0.0 kWh · Yes. · Focus mode
+Enter   input "Edit Name"                                    Edit Name · entry · Supply fan.
+escape  td "Supply fan"                                      Supply fan
+down    td "Heater"                                          Heater · row 3
+tab 1   input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
+```
+
+the section: `Enter`, `Escape`, `ArrowDown` in `demo-editing`, to read a cell's editor (the keys belong to `datatable.spec.ts › opens a cell on Enter, commits on Enter and goes a row down, and the page applies it`).
+
+### `/datatable#demo-tree`
+
+```
+enter   button[disclosure] "Collapse Ground floor"           leaving panel. · expanded · Name column header. · row 2. · column 1 · Collapse Ground floor · expanded button. · Focus mode
+down    button[disclosure] "Expand Kitchen"                  collapsed · Name column header. · row 3. · column 1 · Expand Kitchen · collapsed button.
+right   button[disclosure] "Collapse Kitchen"                blank · expanded · Collapse Kitchen · expanded.
+down    td "Kettle"                                          Kettle · row 4 · device · row 4 column 2 · 2,000 W · row 4 column 3
+left    button[disclosure] "Collapse Kitchen"                expanded · row 3. · Collapse Kitchen · expanded button.
+tab 1   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+```
+
+the section: `ArrowDown`, `ArrowRight`, `ArrowDown`, `ArrowLeft` in `demo-tree`, to read the treegrid (the keys belong to `datatable.spec.ts › on a first cell the arrow out of the line closes a branch or goes to the parent, the arrow into it opens one`).
+
+### `/datatable#demo-remote-tree`
+
+```
+enter   button[disclosure] "Expand Meter 1"                  collapsed · Period column header. · row 2. · column 1 · Expand Meter 1 · collapsed button. · Focus mode
+right   table "Meter archive on the server"                  blank · Meter archive on the server · tree table.
+down    button[disclosure] "Expand 2017"                     row 3 column 1 row 3 column 2 · collapsed · Expand 2017 · collapsed button.
+right   table "Meter archive on the server"                  blank · Meter archive on the server · tree table.
+down    td "January"                                         row 4 column 1 row 4 column 2
+tab 1   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
+```
+
+the section: `ArrowRight`, `ArrowDown`, `ArrowRight`, `ArrowDown` in `demo-remote-tree`, to read a tree the server holds (the keys belong to `datatable.spec.ts › a branch asks the server for its children when it opens, a placeholder standing in for them`).
+
+### `/datatable#demo-remote-groups`
+
+```
+enter   button[disclosure] "Meter 1 (120)"                   table with 1033 rows 4 columns · row header. · row 2. · column 1 · Meter 1 (120) · expanded button. · Focus mode
+act     pct-table-frame "Meter readings on the server"       collapsed · clickable. · Browse mode
+tab 1   button[disclosure] "Meter 5 (120)"                   Meter readings on the server. · table with 913 rows 4 columns · row header. · row 366. · column 1 · Meter 5 (120) · expanded button. · Focus mode
+tab 2   input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
+```
+
+the section: `activate` in `demo-remote-groups`, to read the groups a server made (the keys belong to `datatable.spec.ts › a collapsed group asks nothing, and shows its readings when it opens`).
 
 ### `/datatable#demo-row-menu`
 
@@ -1050,17 +1155,17 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ```
 enter   input[select]                                        table with 9 rows 4 columns · Select column header. · row 4. · column 1 · Select Kettle · check box not checked. · Browse mode
 space   input[select]                                        checked
-back    button[disclosure] "Collapse"                        Name column header. · row 3. · column 2 · Collapse · expanded button. · Focus mode
+back    button[disclosure] "Collapse Kitchen"                Name column header. · row 3. · column 2 · Collapse Kitchen · expanded button. · Focus mode
 back    input[select]                                        Select column header. · column 1 · Select Kitchen · check box partially checked. · Browse mode
-tab 1   button[disclosure] "Collapse"                        Name column header. · column 2 · Collapse · expanded button. · Focus mode
+tab 1   button[disclosure] "Collapse Kitchen"                Name column header. · column 2 · Collapse Kitchen · expanded button. · Focus mode
 tab 2   input[select]                                        Select column header. · row 4. · column 1 · Select Kettle · check box checked. · Browse mode
 tab 3   input[select]                                        row 5. · Select Fridge · check box not checked.
 tab 4   input[select]                                        row 6. · Select Lamp · check box not checked.
 tab 5   input[select]                                        row 7. · Select Hall · check box not checked.
-tab 6   button[disclosure] "Expand"                          Name column header. · column 2 · Expand · collapsed button. · Focus mode
+tab 6   button[disclosure] "Expand Hall"                     Name column header. · column 2 · Expand Hall · collapsed button. · Focus mode
 tab 7   input[select]                                        Select column header. · row 8. · column 1 · Select Garage · check box not checked. · Browse mode
 tab 8   input[select]                                        row 9. · Select Upstairs · check box not checked.
-tab 9   button[disclosure] "Expand"                          Name column header. · column 2 · Expand · collapsed button. · Focus mode
+tab 9   button[disclosure] "Expand Upstairs"                 Name column header. · column 2 · Expand Upstairs · collapsed button. · Focus mode
 tab 10  input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
 ```
 
@@ -1124,7 +1229,7 @@ Tab moved nothing — focus had left the page.
 ### `/layout`
 
 ```
-arrive  a "Layout"                                           navigation · Sandbox views · List with 40 items · Layout · visited link. · Browse mode
+arrive  a "Layout"                                           navigation · Sandbox views · List with 40 items · Layout · link. · Browse mode
 enter   input[control]                                       Theme · panel · light · selected radio button.
 tab 1   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 2   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
@@ -1209,7 +1314,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/announce`
 
 ```
-arrive  a "Live regions"                                     leaving main content. · navigation · Sandbox views · List with 6 items · Live regions · visited link. · Browse mode
+arrive  a "Live regions"                                     leaving main content. · navigation · Sandbox views · List with 6 items · Live regions · link. · Browse mode
 enter   button "Announce politely"                           Announce politely · button.
 tab 1   button "Interrupt"                                   Interrupt · button.
 tab 2   button "Interrupt"                                   Live regions · @pacit/components · page tab. · JUGGLER <window>.

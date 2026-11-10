@@ -2117,7 +2117,7 @@ test.describe('PctTableTree — the home as a tree', () => {
     await expect(rows(page).nth(3)).not.toHaveAttribute('aria-expanded');
     await expect(button(page, 'Kitchen')).toHaveAttribute(
       'aria-label',
-      'Expand',
+      'Expand Kitchen',
     );
     await button(page, 'Kitchen').click();
     await expect(names(page).nth(2)).toHaveText(/Kettle/);
@@ -2125,7 +2125,7 @@ test.describe('PctTableTree — the home as a tree', () => {
     await expect(rows(page).nth(2)).toHaveAttribute('aria-setsize', '3');
     await expect(button(page, 'Kitchen')).toHaveAttribute(
       'aria-label',
-      'Collapse',
+      'Collapse Kitchen',
     );
     await expect(page.getByTestId('tree-state')).toContainText(
       'Open: ground kitchen.',
