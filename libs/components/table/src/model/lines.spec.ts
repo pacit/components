@@ -1,4 +1,9 @@
-import { pctGroupKey, pctLineKey, pctLines } from './lines';
+import {
+  pctGroupKey,
+  pctLineKey,
+  pctLines,
+  type PctSourcedGroup,
+} from './lines';
 
 interface Node {
   id: string;
@@ -23,7 +28,15 @@ describe('pctLines', () => {
   it('draws a hole for a row not delivered, keyed and counted by its index', () => {
     expect(pctLines([a, undefined, b], id)).toEqual([
       { kind: 'row', key: 'a', row: a, index: 0, level: 0, expanded: null },
-      { kind: 'hole', key: 1, index: 1, level: 0, parent: null, at: 1 },
+      {
+        kind: 'hole',
+        key: 1,
+        index: 1,
+        level: 0,
+        parent: null,
+        group: null,
+        at: 1,
+      },
       { kind: 'row', key: 'b', row: b, index: 2, level: 0, expanded: null },
     ]);
   });
@@ -38,9 +51,33 @@ describe('pctLines', () => {
       expanded: new Set(['a']),
     });
     expect(lines.filter((line) => line.kind === 'hole')).toEqual([
-      { kind: 'hole', key: 0, index: 0, level: 0, parent: null, at: 0 },
-      { kind: 'hole', key: 2, index: 2, level: 1, parent: 'a', at: 0 },
-      { kind: 'hole', key: 4, index: 4, level: 1, parent: 'a', at: 2 },
+      {
+        kind: 'hole',
+        key: 0,
+        index: 0,
+        level: 0,
+        parent: null,
+        group: null,
+        at: 0,
+      },
+      {
+        kind: 'hole',
+        key: 2,
+        index: 2,
+        level: 1,
+        parent: 'a',
+        group: null,
+        at: 0,
+      },
+      {
+        kind: 'hole',
+        key: 4,
+        index: 4,
+        level: 1,
+        parent: 'a',
+        group: null,
+        at: 2,
+      },
     ]);
   });
 
@@ -222,7 +259,103 @@ describe('pctLines — groups', () => {
       index: 3,
       level: 0,
       parent: null,
+      group: null,
       at: 1,
+    });
+  });
+});
+
+describe('pctLines — groups a source made', () => {
+  /** A group a source made, standing in a list as a row does. */
+  interface Made extends Node {
+    group: PctSourcedGroup<Node>;
+  }
+  const made = (
+    key: string,
+    members: readonly (Node | undefined)[],
+    count = members.length,
+  ): Made => ({
+    id: key,
+    group: {
+      key,
+      label: `G ${key}`,
+      count,
+      sums: { value: count },
+      members: vi.fn(() => members),
+    },
+  });
+  const sourced = (item: Node) => (item as Partial<Made>).group;
+
+  it('heads a group with its own label, count and sums, its members below as the source sent them', () => {
+    const inner = made('[1,2]', [c, undefined]);
+    const outer = made('[1]', [inner], 9);
+    expect(pctLines([outer, a], id, { sourced })).toEqual([
+      {
+        kind: 'group',
+        key: '[1]',
+        level: 0,
+        label: 'G [1]',
+        count: 9,
+        rows: [],
+        sums: { value: 9 },
+        collapsed: false,
+      },
+      {
+        kind: 'group',
+        key: '[1,2]',
+        level: 1,
+        label: 'G [1,2]',
+        count: 2,
+        rows: [],
+        sums: { value: 2 },
+        collapsed: false,
+      },
+      { kind: 'row', key: 'c', row: c, index: 0, level: 2, expanded: null },
+      {
+        kind: 'hole',
+        key: 1,
+        index: 1,
+        level: 2,
+        parent: null,
+        group: '[1,2]',
+        at: 1,
+      },
+      // A row beside the groups stands as it came: the source's list is read, not grouped.
+      { kind: 'row', key: 'a', row: a, index: 2, level: 0, expanded: null },
+    ]);
+  });
+
+  it('reads no members of a collapsed group, and groups none of the rows itself', () => {
+    const closed = made('[1]', [c]);
+    const lines = pctLines([closed, b], id, {
+      sourced,
+      collapsed: new Set(['[1]']),
+      groups: [{ value: (node) => node.id, label: (node) => node.id }],
+    });
+    expect(closed.group.members).not.toHaveBeenCalled();
+    expect(lines.map((line) => `${line.kind} ${String(line.key)}`)).toEqual([
+      'group [1]',
+      'row b',
+    ]);
+    expect(lines[0]).toMatchObject({ collapsed: true });
+  });
+
+  it('puts a branch’s holes in no group, its parent naming the list', () => {
+    const tree: Node = { id: 't', kids: [] };
+    const group = made('[1]', [tree]);
+    const lines = pctLines([group], id, {
+      sourced,
+      children: (node) => (node === tree ? [undefined] : undefined),
+      expanded: new Set(['t']),
+    });
+    expect(lines.at(-1)).toEqual({
+      kind: 'hole',
+      key: 1,
+      index: 1,
+      level: 2,
+      parent: 't',
+      group: null,
+      at: 0,
     });
   });
 });
@@ -258,6 +391,7 @@ describe('pctLineKey', () => {
         index: 1,
         level: 0,
         parent: null,
+        group: null,
         at: 1,
       }),
     ).toBe('hole:1');

@@ -792,6 +792,62 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Readings grouped on a server"
+  summary="Four thousand eight hundred readings on the server, grouped by meter, or by meter and year. The table asks for the groups of the top level; each group says how many readings it holds and their energy, summed on the server. An open group asks for what is inside it, groups one level deeper or its readings, as the view reaches it; a collapsed one asks nothing."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-remote-groups"
+>
+  <div class="datatable__widths" role="group" aria-label="Grouping">
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="remote-groups-meter"
+      [attr.aria-pressed]="ledgerBy().length === 1"
+      (click)="ledgerBy.set(['meter'])"
+    >
+      By meter
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="remote-groups-year"
+      [attr.aria-pressed]="ledgerBy().length === 2"
+      (click)="ledgerBy.set(['meter', 'year'])"
+    >
+      By meter and year
+    </button>
+    <button
+      pctButton
+      variant="ghost"
+      type="button"
+      data-testid="remote-groups-collapse"
+      (click)="ledgerGroups.collapseAll()"
+    >
+      Collapse all
+    </button>
+  </div>
+  <pct-data-table
+    #ledgerGroups="pctTableGroups"
+    data-testid="table-remote-groups"
+    class="datatable__rules"
+    caption="Meter readings on the server"
+    locale="en"
+    pctTableWindow
+    [pctTableRemote]="loadLedger"
+    [pctTableGroups]="ledgerColumns"
+    [groupBy]="ledgerBy()"
+    [(collapsed)]="ledgerClosed"
+    [columns]="ledgerColumns"
+    [rowId]="ledgerId"
+  />
+  <p class="muted" data-testid="remote-groups-asked">
+    The server was asked {{ ledgerAsked() }} times
+  </p>
+</sbx-demo>
+
+<sbx-demo
   heading="The home as a tree"
   summary="Floors hold rooms, rooms hold devices: each row opens the places inside it from the button in its first cell. The filter keeps the way to a match, its ancestors muted; the sort orders siblings; with the grid the table is a treegrid, and on a first cell the arrow into the line opens a branch, the arrow out of it closes one or goes to the parent."
   [reqs]="['req-a11y-built-in']"
