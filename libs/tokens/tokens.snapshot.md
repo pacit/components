@@ -973,4 +973,25 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-warning-200 color semantic public
 --pct-warning-active color semantic public
 --pct-warning-hover color semantic public
+--pct-wheel-band-bg color component public
+--pct-wheel-band-border color component public
+--pct-wheel-band-border-invalid color component public
+--pct-wheel-band-radius dimension component public
+--pct-wheel-edge-alpha dimension component public
+--pct-wheel-fg color component public
+--pct-wheel-fg-invalid color component public
+--pct-wheel-fg-warning color component public
+--pct-wheel-hint-fg color component public
+--pct-wheel-label-fg color component public
+--pct-wheel-min-width dimension component public
+--pct-wheel-option-fg-disabled color component public
+--pct-wheel-option-fg-selected color component public
+--pct-wheel-option-font-size dimension component public
+--pct-wheel-option-font-size-lg dimension component public
+--pct-wheel-option-font-size-sm dimension component public
+--pct-wheel-option-font-weight-selected fontWeight component public
+--pct-wheel-option-height dimension component public
+--pct-wheel-option-height-lg dimension component public
+--pct-wheel-option-height-sm dimension component public
+--pct-wheel-option-padding-x dimension component public
 ```

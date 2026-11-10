@@ -336,12 +336,13 @@ export class PctWheel<T = string>
     this.fieldLabelledBy.set(id);
   }
 
-  /** The listbox's name: the chrome's label, its own, or the element the page points at. */
-  protected readonly labelledBy = computed(() => {
-    if (this.inField) return this.fieldLabelledBy();
-    if (this.label()) return this.labelId;
-    return this.ariaLabelledby() || null;
-  });
+  /**
+   * The name the wheel has without the page: the chrome's label, or its own. Where it has
+   * neither, the template hands the listbox the element the page points at.
+   */
+  protected readonly ownLabelledBy = computed(() =>
+    this.inField ? this.fieldLabelledBy() : this.label() ? this.labelId : null,
+  );
 
   private readonly messages = pctFieldMessages({
     invalid: this.invalid,

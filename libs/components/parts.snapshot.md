@@ -301,4 +301,12 @@ from what the browser really gets.
 ./topbar PctTopbar start
 ./tree PctTreeItem arrow
 ./tree PctTreeItem label
+./wheel PctWheel band
+./wheel PctWheel error
+./wheel PctWheel hint
+./wheel PctWheel label
+./wheel PctWheel list
+./wheel PctWheel option
+./wheel PctWheel view
+./wheel PctWheel warning
 ```

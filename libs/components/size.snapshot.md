@@ -54,7 +54,7 @@ before an application ships them.
 ./checkbox 24512 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./chips 18743 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./container 725 - @angular/core
-./core 15288 - @angular/core,@angular/forms/signals
+./core 15472 - @angular/core,@angular/forms/signals
 ./date 50380 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./datetime 82673 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./description 9843 ./core @angular/core,@angular/forms/signals
@@ -81,13 +81,14 @@ before an application ships them.
 ./switch 23992 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./table 399856 ./button,./checkbox,./core,./date,./field,./icon,./menu,./popover,./select,./skeleton @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./tabs 19925 ./core @angular/core,@angular/forms/signals
-./testing 15669 - @angular/cdk/testing
+./testing 15822 - @angular/cdk/testing
 ./theme 518 - @angular/core
 ./time 53833 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./toast 27495 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tooltip 17225 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core,@angular/forms/signals
 ./topbar 2371 - @angular/core
 ./tree 12928 ./icon @angular/common,@angular/core
+./wheel 30633 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ```
 
 And the second reading, for the entrypoints that carry more than one tag. The rows

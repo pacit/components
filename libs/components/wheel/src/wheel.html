@@ -26,7 +26,7 @@
     [attr.name]="name() || null"
     [attr.tabindex]="disabled() ? -1 : 0"
     [attr.aria-label]="ariaLabel() || null"
-    [attr.aria-labelledby]="labelledBy()"
+    [attr.aria-labelledby]="ownLabelledBy() ?? (ariaLabelledby() || null)"
     [attr.aria-describedby]="describedBy()"
     [attr.aria-activedescendant]="activeId()"
     [attr.aria-invalid]="showInvalid() ? 'true' : null"

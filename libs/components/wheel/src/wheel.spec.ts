@@ -241,10 +241,11 @@ class NgModelHost {
 
 @Component({
   imports: [PctField, PctWheel],
-  template: `<pct-field label="Weekday" hint="Any day">
+  template: `<pct-field [label]="fieldLabel()" hint="Any day">
     <pct-wheel
       label="Its own"
       hint="Its own hint"
+      ariaLabelledby="page-heading"
       [options]="options"
       [invalid]="invalid()"
       [touched]="touched()"
@@ -256,6 +257,7 @@ class NgModelHost {
 })
 class FieldHost {
   options = DAYS;
+  fieldLabel = signal('Weekday');
   invalid = signal(false);
   touched = signal(false);
   errors = signal<readonly ValidationError.WithOptionalFieldTree[]>([]);
@@ -490,9 +492,9 @@ describe('PctWheel', () => {
 
       // A list and no ring: every row once, none of them a copy.
       expect(rowsOf(fixture).length).toBe(DAYS.length);
-      expect(rowsOf(fixture).some((row) => row.hasAttribute('aria-hidden'))).toBe(
-        false,
-      );
+      expect(
+        rowsOf(fixture).some((row) => row.hasAttribute('aria-hidden')),
+      ).toBe(false);
       expect(
         (fixture.nativeElement as HTMLElement).querySelectorAll(
           '[data-pct-part="label"], [data-pct-part="hint"], [data-pct-part="error"], [data-pct-part="warning"]',
@@ -1083,7 +1085,9 @@ describe('PctWheel', () => {
 
       it('a ring opens on its middle turn', async () => {
         await at('wed', (host) => host.wrap.set(true));
-        expect(screen.calls).toEqual([{ top: (7 + 2) * ROW, behavior: 'instant' }]);
+        expect(screen.calls).toEqual([
+          { top: (7 + 2) * ROW, behavior: 'instant' },
+        ]);
       });
 
       it('a ring with no value opens on the first row of its middle turn', async () => {
@@ -1107,12 +1111,10 @@ describe('PctWheel', () => {
         await settle(fixture);
         expect(screen.calls).toEqual([{ top: 4 * ROW, behavior: 'instant' }]);
 
-        const style = vi
-          .spyOn(window, 'getComputedStyle')
-          .mockReturnValue({
-            getPropertyValue: (name: string) =>
-              name === '--pct-motion-transition-duration' ? '150ms' : '',
-          } as CSSStyleDeclaration);
+        const style = vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+          getPropertyValue: (name: string) =>
+            name === '--pct-motion-transition-duration' ? '150ms' : '',
+        } as CSSStyleDeclaration);
         try {
           fixture.componentInstance.value.set('mon');
           await settle(fixture);
@@ -1153,11 +1155,9 @@ describe('PctWheel', () => {
       it('a new list is placed at once, whatever the motion axis says', async () => {
         const fixture = await at('wed');
         screen.calls.length = 0;
-        const style = vi
-          .spyOn(window, 'getComputedStyle')
-          .mockReturnValue({
-            getPropertyValue: () => '150ms',
-          } as unknown as CSSStyleDeclaration);
+        const style = vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+          getPropertyValue: () => '150ms',
+        } as unknown as CSSStyleDeclaration);
         try {
           fixture.componentInstance.options.set([
             { value: 'tue', label: 'Tuesday' },
@@ -1383,7 +1383,14 @@ describe('PctWheel', () => {
 
       it('the nearer row wins over the row after', async () => {
         const fixture = await at(null, (host) =>
-          host.options.set([on('a'), on('b'), off('c'), off('d'), off('e'), on('f')]),
+          host.options.set([
+            on('a'),
+            on('b'),
+            off('c'),
+            off('d'),
+            off('e'),
+            on('f'),
+          ]),
         );
 
         touchRows(fixture);
@@ -1531,11 +1538,9 @@ describe('PctWheel', () => {
         const fixture = await at('wed', (host) => host.wrap.set(true));
         const list = listOf(fixture);
         screen.calls.length = 0;
-        const style = vi
-          .spyOn(window, 'getComputedStyle')
-          .mockReturnValue({
-            getPropertyValue: () => '150ms',
-          } as unknown as CSSStyleDeclaration);
+        const style = vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+          getPropertyValue: () => '150ms',
+        } as unknown as CSSStyleDeclaration);
 
         try {
           expect(observers.length).toBe(1);
@@ -1717,6 +1722,17 @@ describe('PctWheel', () => {
           '[data-pct-part="label"], [data-pct-part="hint"], [data-pct-part="error"], [data-pct-part="warning"]',
         ).length,
       ).toBe(0);
+    });
+
+    it('a field with no label leaves the name to the page, never to the wheel’s own label', async () => {
+      const fixture = await render(FieldHost);
+      fixture.componentInstance.fieldLabel.set('');
+      await settle(fixture);
+
+      expect(allParts(fixture, 'label').length).toBe(0);
+      expect(listOf(fixture).getAttribute('aria-labelledby')).toBe(
+        'page-heading',
+      );
     });
 
     it('the error and the warning are the chrome’s to draw, and the host still says which is lit', async () => {

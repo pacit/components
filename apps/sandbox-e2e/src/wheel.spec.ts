@@ -91,9 +91,10 @@ test.describe('PctWheel — a listbox on the platform’s scroll', () => {
   }) => {
     const hour = page.getByTestId('wheel-hour');
 
-    await expect(
-      hour.getByRole('listbox', { name: 'Hour' }),
-    ).toHaveAttribute('aria-activedescendant', /-option-9$/);
+    await expect(hour.getByRole('listbox', { name: 'Hour' })).toHaveAttribute(
+      'aria-activedescendant',
+      /-option-9$/,
+    );
     await expect(hour.getByRole('option')).toHaveCount(24);
     await expect(hour.locator('[data-pct-part="option"]')).toHaveCount(72);
     await expect(hour.getByRole('option', { selected: true })).toHaveText('09');
@@ -161,7 +162,9 @@ test.describe('PctWheel — a listbox on the platform’s scroll', () => {
       .toEqual({ label: 'Friday', rests: true });
 
     // `force`: Playwright itself refuses to click what says `aria-disabled`.
-    await wheel.getByRole('option', { name: 'Saturday' }).click({ force: true });
+    await wheel
+      .getByRole('option', { name: 'Saturday' })
+      .click({ force: true });
     await wheel.getByRole('option', { name: 'Thursday' }).click();
     await expect(value).toHaveText('thu');
   });
@@ -360,9 +363,9 @@ test.describe('PctWheel — a listbox on the platform’s scroll', () => {
       await page.keyboard.press('ArrowDown');
       await wheel.getByRole('option', { name: 'Friday' }).click();
 
-      await expect(
-        wheel.getByRole('option', { selected: true }),
-      ).toHaveText('Thursday');
+      await expect(wheel.getByRole('option', { selected: true })).toHaveText(
+        'Thursday',
+      );
     });
   });
 });
