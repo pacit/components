@@ -45,6 +45,7 @@ import {
   PctTableGrid,
   type PctTableGridCell,
   type PctTableLayout,
+  type PctTableGroupsAnswer,
   type PctTableLoad,
   PctTableRemote,
   type PctTableRequest,
@@ -407,6 +408,79 @@ function serveArchive(
     rows.push(list.at(at));
   return new Promise((done, fail) => {
     const timer = setTimeout(() => done({ rows, total: list.total }), 300);
+    abort.addEventListener('abort', () => {
+      clearTimeout(timer);
+      fail(abort.reason);
+    });
+  });
+}
+
+/** A month's reading of a meter, on a server that groups them. */
+interface LedgerReading {
+  readonly id: string;
+  readonly meter: string;
+  readonly year: string;
+  readonly month: string;
+  readonly energy: number;
+}
+
+/** Every reading the server holds: forty meters, ten years each, twelve months a year. */
+const LEDGER: readonly LedgerReading[] = Array.from(
+  { length: ARCHIVE_METERS * ARCHIVE_YEARS * MONTHS.length },
+  (_, at) => {
+    const month = at % MONTHS.length;
+    const year = Math.floor(at / MONTHS.length) % ARCHIVE_YEARS;
+    const meter = Math.floor(at / (MONTHS.length * ARCHIVE_YEARS));
+    return {
+      id: `r${at}`,
+      meter: `Meter ${meter + 1}`,
+      year: String(ARCHIVE_FIRST_YEAR + year),
+      month: MONTHS[month],
+      energy: monthEnergy(meter, year, month),
+    };
+  },
+);
+
+const ledgerCol = pctColumnsOf<LedgerReading>();
+
+/** The columns the readings server groups by. */
+type LedgerGroup = 'meter' | 'year';
+
+/**
+ * The readings' server: the groups one level below the group asked into, each with its count
+ * and its energy summed, or the group's readings at the last level — a third of a second later.
+ */
+function serveLedger(
+  request: PctTableRequest<never>,
+  abort: AbortSignal,
+): Promise<PctTableAnswer<LedgerReading> | PctTableGroupsAnswer> {
+  const by = request.groupBy as readonly LedgerGroup[];
+  const inGroup = LEDGER.filter((reading) =>
+    request.group.every((value, level) => reading[by[level]] === value),
+  );
+  let answer: PctTableAnswer<LedgerReading> | PctTableGroupsAnswer;
+  if (request.group.length < by.length) {
+    const column = by[request.group.length];
+    const groups = new Map<string, { count: number; energy: number }>();
+    for (const reading of inGroup) {
+      const group = groups.get(reading[column]) ?? { count: 0, energy: 0 };
+      group.count++;
+      group.energy += reading.energy;
+      groups.set(reading[column], group);
+    }
+    const all = [...groups].map(([value, { count, energy }]) => ({
+      value,
+      count,
+      sums: { energy },
+    }));
+    answer = { groups: all.slice(request.from, request.to), total: all.length };
+  } else
+    answer = {
+      rows: inGroup.slice(request.from, request.to),
+      total: inGroup.length,
+    };
+  return new Promise((done, fail) => {
+    const timer = setTimeout(() => done(answer), 300);
     abort.addEventListener('abort', () => {
       clearTimeout(timer);
       fail(abort.reason);
@@ -1075,6 +1149,30 @@ export class DatatableView {
   ) => {
     this.archiveAsked.update((count) => count + 1);
     return serveArchive(request, abort);
+  };
+
+  /** The readings demo's columns: the server orders nothing. */
+  protected readonly ledgerColumns = ledgerCol.of([
+    ledgerCol.key('meter', { header: 'Meter', sort: false }),
+    ledgerCol.key('year', { header: 'Year', sort: false }),
+    ledgerCol.key('month', { header: 'Month', sort: false }),
+    ledgerCol.key('energy', {
+      header: 'Energy',
+      kind: { number: { unit: 'kWh' } },
+      sort: false,
+    }),
+  ]);
+  protected readonly ledgerId = (row: LedgerReading) => row.id;
+  protected readonly ledgerBy = signal<readonly LedgerGroup[]>(['meter']);
+  protected readonly ledgerClosed = signal<readonly string[]>([]);
+  /** The blocks the server was asked for, of groups or of readings. */
+  protected readonly ledgerAsked = signal(0);
+  protected readonly loadLedger: PctTableLoad<LedgerReading, never> = (
+    request,
+    abort,
+  ) => {
+    this.ledgerAsked.update((count) => count + 1);
+    return serveLedger(request, abort);
   };
 
   /**

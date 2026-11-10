@@ -71,6 +71,7 @@ import {
   pctGroupKey,
   pctLineKey,
   pctLines,
+  type PctSourcedGroup,
   type PctTableLine,
 } from './model/lines';
 import { pctOrderRows } from './model/order';
@@ -192,9 +193,11 @@ export interface PctTableFeature {
    * `undefined` where its block has not come, which the table draws as a hole; whether a block
    * is in flight; the failed block a hole stands in, given the list it is of and its place in
    * it, `null` while its block loads; a tree's children, when the source holds them, a
-   * branch's list as it came, holes and all; and the component the table makes for the
-   * failure, out of the paint, with what it draws given the failed block — the sentence and
-   * its retry. The source has sorted and filtered them.
+   * branch's list as it came, holes and all; the groups, when the source makes them — its top
+   * list, groups and holes, the rows of `rows` being those that came in the groups' lists —
+   * and what an item of a list is when it is a group; and the component the table makes for
+   * the failure, out of the paint, with what it draws given the failed block — the sentence
+   * and its retry. The source has sorted and filtered them.
    */
   readonly remote?: {
     readonly rows: Signal<readonly unknown[]>;
@@ -202,9 +205,24 @@ export interface PctTableFeature {
     readonly failed: Signal<
       (hole: {
         readonly parent: PctRowId | null;
+        readonly group: string | null;
         readonly at: number;
       }) => unknown
     >;
+    readonly grouped: Signal<{
+      readonly by: readonly string[];
+      readonly top: readonly unknown[];
+      readonly group: (item: unknown) =>
+        | {
+            readonly key: string;
+            readonly level: number;
+            readonly value: unknown;
+            readonly count: number;
+            readonly sums: Readonly<Record<string, unknown>> | undefined;
+            readonly members: () => readonly unknown[];
+          }
+        | undefined;
+    } | null>;
     readonly children: Signal<
       ((row: never) => readonly unknown[] | undefined) | null
     >;
@@ -1110,6 +1128,17 @@ export class PctDataTable<
   /** The remote source the rows come from, while a directive gives one. */
   protected readonly remote = computed(() => this.contributed().remote ?? null);
 
+  /** The groups a remote source makes, while it makes them. */
+  private readonly sourced = computed(() => this.remote()?.grouped() ?? null);
+
+  /**
+   * The list the table draws from the top: the rows given, or a source's groups, holes and
+   * all.
+   */
+  private readonly top = computed(
+    () => this.sourced()?.top ?? (this.given() as readonly unknown[]),
+  );
+
   /**
    * Rows are coming: the application says so, or a remote source's first are. A remote
    * block in flight among rows already drawn is its holes' to say, each `aria-busy`: a
@@ -1118,7 +1147,7 @@ export class PctDataTable<
   protected readonly busy = computed(
     () =>
       this.loading() ||
-      ((this.remote()?.loading() ?? false) && this.given().length === 0),
+      ((this.remote()?.loading() ?? false) && this.top().length === 0),
   );
 
   /** The rows a remote source has delivered, its holes left out. */
@@ -1248,7 +1277,14 @@ export class PctDataTable<
    * @since 0.3.0
    */
   readonly matched = computed(() => {
-    // A remote source's count is the source's: its roots, the holes among them too.
+    // A remote source's count is the source's: its roots, the holes among them too, or the
+    // rows its groups at the top hold.
+    const sourced = this.sourced();
+    if (sourced)
+      return sourced.top.reduce<number>(
+        (sum, item) => sum + (sourced.group(item)?.count ?? 0),
+        0,
+      );
     if (this.remote()) return this.given().length;
     return this.tree()?.rows.length ?? this.filtered().length;
   });
@@ -1290,14 +1326,17 @@ export class PctDataTable<
   readonly lines = computed<readonly PctTableLine<T>[]>(() => {
     const id = this.rowId();
     const remote = this.remote();
-    const rows = remote ? this.given() : this.ordered();
+    const sourced = this.madeGroups();
+    const rows = sourced ? this.top() : remote ? this.given() : this.ordered();
     const tree = this.tree();
-    const lines = pctLines(rows, id, {
+    const lines = pctLines(rows as readonly (T | undefined)[], id, {
       details: this.disclosure() ? new Set(this.openDetails()()) : undefined,
       children: tree?.children,
       expanded: tree ? new Set(this.treeFeature()?.expanded()) : undefined,
-      groups: this.grouping(),
+      // A remote source's groups are its own to make: the table groups none of its rows.
+      groups: remote ? [] : this.grouping(),
       collapsed: new Set(this.contributed().groups?.collapsed()),
+      sourced: sourced ?? undefined,
     });
     this.warnOnTwins(
       tree
@@ -1308,35 +1347,62 @@ export class PctDataTable<
   });
 
   /**
+   * The ids of the columns the rows are grouped by, outermost first: the groups directive's
+   * `groupBy` while it is on, those the columns hold; empty without it. What a remote source
+   * is asked to group by.
+   *
+   * @since next
+   */
+  readonly groupedBy = computed<readonly string[]>(() => {
+    const groups = this.contributed().groups;
+    if (!groups || groups.disabled()) return [];
+    const ids = new Set<string>(this.columns().map((column) => column.id));
+    return groups.by().filter((id) => ids.has(id));
+  });
+
+  /**
    * The levels the rows are grouped by: the groups directive's columns, while it is on. A
    * group is headed by the text its column writes for the group's first row.
    */
   private readonly grouping = computed(() => {
-    const groups = this.contributed().groups;
-    if (!groups || groups.disabled()) return [];
-    // A remote source's groups are the source's to make, and it makes none yet: its rows stay
-    // in the order it gave them.
-    if (this.remote()) {
-      // Said once a column is asked for: groups by nothing group nothing to refuse.
-      if (isDevMode() && groups.by().length > 0) this.warnOnRemoteGroups();
-      return [];
-    }
     const columns: readonly PctAnyColumn<T>[] = this.columns();
     const values = this.values();
     const written = this.written();
     const empty = this.texts().tableGroupEmpty;
-    return groups.by().flatMap((id) => {
+    return this.groupedBy().map((id) => {
       const c = columns.findIndex((column) => column.id === id);
-      return c < 0
-        ? []
-        : [
-            {
-              value: (row: T) => values(row)[c],
-              // A group of no value is named all the same: its button needs a name.
-              label: (row: T) => written(row)[c] || empty,
-            },
-          ];
+      return {
+        value: (row: T) => values(row)[c],
+        // A group of no value is named all the same: its button needs a name.
+        label: (row: T) => written(row)[c] || empty,
+      };
     });
+  });
+
+  /**
+   * The groups a remote source made, as the lines read them: each headed by the text its
+   * column writes for the group's value, as a group of the table's own is for its first row's.
+   */
+  private readonly madeGroups = computed<
+    ((item: T) => PctSourcedGroup<T> | undefined) | null
+  >(() => {
+    const sourced = this.sourced();
+    if (sourced === null) return null;
+    const writers = this.writers();
+    const now = this.moment();
+    const empty = this.texts().tableGroupEmpty;
+    return (item) => {
+      const group = sourced.group(item);
+      if (group === undefined) return undefined;
+      const write = writers.get(sourced.by[group.level]) as Writer;
+      return {
+        key: group.key,
+        label: write(group.value, now) || empty,
+        count: group.count,
+        sums: group.sums,
+        members: group.members as () => readonly (T | undefined)[],
+      };
+    };
   });
 
   /** The columns shown, in their order, each with its place among all the columns. */
@@ -1363,28 +1429,45 @@ export class PctDataTable<
     const count = new Intl.NumberFormat(this.resolvedLocale());
     const shown = this.shown();
     const span = this.lead() + 1;
-    const sum = (rows: readonly T[], column: PctAnyColumn<T>, c: number) => {
-      const aggregate = column.aggregate;
-      if (aggregate === undefined) return '';
-      const result = pctAggregate(
-        rows.map((row) => values(row)[c]),
-        aggregate,
-      );
+    const write = (result: unknown, column: PctAnyColumn<T>) =>
       // No result is written as nothing by every kind.
       // A count is a count whatever the column holds, and a number summed from a column with
       // no number kind is written in the locale's digits, not as JavaScript prints it.
-      return aggregate === 'count' ||
-        (typeof result === 'number' && typeof column.kind !== 'object')
+      column.aggregate === 'count' ||
+      (typeof result === 'number' && typeof column.kind !== 'object')
         ? count.format(result as number)
         : (writers.get(column.id) as Writer)(result, now);
+    const sum = (rows: readonly T[], column: PctAnyColumn<T>, c: number) => {
+      const aggregate = column.aggregate;
+      if (aggregate === undefined) return '';
+      return write(
+        pctAggregate(
+          rows.map((row) => values(row)[c]),
+          aggregate,
+        ),
+        column,
+      );
     };
-    return (rows: readonly T[]): Summary => {
+    // A source's sums are its own: a column it gave none for is written as nothing.
+    const given = (
+      sums: Readonly<Record<string, unknown>>,
+      column: PctAnyColumn<T>,
+    ) =>
+      Object.hasOwn(sums, column.id) && sums[column.id] != null
+        ? write(sums[column.id], column)
+        : '';
+    return (
+      rows: readonly T[],
+      sums?: Readonly<Record<string, unknown>>,
+    ): Summary => {
       const [first, ...rest] = shown;
+      const cell = (column: PctAnyColumn<T>, c: number) =>
+        sums ? given(sums, column) : sum(rows, column, c);
       return {
         span,
-        first: first ? sum(rows, first.column, first.c) : '',
+        first: first ? cell(first.column, first.c) : '',
         cells: rest.map(({ column, c }) => ({
-          text: sum(rows, column, c),
+          text: cell(column, c),
           numeric: pctColumnNumeric(column),
         })),
       };
@@ -1413,7 +1496,7 @@ export class PctDataTable<
         labels.set(line.level, line.label);
         const countText = said.replace('{count}', count.format(line.count));
         headings.set(at, {
-          ...summarize(line.rows),
+          ...summarize(line.rows, line.sums),
           key: line.key,
           line: at,
           level: line.level,
@@ -1585,9 +1668,16 @@ export class PctDataTable<
    * @since 0.3.0
    */
   groupKeys(): readonly string[] {
-    return pctLines(this.ordered(), this.rowId(), {
-      groups: this.grouping(),
-    }).flatMap((line) => (line.kind === 'group' ? [line.key] : []));
+    // A source's groups are those that came: one that comes later opens as it comes.
+    const sourced = this.madeGroups();
+    return pctLines(
+      (sourced ? this.top() : this.ordered()) as readonly (T | undefined)[],
+      this.rowId(),
+      {
+        groups: this.remote() ? [] : this.grouping(),
+        sourced: sourced ?? undefined,
+      },
+    ).flatMap((line) => (line.kind === 'group' ? [line.key] : []));
   }
 
   private warnedTwins = false;
@@ -1972,7 +2062,8 @@ export class PctDataTable<
     const marked = this.marked();
     const rowTone = this.rowTone();
     const tree = this.tree();
-    const grouped = this.grouping().length;
+    const grouped =
+      this.sourced()?.by.length ?? (this.remote() ? 0 : this.grouping().length);
     // The engine's view of the columns: a tone takes the value it is handed, of any type.
     const columns: readonly PctAnyColumn<T>[] = this.columns();
     const marksOf = (id: string, quick: boolean): readonly string[] | null => {
@@ -2136,18 +2227,6 @@ export class PctDataTable<
     return (this.remote() as NonNullable<PctTableFeature['remote']>).failure();
   }
 
-  private warnedRemoteGroups = false;
-
-  private warnOnRemoteGroups(): void {
-    if (this.warnedRemoteGroups) return;
-    this.warnedRemoteGroups = true;
-    console.warn(
-      `[pct-data-table] pctTableGroups does not group the rows of pctTableRemote: a group ` +
-        `of rows the source has not sent cannot be counted or summed here, so the rows stay ` +
-        `in the order the source gave them.`,
-    );
-  }
-
   /** Opens or closes a row's children: the tree directive's model, written by the row's button. */
   protected toggleNode(id: PctRowId): void {
     const tree = this.treeFeature();
@@ -2167,7 +2246,7 @@ export class PctDataTable<
   protected readonly primary = computed(() => this.sort()[0] ?? null);
 
   protected readonly placeholders = computed(() =>
-    this.busy() && this.given().length === 0 ? PLACEHOLDER_ROWS : [],
+    this.busy() && this.top().length === 0 ? PLACEHOLDER_ROWS : [],
   );
 
   /**
@@ -2179,7 +2258,7 @@ export class PctDataTable<
     if (this.busy()) return 'loading';
     // A remote source whose first block failed has no hole to say so in.
     if (this.failedFirst() !== null) return 'failed';
-    return pctQuestionWords(this.filter()).length > 0 || this.given().length > 0
+    return pctQuestionWords(this.filter()).length > 0 || this.top().length > 0
       ? 'no-matches'
       : 'empty';
   });
@@ -2191,7 +2270,7 @@ export class PctDataTable<
 
   /** The failure of a remote source's first block of roots, `null` while it has none. */
   protected readonly failedFirst = computed(
-    () => this.remote()?.failed()({ parent: null, at: 0 }) ?? null,
+    () => this.remote()?.failed()({ parent: null, group: null, at: 0 }) ?? null,
   );
 
   protected readonly message = computed(() => {
@@ -2709,7 +2788,7 @@ export class PctDataTable<
 
   /** How many digits the widest row number has: the column of numbers is as wide as they are. */
   protected readonly digits = computed(
-    () => String(this.given().length).length,
+    () => String(this.sourced() ? this.matched() : this.given().length).length,
   );
 
   /** Writes how many columns are hidden. */

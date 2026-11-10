@@ -9,10 +9,12 @@ import type { PctRowId } from './columns';
  *   depth in a tree, 0 without one, and `expanded` whether its children are shown, `null`
  *   for a row with no children to show.
  * - `hole`: a row a remote source has not delivered yet, keyed by its index. `parent` is the
- *   id of the row whose children it stands among, `null` among the roots, `at` its place in
- *   that list, from 0 — what a source is asked for to fill it — and `level` its depth.
+ *   id of the row whose children it stands among, `null` among the roots; `group` the key of
+ *   the group a source made whose members it stands among, `null` outside one; `at` its place
+ *   in that list, from 0 — what a source is asked for to fill it — and `level` its depth.
  * - `details`: the details of the row before it, the full width of the table.
- * - `group`: the heading of a group of rows.
+ * - `group`: the heading of a group of rows. `sums` are the sums a source gave a group it
+ *   made, by column id; without them, the table sums `rows`.
  *
  * @since 0.3.0
  */
@@ -31,6 +33,7 @@ export type PctTableLine<T> =
       readonly index: number;
       readonly level: number;
       readonly parent: PctRowId | null;
+      readonly group: string | null;
       readonly at: number;
     }
   | {
@@ -46,6 +49,7 @@ export type PctTableLine<T> =
       readonly label: string;
       readonly count: number;
       readonly rows: readonly T[];
+      readonly sums?: Readonly<Record<string, unknown>>;
       readonly collapsed: boolean;
     };
 
@@ -58,6 +62,21 @@ export type PctTableLine<T> =
 export interface PctGroupBy<T> {
   readonly value: (row: T) => unknown;
   readonly label: (row: T) => string;
+}
+
+/**
+ * A group a remote source made, as the lines read it: its key, the label it is headed with,
+ * how many rows it holds, the sums the source gave, and its members — groups one level deeper,
+ * or rows — read only while it is open, holes and all.
+ *
+ * @since next
+ */
+export interface PctSourcedGroup<T> {
+  readonly key: string;
+  readonly label: string;
+  readonly count: number;
+  readonly sums: Readonly<Record<string, unknown>> | undefined;
+  readonly members: () => readonly (T | undefined)[];
 }
 
 /**
@@ -74,6 +93,13 @@ export interface PctLinesOptions<T> {
   readonly groups?: readonly PctGroupBy<T>[];
   /** The groups whose rows are hidden, by key. */
   readonly collapsed?: ReadonlySet<string>;
+  /**
+   * The groups a remote source made: the group an item of a list is, `undefined` for a row.
+   * The rows stand in them as they came, and `groups` is not read.
+   *
+   * @since next
+   */
+  readonly sourced?: (item: T) => PctSourcedGroup<T> | undefined;
   /** The rows whose details are open, by id. */
   readonly details?: ReadonlySet<PctRowId>;
   /**
@@ -128,21 +154,55 @@ export function pctLines<T>(
   rowId: (row: T) => PctRowId,
   options: PctLinesOptions<T> = {},
 ): readonly PctTableLine<T>[] {
-  const { details, children, expanded, groups = [], collapsed } = options;
+  const {
+    details,
+    children,
+    expanded,
+    groups = [],
+    collapsed,
+    sourced,
+  } = options;
   const lines: PctTableLine<T>[] = [];
   let index = 0;
-  // `places` are the rows' places in their list, where the list walked is not the whole of it.
+  // `places` are the rows' places in their list, where the list walked is not the whole of it;
+  // `group` the key of the group a source made that the list is the members of.
   const walk = (
     list: readonly (T | undefined)[],
     level: number,
     parent: PctRowId | null,
     places?: readonly number[],
+    group: string | null = null,
   ): void => {
     for (const [i, row] of list.entries()) {
       if (row === undefined) {
         const at = places?.[i] ?? i;
-        lines.push({ kind: 'hole', key: index, index, level, parent, at });
+        lines.push({
+          kind: 'hole',
+          key: index,
+          index,
+          level,
+          parent,
+          group,
+          at,
+        });
         index++;
+        continue;
+      }
+      // A group a source made heads its members, which its list holds as the source sent them.
+      const made = sourced?.(row);
+      if (made !== undefined) {
+        const closed = collapsed?.has(made.key) ?? false;
+        lines.push({
+          kind: 'group',
+          key: made.key,
+          level,
+          label: made.label,
+          count: made.count,
+          rows: [],
+          sums: made.sums,
+          collapsed: closed,
+        });
+        if (!closed) walk(made.members(), level + 1, null, undefined, made.key);
         continue;
       }
       const key = rowId(row);
@@ -198,7 +258,7 @@ export function pctLines<T>(
       if (!closed) group(members, level + 1, values);
     }
   };
-  if (groups.length === 0) walk(rows, 0, null);
+  if (groups.length === 0 || sourced !== undefined) walk(rows, 0, null);
   else {
     // Holes have no value to be grouped by: they stand after the groups, as they came.
     group(

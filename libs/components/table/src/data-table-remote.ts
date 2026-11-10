@@ -28,6 +28,7 @@ import {
 } from './model/blocks';
 import type { PctRowId } from './model/columns';
 import type { PctAnyColumnFilter } from './model/filters';
+import { pctGroupKey } from './model/lines';
 import type { PctTableSort } from './table';
 
 /** A block's size as given: a whole number of rows, at least one, or the default's 100. */
@@ -47,33 +48,63 @@ interface Link {
 }
 
 /**
- * A failed block as the table holds it: the list it is of and its number. The table hands it
- * back to the retry and reads nothing in it; one object per failure, so the holes of one
- * block are seen as one.
+ * A failed block as the table holds it: the key of the list it is of and its number. The
+ * table hands it back to the retry and reads nothing in it; one object per failure, so the
+ * holes of one block are seen as one.
  */
 interface Failure {
-  readonly parent: PctRowId | null;
+  readonly list: string;
   readonly block: number;
 }
 
 /**
- * One list the source answers for: the roots, or the children of a branch that opened, each
- * asked for a block at a time.
+ * A group the source made: its key, its values from the outermost level down, and what the
+ * source said of it. One object per group that came, so a list holds it as it holds a row.
+ */
+class Group {
+  constructor(
+    readonly key: string,
+    readonly values: readonly unknown[],
+    readonly count: number,
+    readonly sums: Readonly<Record<string, unknown>> | undefined,
+  ) {}
+}
+
+/** An item of a list: a row, or a group the source made. */
+type Item<T> = T | Group;
+
+/**
+ * The key of a list: the branch whose children it holds, or the group whose members it does,
+ * both `null` for the top. A row's id and a group's key are kept apart, a `1` from a `'1'` too.
+ */
+function listKey(parent: PctRowId | null, group: string | null): string {
+  return JSON.stringify([parent, group]);
+}
+
+/**
+ * One list the source answers for: the roots, the children of a branch that opened or the
+ * members of a group, each asked for a block at a time.
  */
 interface List<T> {
-  /** The branch whose children these are, `null` for the roots. */
+  /** Its key among the lists: its `parent` and its `group`. */
+  readonly key: string;
+  /** The branch whose children these are, `null` for the roots and a group's members. */
   readonly parent: PctRowId | null;
   /** The ids of the branches above the list, the outermost first and `parent` last. */
   readonly path: readonly PctRowId[];
+  /** The key of the group whose members these are, `null` outside one. */
+  readonly group: string | null;
+  /** The values of the groups the list stands in, the outermost first. */
+  readonly values: readonly unknown[];
   /** Each block asked for, and what came of it. */
-  readonly blocks: WritableSignal<ReadonlyMap<number, PctBlock<T>>>;
+  readonly blocks: WritableSignal<ReadonlyMap<number, PctBlock<Item<T>>>>;
   /**
    * The count the last answer gave; `null` before a branch's first. The roots' is a number
    * from the start, and stays the last question's until a block of a new one answers.
    */
   readonly count: WritableSignal<number | null>;
   /** The list as the table draws it: a hole wherever no block came, one while none has. */
-  readonly rows: Signal<readonly (T | undefined)[]>;
+  readonly rows: Signal<readonly (Item<T> | undefined)[]>;
   /** The requests in flight, by block, so a block let go aborts its own. */
   readonly flying: Map<number, AbortController>;
   /** Each failed block's failure, kept so the holes of one block hand over one object. */
@@ -106,6 +137,21 @@ export interface PctTableRequest<Id extends string = string> {
    * @since next
    */
   readonly path: readonly PctRowId[];
+  /**
+   * The columns the rows are grouped by, outermost first: `pctTableGroups`'s `groupBy`, empty
+   * without it.
+   *
+   * @since next
+   */
+  readonly groupBy: readonly string[];
+  /**
+   * The values of the group whose members are asked for, outermost first; empty for the top.
+   * Shorter than `groupBy`, the source answers with the groups one level deeper
+   * ({@link PctTableGroupsAnswer}); as long, with the group's rows.
+   *
+   * @since next
+   */
+  readonly group: readonly unknown[];
   /** The first row of the block, counted in its list: the roots, or `parent`'s children. */
   readonly from: number;
   /** The row after the block's last: the source gives fewer past the end of its rows. */
@@ -133,15 +179,45 @@ export interface PctTableAnswer<T> {
 }
 
 /**
- * Loads a block of rows. `signal` aborts when the table no longer needs the block: the order
- * or the question changed, or the view left it before it came.
+ * A group a remote source made, one level of `groupBy`: the value its rows share in that
+ * level's column, how many rows it holds, and the sums its heading shows.
+ *
+ * @since next
+ */
+export interface PctTableGroup {
+  /** The value its rows share, as the column reads it: its heading writes it as the column does. */
+  readonly value: unknown;
+  /** How many rows it holds, those of the groups inside it too. */
+  readonly count: number;
+  /**
+   * The sums of its rows by column id, each a value of the column's kind, written as the
+   * column writes it; a column with none is written as nothing.
+   */
+  readonly sums?: Readonly<Record<string, unknown>>;
+}
+
+/**
+ * What a remote source answers when asked into a group shallower than `groupBy`: the groups of
+ * the block, one level deeper, and how many there are in all.
+ *
+ * @since next
+ */
+export interface PctTableGroupsAnswer {
+  readonly groups: readonly PctTableGroup[];
+  readonly total: number;
+}
+
+/**
+ * Loads a block of rows, or of groups when the table groups them. `signal` aborts when the
+ * table no longer needs the block: the order or the question changed, or the view left it
+ * before it came.
  *
  * @since 0.3.0
  */
 export type PctTableLoad<T, Id extends string = string> = (
   request: PctTableRequest<Id>,
   signal: AbortSignal,
-) => Promise<PctTableAnswer<T>>;
+) => Promise<PctTableAnswer<T> | PctTableGroupsAnswer>;
 
 /**
  * The rows come from a remote source a block at a time, as the view reaches them: one
@@ -162,8 +238,13 @@ export type PctTableLoad<T, Id extends string = string> = (
  *   the view reaches them, with a count and holes of their own. A closed branch keeps the
  *   rows that came; a new order or question lets every branch's go, and asks again for the
  *   open ones as their rows come back.
+ * - **Groups are the source's to make** ([0123](../../../../docs/decisions/0123-a-group-of-a-remote-source-is-the-sources.md)):
+ *   with `pctTableGroups`, the source is asked under `request.groupBy` and answers the top
+ *   with groups, each with its count and sums; an open group's members are a list of their
+ *   own, asked for under `request.group` — groups one level deeper, or its rows — as the view
+ *   reaches them. The table groups, counts and sums none of the rows itself.
  * - **It needs `pctTableWindow`**: without a window every row of the source would be drawn,
- *   holes and all. Groups are the source's to make, and the table makes none of its rows.
+ *   holes and all.
  *
  * `refresh()` asks again for the blocks in view and lets the rest go, for data that lives;
  * `invalidate()` lets every row go, the scroll staying where it is.
@@ -219,24 +300,31 @@ export class PctTableRemote<T, Id extends string = string> {
   readonly hasChildren = input<((row: T) => boolean) | null>(null);
 
   /**
-   * Each list asked for under the current question, by the branch it is of — `null` the roots,
-   * which are always there.
+   * Each list asked for under the current question, by its key — the top's, which is always
+   * there, of no branch and no group.
    */
-  private readonly lists = signal<ReadonlyMap<PctRowId | null, List<T>>>(
-    new Map(),
-  );
-
-  /** The roots: the list every table of a remote source has. */
-  private readonly roots = this.list(null, [], 0);
+  private readonly lists = signal<ReadonlyMap<string, List<T>>>(new Map());
 
   /**
-   * Where each row that came stands: its list and its place in it. Written as a block comes
-   * and let go with it, so a row's place is read without walking a list.
+   * The columns the lists held were asked to group by: the table's `groupedBy` as it was at
+   * the question, so a list of groups is never read as one of rows.
    */
-  private readonly placed = new Map<T, { list: List<T>; at: number }>();
+  private readonly levels = signal<readonly string[]>([]);
+
+  /** The roots: the list every table of a remote source has. */
+  private readonly roots = this.list(null, [], null, [], 0);
+
+  /**
+   * Where each row and group that came stands: its list and its place in it. Written as a
+   * block comes and let go with it, so a row's place is read without walking a list.
+   */
+  private readonly placed = new Map<Item<T>, { list: List<T>; at: number }>();
 
   /** Each row that came, by id: the branch a list of its children is asked under. */
   private readonly byId = new Map<PctRowId, T>();
+
+  /** Each group that came, by key: the group a list of its members is asked under. */
+  private readonly byKey = new Map<string, Group>();
 
   /**
    * The size the blocks held were asked at: a new `blockSize` is a new list, and until the
@@ -287,6 +375,7 @@ export class PctTableRemote<T, Id extends string = string> {
       this.table.filter(),
       this.table.columnFilters(),
       this.blockSize(),
+      this.table.groupedBy(),
     ]),
   );
 
@@ -297,31 +386,34 @@ export class PctTableRemote<T, Id extends string = string> {
   private readonly drawnRows = computed(() => {
     const lines = this.table.lines();
     const { start, end } = this.window.drawn();
-    const drawn = new Map<PctRowId | null, { from: number; to: number }>();
-    const mark = (parent: PctRowId | null, at: number) => {
-      const seen = drawn.get(parent);
-      if (seen === undefined) drawn.set(parent, { from: at, to: at + 1 });
-      else drawn.set(parent, { from: seen.from, to: at + 1 });
+    const drawn = new Map<string, { from: number; to: number }>();
+    const mark = (key: string, at: number) => {
+      const seen = drawn.get(key);
+      if (seen === undefined) drawn.set(key, { from: at, to: at + 1 });
+      else drawn.set(key, { from: seen.from, to: at + 1 });
+    };
+    const markPlace = (item: Item<T> | undefined) => {
+      const place = item === undefined ? undefined : this.placed.get(item);
+      // A row of the tree inside the rows that came has no list of its own.
+      if (place !== undefined) mark(place.list.key, place.at);
     };
     for (let line = start; line < end; line++) {
       const found = lines[line];
-      if (found.kind === 'hole') mark(found.parent, found.at);
-      else if (found.kind === 'row') {
-        const place = this.placed.get(found.row);
-        // A row of the tree inside the rows that came has no list of its own.
-        if (place !== undefined) mark(place.list.parent, place.at);
-      }
+      if (found.kind === 'hole')
+        mark(listKey(found.parent, found.group), found.at);
+      else if (found.kind === 'row') markPlace(found.row);
+      else if (found.kind === 'group') markPlace(this.byKey.get(found.key));
     }
     // Nothing drawn is the top of the roots, where the first block is asked for.
-    if (drawn.size === 0) drawn.set(null, { from: 0, to: 0 });
+    if (drawn.size === 0) drawn.set(this.roots.key, { from: 0, to: 0 });
     return drawn;
   });
 
   /** The blocks the rows drawn need, by list. */
   private readonly wanted = computed(() => {
-    const wanted = new Map<PctRowId | null, readonly number[]>();
-    for (const [parent, { from, to }] of this.drawnRows())
-      wanted.set(parent, this.blocksFor(this.lists().get(parent), from, to));
+    const wanted = new Map<string, readonly number[]>();
+    for (const [key, { from, to }] of this.drawnRows())
+      wanted.set(key, this.blocksFor(this.lists().get(key), from, to));
     return wanted;
   });
 
@@ -335,20 +427,22 @@ export class PctTableRemote<T, Id extends string = string> {
     const parts = signal<PctTableRemoteParts | null>(null);
     LINKS.set(this, {
       parts,
-      retry: ({ parent, block }) => {
-        const list = this.lists().get(parent);
+      retry: ({ list: key, block }) => {
+        const list = this.lists().get(key);
         if (list !== undefined) this.askAgain(list, [block]);
       },
     });
     this.table.contribute({
       remote: {
-        rows: this.roots.rows,
+        rows: computed(() =>
+          this.levels().length === 0 ? this.roots.rows() : this.grouped(),
+        ),
         loading: this.loading,
         failed: computed(() => {
           const lists = this.lists();
           const size = this.size();
-          return ({ parent, at }) => {
-            const list = lists.get(parent);
+          return ({ parent, group, at }) => {
+            const list = lists.get(listKey(parent, group));
             if (list === undefined) return null;
             const block = pctFailedBlock(list.blocks(), at, size);
             return block === null ? null : this.failureOf(list, block);
@@ -361,9 +455,30 @@ export class PctTableRemote<T, Id extends string = string> {
           const lists = this.lists();
           return (row: T) => {
             if (!has(row)) return undefined;
-            return lists.get(id(row))?.rows() ?? UNASKED;
+            return lists.get(listKey(id(row), null))?.rows() ?? UNASKED;
           };
         }) as Signal<((row: never) => readonly unknown[] | undefined) | null>,
+        grouped: computed(() => {
+          const by = this.levels();
+          if (by.length === 0) return null;
+          const lists = this.lists();
+          return {
+            by,
+            top: this.roots.rows(),
+            group: (item: unknown) =>
+              item instanceof Group
+                ? {
+                    key: item.key,
+                    level: item.values.length - 1,
+                    value: item.values[item.values.length - 1],
+                    count: item.count,
+                    sums: item.sums,
+                    members: () =>
+                      lists.get(listKey(null, item.key))?.rows() ?? UNASKED,
+                  }
+                : undefined,
+          };
+        }),
         parts: PctTableRemoteParts,
         // Read once the table has made the parts: a block fails after its first render.
         failure: computed(() => (parts() as PctTableRemoteParts).failure()),
@@ -381,9 +496,11 @@ export class PctTableRemote<T, Id extends string = string> {
       if (!same)
         untracked(() => {
           this.asked = { query, load };
-          // A new list: the old one's blocks go, and the new ones are of the new size.
+          // A new list: the old one's blocks go, and the new ones are of the new size and
+          // grouped by the new columns.
           this.clear();
           this.size.set(this.blockSize());
+          this.levels.set(this.table.groupedBy());
         });
       // The first list starts at the top too, where the frame stands.
       if (!same && !untracked(this.keepScroll)) {
@@ -395,7 +512,10 @@ export class PctTableRemote<T, Id extends string = string> {
           if (frame !== null) frame.scrollTop = 0;
           this.follow(
             new Map([
-              [null, this.blocksFor(this.roots, 0, end - this.window.first())],
+              [
+                this.roots.key,
+                this.blocksFor(this.roots, 0, end - this.window.first()),
+              ],
             ]),
           );
         });
@@ -417,7 +537,7 @@ export class PctTableRemote<T, Id extends string = string> {
   refresh(): void {
     const wanted = this.wanted();
     for (const list of this.lists().values()) {
-      const view = wanted.get(list.parent) ?? [];
+      const view = wanted.get(list.key) ?? [];
       this.letGo(
         list,
         [...list.blocks().keys()].filter((block) => !view.includes(block)),
@@ -436,17 +556,44 @@ export class PctTableRemote<T, Id extends string = string> {
     this.follow(this.wanted());
   }
 
-  /** A list of its own, the roots or a branch's children, with no block asked for. */
+  /**
+   * The rows that came in the groups' lists, in the order the groups stand: what the table
+   * reads as the rows a source sent.
+   */
+  private grouped(): readonly T[] {
+    const lists = this.lists();
+    const rows: T[] = [];
+    const walk = (list: readonly (Item<T> | undefined)[]) => {
+      for (const item of list) {
+        if (item instanceof Group) {
+          const members = lists.get(listKey(null, item.key));
+          if (members !== undefined) walk(members.rows());
+        } else if (item !== undefined) rows.push(item);
+      }
+    };
+    walk(this.roots.rows());
+    return rows;
+  }
+
+  /**
+   * A list of its own, the roots, a branch's children or a group's members, with no block
+   * asked for.
+   */
   private list(
     parent: PctRowId | null,
     path: readonly PctRowId[],
+    group: string | null,
+    values: readonly unknown[],
     count: number | null,
   ): List<T> {
-    const blocks = signal<ReadonlyMap<number, PctBlock<T>>>(new Map());
+    const blocks = signal<ReadonlyMap<number, PctBlock<Item<T>>>>(new Map());
     const counted = signal(count);
     const list: List<T> = {
+      key: listKey(parent, group),
       parent,
       path,
+      group,
+      values,
       blocks,
       count: counted,
       rows: computed(() => {
@@ -458,7 +605,7 @@ export class PctTableRemote<T, Id extends string = string> {
       flying: new Map(),
       failures: new Map(),
     };
-    this.lists.update((lists) => new Map(lists).set(parent, list));
+    this.lists.update((lists) => new Map(lists).set(list.key, list));
     return list;
   }
 
@@ -466,7 +613,7 @@ export class PctTableRemote<T, Id extends string = string> {
   private failureOf(list: List<T>, block: number): Failure {
     let failure = list.failures.get(block);
     if (failure === undefined) {
-      failure = { parent: list.parent, block };
+      failure = { list: list.key, block };
       list.failures.set(block, failure);
     }
     return failure;
@@ -489,26 +636,25 @@ export class PctTableRemote<T, Id extends string = string> {
     );
   }
 
-  /** Lets every block go, and every branch's list: the roots stay, with their count. */
+  /** Lets every block go, and every branch's and group's list: the roots stay, with their count. */
   private clear(): void {
     for (const list of this.lists().values())
       this.letGo(list, [...list.blocks().keys()]);
-    this.lists.set(new Map([[null, this.roots]]));
+    this.lists.set(new Map([[this.roots.key, this.roots]]));
     this.placed.clear();
     this.byId.clear();
+    this.byKey.clear();
   }
 
   /**
    * Follows the view: asks for each block of `wanted` not asked for, opening the list of a
-   * branch the first time its children are drawn, and lets go of the blocks the view left
-   * that have no rows to show — still coming, or failed — so a scroll past them waits for
-   * none, and one back to them asks again.
+   * branch or a group the first time its members are drawn, and lets go of the blocks the
+   * view left that have no rows to show — still coming, or failed — so a scroll past them
+   * waits for none, and one back to them asks again.
    */
-  private follow(
-    wanted: ReadonlyMap<PctRowId | null, readonly number[]>,
-  ): void {
+  private follow(wanted: ReadonlyMap<string, readonly number[]>): void {
     for (const list of this.lists().values()) {
-      const view = wanted.get(list.parent) ?? [];
+      const view = wanted.get(list.key) ?? [];
       this.letGo(
         list,
         [...list.blocks()].flatMap(([block, state]) =>
@@ -516,8 +662,8 @@ export class PctTableRemote<T, Id extends string = string> {
         ),
       );
     }
-    for (const [parent, blocks] of wanted) {
-      const list = this.lists().get(parent) ?? this.branch(parent);
+    for (const [key, blocks] of wanted) {
+      const list = this.lists().get(key) ?? this.branch(key);
       if (list === null) continue;
       const held = list.blocks();
       this.askAgain(
@@ -528,15 +674,28 @@ export class PctTableRemote<T, Id extends string = string> {
   }
 
   /**
-   * The list of a branch's children, made the first time they are drawn; `null` for a branch
-   * none of whose rows came, which a hole cannot name.
+   * The list of a branch's children or a group's members, made the first time they are drawn;
+   * `null` for one whose row or group has not come, which a hole cannot name.
    */
-  private branch(parent: PctRowId | null): List<T> | null {
-    if (parent === null) return this.roots;
+  private branch(key: string): List<T> | null {
+    const [parent, group] = JSON.parse(key) as [PctRowId | null, string | null];
+    if (parent === null) {
+      const made = group === null ? undefined : this.byKey.get(group);
+      return made === undefined
+        ? null
+        : this.list(null, [], made.key, made.values, null);
+    }
     const row = this.byId.get(parent);
     if (row === undefined) return null;
-    const above = this.placed.get(row)?.list.path ?? [];
-    return this.list(parent, [...above, parent], null);
+    // A branch stands in the groups its row stands in.
+    const above = this.placed.get(row)?.list;
+    return this.list(
+      parent,
+      [...(above?.path ?? []), parent],
+      null,
+      above?.values ?? [],
+      null,
+    );
   }
 
   /** Asks for each of `blocks` of a list, keeping the rows a block has until its answer. */
@@ -568,23 +727,29 @@ export class PctTableRemote<T, Id extends string = string> {
     list.blocks.set(next);
   }
 
-  /** Writes where each row of a block that came stands. */
-  private place(list: List<T>, block: number, rows: readonly T[]): void {
+  /** Writes where each row or group of a block that came stands. */
+  private place(list: List<T>, block: number, items: readonly Item<T>[]): void {
     const size = this.size();
     const id = this.table.rowId();
-    rows.slice(0, size).forEach((row, i) => {
-      this.placed.set(row, { list, at: block * size + i });
-      this.byId.set(id(row), row);
+    items.slice(0, size).forEach((item, i) => {
+      this.placed.set(item, { list, at: block * size + i });
+      if (item instanceof Group) this.byKey.set(item.key, item);
+      else this.byId.set(id(item), item);
     });
   }
 
-  /** Forgets where the rows of a block let go stood, unless another block holds them now. */
-  private unplace(list: List<T>, rows: readonly T[] | null): void {
+  /**
+   * Forgets where the rows and groups of a block let go stood, unless another block holds
+   * them now.
+   */
+  private unplace(list: List<T>, items: readonly Item<T>[] | null): void {
     const id = this.table.rowId();
-    for (const row of rows ?? []) {
-      if (this.placed.get(row)?.list !== list) continue;
-      this.placed.delete(row);
-      if (this.byId.get(id(row)) === row) this.byId.delete(id(row));
+    for (const item of items ?? []) {
+      if (this.placed.get(item)?.list !== list) continue;
+      this.placed.delete(item);
+      if (item instanceof Group) {
+        if (this.byKey.get(item.key) === item) this.byKey.delete(item.key);
+      } else if (this.byId.get(id(item)) === item) this.byId.delete(id(item));
     }
   }
 
@@ -594,9 +759,14 @@ export class PctTableRemote<T, Id extends string = string> {
     const controller = new AbortController();
     list.flying.set(block, controller);
     const size = this.size();
+    const groupBy = this.levels();
+    // Shallower than the columns grouped by, a list holds groups; as deep, rows.
+    const groups = list.values.length < groupBy.length;
     const request: PctTableRequest<Id> = {
       parent: list.parent,
       path: list.path,
+      groupBy,
+      group: list.values,
       from: block * size,
       to: (block + 1) * size,
       // The headers write the ids of sortable columns: those the source sorts by.
@@ -609,14 +779,14 @@ export class PctTableRemote<T, Id extends string = string> {
      * table's, and one asked again is a request of its own.
      */
     const settle = (
-      state: (rows: readonly T[] | null) => PctBlock<T>,
+      state: (rows: readonly Item<T>[] | null) => PctBlock<Item<T>>,
     ): boolean => {
       if (controller.signal.aborted) return false;
       list.flying.delete(block);
       list.blocks.update((blocks) =>
         new Map(blocks).set(
           block,
-          state((blocks.get(block) as PctBlock<T>).rows),
+          state((blocks.get(block) as PctBlock<Item<T>>).rows),
         ),
       );
       return true;
@@ -625,10 +795,11 @@ export class PctTableRemote<T, Id extends string = string> {
     const fail = (error: unknown) =>
       settle((rows) => ({ state: 'failed', error, rows }));
     // A load that throws rather than rejects fails its block all the same.
-    new Promise<PctTableAnswer<T>>((resolve) =>
+    new Promise<PctTableAnswer<T> | PctTableGroupsAnswer>((resolve) =>
       resolve(this.load()(request, controller.signal)),
     ).then((answer) => {
       const { total } = answer;
+      const items = this.itemsOf(answer, groups, list.values);
       // A count that is no count of rows fails the block, as a load that threw would.
       if (!Number.isInteger(total) || total < 0)
         fail(
@@ -636,15 +807,47 @@ export class PctTableRemote<T, Id extends string = string> {
             `[pct-data-table] pctTableRemote: a block's total must be a whole number of rows, not ${String(total)}.`,
           ),
         );
+      else if (items instanceof Error) fail(items);
       else {
         if (controller.signal.aborted) return;
         // The places first: the lines the answer makes are read by them.
         this.unplace(list, list.blocks().get(block)?.rows ?? null);
-        this.place(list, block, answer.rows);
-        settle(() => ({ state: 'loaded', rows: answer.rows }));
+        this.place(list, block, items);
+        settle(() => ({ state: 'loaded', rows: items }));
         list.count.set(total);
       }
     }, fail);
+  }
+
+  /**
+   * What an answer holds for a list: its rows, or the groups it made one level deeper than
+   * `values` — or the error that fails the block, for an answer of the other kind or a group
+   * whose count is no count of rows.
+   */
+  private itemsOf(
+    answer: PctTableAnswer<T> | PctTableGroupsAnswer,
+    groups: boolean,
+    values: readonly unknown[],
+  ): readonly Item<T>[] | Error {
+    const field = groups ? 'groups' : 'rows';
+    const items: unknown = (answer as unknown as Record<string, unknown>)[
+      field
+    ];
+    if (!Array.isArray(items))
+      return new TypeError(
+        `[pct-data-table] pctTableRemote: a block asked for under ${JSON.stringify(values)} of groupBy needs \`${field}\`: the table groups by ${groups ? 'more' : 'no more'} columns there.`,
+      );
+    if (!groups) return items as readonly T[];
+    const made: Group[] = [];
+    for (const { value, count, sums } of items as readonly PctTableGroup[]) {
+      if (!Number.isInteger(count) || count < 0)
+        return new RangeError(
+          `[pct-data-table] pctTableRemote: a group's count must be a whole number of rows, not ${String(count)}.`,
+        );
+      const path = [...values, value];
+      made.push(new Group(pctGroupKey(path), path, count, sums));
+    }
+    return made;
   }
 
   /**

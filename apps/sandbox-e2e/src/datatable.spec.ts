@@ -1252,6 +1252,79 @@ test.describe('PctTableRemote with a tree — an archive from a server, one bran
   });
 });
 
+test.describe('PctTableRemote with groups — readings grouped on a server', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datatable');
+  });
+
+  const readings = (page: Page) => page.getByTestId('table-remote-groups');
+  const headings = (page: Page) =>
+    readings(page).locator('tr[data-pct-part="group"]');
+  const asked = (page: Page) => page.getByTestId('remote-groups-asked');
+  /** A group's disclosure, by its label and count. */
+  const group = (page: Page, name: string) =>
+    readings(page).getByRole('button', { name, exact: true });
+
+  test('a group heads its readings with the count and the sum the server gave', async ({
+    page,
+  }) => {
+    const first = headings(page).first();
+    await expect(first).toContainText('Meter 1 (120)');
+    await expect(first).toContainText('6,540 kWh');
+    await expect(group(page, 'Meter 1 (120)')).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    // An open group's readings come as the view reaches them, under its heading.
+    const reading = readings(page).locator('tbody tr[data-pct-index]').nth(1);
+    await expect(reading).toContainText('January');
+    await expect(reading).toContainText('10 kWh');
+    // The heading names the rest of its body.
+    await expect(first.locator('th')).toHaveAttribute('scope', 'rowgroup');
+  });
+
+  test('a group of a group is asked for under both values, and named within its group', async ({
+    page,
+  }) => {
+    await page.getByTestId('remote-groups-year').click();
+    await expect(headings(page).nth(1)).toContainText('2017 (12)');
+    await expect(headings(page).nth(1)).toContainText('582 kWh');
+    await expect(group(page, '2017 (12), in Meter 1')).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(
+      readings(page).locator('tbody tr[data-pct-index]').nth(2),
+    ).toContainText('January');
+  });
+
+  test('a collapsed group asks nothing, and shows its readings when it opens', async ({
+    page,
+  }) => {
+    await expect(headings(page).first()).toContainText('Meter 1 (120)');
+    await page.getByTestId('remote-groups-collapse').click();
+    await expect(group(page, 'Meter 1 (120)')).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    await expect(headings(page).nth(4)).toContainText('Meter 5 (120)');
+    // A request would come a third of a second later: none does.
+    const before = await asked(page).textContent();
+    await page.waitForTimeout(600);
+    await expect(asked(page)).toHaveText(before ?? '');
+    await group(page, 'Meter 3 (120)').click();
+    const below = readings(page)
+      .locator('tbody')
+      .filter({
+        has: page.getByRole('button', { name: 'Meter 3 (120)', exact: true }),
+      })
+      .locator('tr[data-pct-index]:not([data-pct-part])')
+      .first();
+    await expect(below).toContainText('Meter 3');
+    await expect(below).toContainText('January');
+  });
+});
+
 test.describe('PctTableColumns — the columns as the user lays them out', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/datatable');

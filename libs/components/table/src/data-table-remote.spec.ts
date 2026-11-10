@@ -191,6 +191,7 @@ class NoWindowHost {
   />`,
 })
 class GroupsHost {
+  readonly remote = viewChild.required(PctTableRemote);
   readonly by = signal<readonly ('name' | 'value')[]>(['name']);
   readonly columns = columns;
   readonly load = load;
@@ -344,6 +345,8 @@ describe('PctTableRemote', () => {
       {
         parent: null,
         path: [],
+        groupBy: [],
+        group: [],
         from: 0,
         to: 50,
         sort: [],
@@ -402,6 +405,8 @@ describe('PctTableRemote', () => {
     expect(asked[1].request).toEqual({
       parent: null,
       path: [],
+      groupBy: [],
+      group: [],
       from: 50,
       to: 100,
       sort: [],
@@ -624,6 +629,8 @@ describe('PctTableRemote', () => {
     expect(asked[3].request).toEqual({
       parent: null,
       path: [],
+      groupBy: [],
+      group: [],
       from: 0,
       to: 50,
       sort: [{ key: 'name', direction: 'descending' }],
@@ -705,6 +712,8 @@ describe('PctTableRemote', () => {
     expect(asked.at(-1)?.request).toEqual({
       parent: null,
       path: [],
+      groupBy: [],
+      group: [],
       from: 0,
       to: 50,
       sort: [],
@@ -730,6 +739,8 @@ describe('PctTableRemote', () => {
     expect(asked[1].request).toEqual({
       parent: null,
       path: [],
+      groupBy: [],
+      group: [],
       from: 0,
       to: 20,
       sort: [],
@@ -1018,39 +1029,25 @@ describe('PctTableRemote', () => {
     );
   });
 
-  it('groups none of a remote source’s rows, and says why', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  it('fails the first block of a source that answers rows where groups are asked for', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
     const fixture = TestBed.createComponent(GroupsHost);
     fixture.detectChanges();
     await stable(fixture);
+    expect(asked[0].request.groupBy).toEqual(['name']);
     asked[0].answer();
     await stable(fixture);
     expect(
       tableOf(fixture).querySelector('[data-pct-part="group"]'),
     ).toBeNull();
-    expect(lines(fixture)[0]).toBe('Register 0');
-    // Grouped by nothing, nothing is refused; by another column, the sentence is not said again.
-    fixture.componentInstance.by.set([]);
-    await stable(fixture);
-    fixture.componentInstance.by.set(['value']);
-    await stable(fixture);
-    const said = warn.mock.calls.filter(([text]) =>
-      String(text).includes('pctTableRemote'),
+    expect(String(fixture.componentInstance.remote().error())).toContain(
+      '`groups`',
     );
-    expect(said).toEqual([
-      [
-        '[pct-data-table] pctTableGroups does not group the rows of pctTableRemote: a group ' +
-          'of rows the source has not sent cannot be counted or summed here, so the rows stay ' +
-          'in the order the source gave them.',
-      ],
-    ]);
   });
 
-  it('says nothing of groups by no column', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  it('asks under no grouping while groups by no column', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -1058,11 +1055,8 @@ describe('PctTableRemote', () => {
     fixture.componentInstance.by.set([]);
     fixture.detectChanges();
     await stable(fixture);
-    expect(
-      warn.mock.calls.filter(([text]) =>
-        String(text).includes('pctTableRemote'),
-      ),
-    ).toEqual([]);
+    expect(asked[0].request.groupBy).toEqual([]);
+    expect(asked[0].request.group).toEqual([]);
   });
 });
 
