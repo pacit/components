@@ -244,24 +244,75 @@ test.describe('PctWheel — a listbox on the platform’s scroll', () => {
         .toEqual({ label: '00', rests: true });
     });
 
+    test('a key pressed before the travel before it is heard to end is not undone by it', async ({
+      page,
+    }) => {
+      const list = listOf(page, 'wheel-hour');
+      const value = page.getByTestId('clock-value');
+
+      await list.focus();
+      await page.keyboard.press('Home');
+      await expect(value).toHaveText('0:30');
+      await expect
+        .poll(() => underLine(page, 'wheel-hour'))
+        .toEqual({ label: '00', rests: true });
+
+      // Back and forth over the seam with no rest between. Each travel is overtaken by the
+      // next wherever the engine has got with it — not begun, on its way, or at its row and
+      // not yet said to have ended, which firefox says some 180 ms after the rows stop. The
+      // list is then left until it has heard nothing for longer than that.
+      const still = list.evaluate(
+        (element) =>
+          new Promise<void>((resolve) => {
+            let timer = setTimeout(resolve, 500);
+            const heard = (): void => {
+              clearTimeout(timer);
+              timer = setTimeout(resolve, 500);
+            };
+            element.addEventListener('scroll', heard);
+            element.addEventListener('scrollend', heard);
+          }),
+      );
+      for (const key of ['ArrowUp', 'ArrowDown', 'ArrowUp', 'ArrowDown'])
+        await page.keyboard.press(key);
+      await still;
+
+      // The value is the last key's, and so is the row at rest — on the middle turn.
+      await expect(value).toHaveText('0:30');
+      expect(await underLine(page, 'wheel-hour')).toEqual({
+        label: '00',
+        rests: true,
+      });
+      expect(await turnOf(page, 'wheel-hour', 24)).toBe(1);
+    });
+
     test('a turn of the mouse’s wheel past the end of the rows goes on from the start', async ({
       page,
     }) => {
       const list = listOf(page, 'wheel-minute');
       const value = page.getByTestId('clock-value');
 
-      // Forty rows on from 30 is 10, on the last of the three turns.
-      await turn(page, list, 40);
+      // Forty rows on from 30 is 10, past the end of the rows — sent as ten turns of four,
+      // each left to come to rest: one event of a mouse's wheel goes no further than a page
+      // in firefox, which is five rows here. Every settle is put back on the middle turn.
+      for (const minute of '34 38 42 46 50 54 58 02 06 10'.split(' ')) {
+        await turn(page, list, 4);
+        await expect
+          .poll(() => underLine(page, 'wheel-minute'))
+          .toEqual({ label: minute, rests: true });
+        await expect.poll(() => turnOf(page, 'wheel-minute', 60)).toBe(1);
+      }
       await expect(value).toHaveText('9:10');
-      await expect.poll(() => turnOf(page, 'wheel-minute', 60)).toBe(1);
-      await expect
-        .poll(() => underLine(page, 'wheel-minute'))
-        .toEqual({ label: '10', rests: true });
 
-      // And forty back is 30 again, by way of the first turn.
-      await turn(page, list, -40);
+      // And forty back is 30 again, by way of the turn before.
+      for (const minute of '06 02 58 54 50 46 42 38 34 30'.split(' ')) {
+        await turn(page, list, -4);
+        await expect
+          .poll(() => underLine(page, 'wheel-minute'))
+          .toEqual({ label: minute, rests: true });
+        await expect.poll(() => turnOf(page, 'wheel-minute', 60)).toBe(1);
+      }
       await expect(value).toHaveText('9:30');
-      await expect.poll(() => turnOf(page, 'wheel-minute', 60)).toBe(1);
     });
 
     test('a click on a copy is a click on the row it copies', async ({

@@ -456,6 +456,14 @@ export class PctWheel<T = string>
    */
   private gesture = false;
 
+  /**
+   * The row the wheel has sent its scroll to and has not heard it rest on: set by a travel
+   * that takes time, taken down by the settle that arrives there and by a gesture. An engine
+   * says a scroll has ended some time after the rows stopped — firefox about 180 ms after —
+   * and a key pressed in between sends the wheel on before the travel before is heard to end.
+   */
+  private bound: number | null = null;
+
   /** The runway the last centring was made on; another one is placed afresh, not travelled to. */
   private drawn: readonly PctWheelRow<T>[] | null = null;
 
@@ -494,6 +502,7 @@ export class PctWheel<T = string>
       // take a note.
       const begin = (): void => {
         this.gesture = true;
+        this.bound = null;
       };
       list.addEventListener('pointerdown', begin, { passive: true });
       list.addEventListener('wheel', begin, { passive: true });
@@ -574,6 +583,10 @@ export class PctWheel<T = string>
    * to correct — and, if a gesture brought the scroll here, the row under the line becomes the
    * value. The handler runs twice for a settle that crosses a turn, the second time for the
    * scroll it made itself, and finds nothing left to do (0091 §2).
+   *
+   * A settle heard off the row the wheel sent its scroll to is the one of a travel before —
+   * a turn put right here would end the travel under way on the row it left — or of a travel
+   * the engine let run on. Either way the wheel is sent to its row again, and nothing is read.
    */
   protected onScrollEnd(): void {
     const list = this.list().nativeElement;
@@ -587,6 +600,12 @@ export class PctWheel<T = string>
       Math.max(Math.round(list.scrollTop / height), 0),
       last,
     );
+    if (this.bound !== null && under !== this.bound) {
+      this.centre(false);
+      return;
+    }
+    this.bound = null;
+
     const turn = Math.floor(under / count);
     const canonical = this.canonical();
     if (turn !== canonical)
@@ -651,20 +670,29 @@ export class PctWheel<T = string>
 
     const count = this.options().length;
     const from = list.scrollTop;
-    let top = (this.canonical() * count + active) * height;
+    let row = this.canonical() * count + active;
     if (!afresh) {
       for (let turn = 0; turn < this.turns(); turn++) {
-        const copy = (turn * count + active) * height;
-        if (Math.abs(copy - from) < Math.abs(top - from)) top = copy;
+        const copy = turn * count + active;
+        if (Math.abs(copy * height - from) < Math.abs(row * height - from))
+          row = copy;
       }
     }
-    if (Math.abs(top - from) < 1) return;
+    const top = row * height;
+    if (Math.abs(top - from) < 1) {
+      // Already there. A travel under way goes on to the row it was sent to all the same —
+      // no engine takes one back for a scroll that moves nothing — so the row is noted, and
+      // the settle of that travel sends the wheel here.
+      if (this.bound !== null) this.bound = row;
+      return;
+    }
 
+    const behavior = afresh ? 'instant' : pctScrollBehavior(list);
     this.gesture = false;
-    list.scrollTo({
-      top,
-      behavior: afresh ? 'instant' : pctScrollBehavior(list),
-    });
+    // A scroll made at once is where it was sent when the call returns; only one that takes
+    // time can be overtaken.
+    this.bound = behavior === 'smooth' ? row : null;
+    list.scrollTo({ top, behavior });
   }
 
   /**

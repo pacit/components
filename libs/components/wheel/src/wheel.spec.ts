@@ -1594,6 +1594,135 @@ describe('PctWheel', () => {
       });
     });
 
+    describe('a travel overtaken by the next', () => {
+      /**
+       * A ring on Monday — row 7, the first of the middle turn — on a motion axis with a
+       * duration, so that its travels take time. The layout stub moves the scroll at once; a
+       * case puts it back where a travel under way would still be.
+       */
+      async function travelling() {
+        const fixture = await at('mon', (host) => host.wrap.set(true));
+        const style = vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+          getPropertyValue: (name: string) =>
+            name === '--pct-motion-transition-duration' ? '150ms' : '',
+        } as CSSStyleDeclaration);
+        screen.calls.length = 0;
+        return { fixture, list: listOf(fixture), style };
+      }
+
+      it('the settle of the travel before puts no turn right under the next one', async () => {
+        const { fixture, list, style } = await travelling();
+        try {
+          // Sunday is one row up, on the turn before: the rows have stopped there and the
+          // engine has not said so yet when the next key comes.
+          press(fixture, 'ArrowUp');
+          await settle(fixture);
+          press(fixture, 'ArrowDown');
+          await settle(fixture);
+          expect(screen.calls).toEqual([
+            { top: 6 * ROW, behavior: 'smooth' },
+            { top: 7 * ROW, behavior: 'smooth' },
+          ]);
+
+          // Now it says so, and the travel back to Monday has not moved a row: no turn is
+          // put right — that would be Sunday on the middle turn — and Monday is asked for again.
+          list.scrollTop = 6 * ROW;
+          list.dispatchEvent(new Event('scrollend'));
+          expect(screen.calls).toEqual([
+            { top: 6 * ROW, behavior: 'smooth' },
+            { top: 7 * ROW, behavior: 'smooth' },
+            { top: 7 * ROW, behavior: 'smooth' },
+          ]);
+
+          // The travel arrives, and the wheel is at rest: the next settle is read again.
+          rest(fixture, 7 * ROW);
+          expect(list.scrollTop).toBe(7 * ROW);
+          rest(fixture, 6 * ROW);
+          expect(list.scrollTop).toBe(13 * ROW);
+          expect(fixture.componentInstance.value()).toBe('mon');
+        } finally {
+          style.mockRestore();
+        }
+      });
+
+      it.each(['pointerdown', 'wheel'] as const)(
+        'a %s takes the scroll from the travel, and its settle is read',
+        async (type) => {
+          const { fixture, list, style } = await travelling();
+          try {
+            press(fixture, 'ArrowUp');
+            await settle(fixture);
+
+            touchRows(fixture, type);
+            rest(fixture, 5 * ROW);
+
+            expect(fixture.componentInstance.value()).toBe('sat');
+            expect(list.scrollTop).toBe((7 + 5) * ROW);
+          } finally {
+            style.mockRestore();
+          }
+        },
+      );
+
+      it('a travel taken back before it moved is asked back to the row it left', async () => {
+        const { fixture, list, style } = await travelling();
+        try {
+          press(fixture, 'ArrowUp');
+          await settle(fixture);
+          list.scrollTop = 7 * ROW;
+          press(fixture, 'ArrowDown');
+          await settle(fixture);
+
+          // The scroll stands on Monday's row already — and is on its way to Sunday's, which
+          // no scroll of no distance takes back.
+          expect(screen.calls).toEqual([{ top: 6 * ROW, behavior: 'smooth' }]);
+
+          // It comes to rest on Sunday's, and is sent to the row the value is on.
+          rest(fixture, 6 * ROW);
+          expect(screen.calls).toEqual([
+            { top: 6 * ROW, behavior: 'smooth' },
+            { top: 7 * ROW, behavior: 'smooth' },
+          ]);
+
+          // There it rests, and a settle anywhere is read again.
+          rest(fixture, 7 * ROW);
+          rest(fixture, 6 * ROW);
+          expect(list.scrollTop).toBe(13 * ROW);
+          expect(screen.calls.length).toBe(2);
+        } finally {
+          style.mockRestore();
+        }
+      });
+
+      it('a travel made at once is overtaken by nothing', async () => {
+        const { fixture, list, style } = await travelling();
+        style.mockRestore();
+
+        // No duration on the axis: the scroll is on Sunday's row when the call returns, and
+        // a settle heard anywhere else is a settle there.
+        press(fixture, 'ArrowUp');
+        await settle(fixture);
+        expect(screen.calls).toEqual([{ top: 6 * ROW, behavior: 'instant' }]);
+        rest(fixture, 5 * ROW);
+        expect(list.scrollTop).toBe((7 + 5) * ROW);
+
+        // And a row the scroll already stands on is not asked for.
+        rest(fixture, 6 * ROW);
+        screen.calls.length = 0;
+        press(fixture, 'ArrowDown');
+        await settle(fixture);
+        list.scrollTop = 13 * ROW;
+        press(fixture, 'ArrowUp');
+        await settle(fixture);
+        expect(screen.calls).toEqual([{ top: 14 * ROW, behavior: 'instant' }]);
+
+        // Nor is it noted: a settle on another row of the middle turn is left where it is.
+        rest(fixture, 12 * ROW);
+        expect(list.scrollTop).toBe(12 * ROW);
+        expect(screen.calls.length).toBe(1);
+      });
+    });
+
     describe('the size of the list changing', () => {
       const observers: {
         callback: ResizeObserverCallback;
