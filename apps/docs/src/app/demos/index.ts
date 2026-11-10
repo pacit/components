@@ -578,6 +578,11 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       load: () =>
         import('./columns.clock.demo').then((m) => m.ColumnsClockDemo),
     },
+    {
+      key: 'wheel',
+      load: () =>
+        import('./columns.wheel.demo').then((m) => m.ColumnsWheelDemo),
+    },
   ],
   time: [
     {
@@ -591,6 +596,10 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
     {
       key: 'bounds',
       load: () => import('./time.bounds.demo').then((m) => m.TimeBoundsDemo),
+    },
+    {
+      key: 'wheel',
+      load: () => import('./time.wheel.demo').then((m) => m.TimeWheelDemo),
     },
   ],
   datetime: [

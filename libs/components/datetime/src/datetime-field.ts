@@ -64,6 +64,7 @@ import {
   pctTimeOfDay,
   PctTimeOfDay,
   pctTimeOfDayParts,
+  PctTimePicker,
   PctTimePredicate,
 } from '@pacit/components/time';
 
@@ -303,6 +304,13 @@ export class PctDatetime
    * @since 0.3.0
    */
   readonly step = input(60, { transform: numberAttribute });
+
+  /**
+   * The shape of the panel's time columns, as on `<pct-time>`: `list`, or `wheel` — a `PctWheel` per field beside the calendar (0089). The grid of days is the same in both.
+   *
+   * @since next
+   */
+  readonly picker = input<PctTimePicker>('list');
 
   /**
    * Days inside the bounds that cannot be picked — handed to the calendar as it is, so a day it refuses is refused whole, hours included.
@@ -1111,8 +1119,8 @@ export class PctDatetime
    * spliced back onto the field, because an overlay stands at the END of the document's tab
    * order however near the field it is drawn
    * ([0031](../../../../docs/decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)).
-   * The stops are the month buttons, the grid's cell and the columns, all of them in this
-   * entrypoint's templates and the two it composes.
+   * The stops are the month buttons, the grid's cell and the columns — a wheel's listbox where a
+   * column is drawn as one — all of them in this entrypoint's templates and those it composes.
    */
   protected onPanelKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {

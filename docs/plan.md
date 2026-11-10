@@ -181,19 +181,18 @@ form exists and is a condition of entering a release. Forty-two cards are filled
   - left out: the drum (rows turned by their distance to the line), a variant to measure
     where scroll-driven animations are; the select's long list is not this runway's consumer
 
-- [ ] **1.7 — the time panel's shape** — `picker` (`'list' | 'wheel'`, default `'list'`) on
-      `PctTime` and `PctTimeColumns`, after 1.6: the `wheel` shape composes `PctWheel` per
-      field, `wrap` on, the bounds as disabled rows
-  - the `list` shape polished in the same pull request: an odd row count at every size from
-    the row-height token (192 px holds six rows of 32 today, so the centre is between two),
-    which retires `--pct-time-column-height` (in no release) and the columns card's sentence
-    that the window is a height and not a count; a snap to the row's start; the walk kept
-    centred — `time.spec`'s case "opens with the chosen rows in view, centred, and keeps the
-    walk in view" rewritten
-  - the datetime field (1.4) takes the same input when it lands, `list` alone before
-  - ends with: both time cards with their new row, the `time-field` and `time-columns`
-    baselines of `/time` moved, `time-columns.ts` mutated narrowly, and the three readers on
-    the `wheel` shape
+- [x] **1.7 — the time panel's shape** — **closed 2026-11-10**: `picker` (`'list' | 'wheel'`,
+      default `'list'`) on `PctTime`, `PctDatetime` and `PctTimeColumns`
+  - the `wheel` shape is a `PctWheel` per field, the bounds its refused rows, and a ring
+    where the column fills its window; the keys, the step and `timePicked` are the columns'
+    in both shapes, and the wheel takes `startAt` for the row an empty column opens on
+  - the window is a count: `rows` on the columns, seven by default, in both shapes; the
+    `list` shape snaps to a row's start and keeps the walk on the middle
+  - `--pct-time-column-height` shipped in 0.3.0, which the plan did not know: deprecated
+    and still honoured where a skin wrote it, not retired (0089, amended)
+  - ended with: the three cards with their new rows, two demos on the site, the `/time` and
+    `/datetime` baselines moved, `time-columns.ts` and `wheel.ts` mutated narrowly, and the
+    three readers on the `wheel` shape
 
 - [x] **1.8 — numbers and instants in `./core`** — **closed 2026-10-29**
   - `pctQuantityFormat`: the platform's unit where it knows one, a symbol after a no-break

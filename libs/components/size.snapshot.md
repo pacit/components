@@ -56,7 +56,7 @@ before an application ships them.
 ./container 725 - @angular/core
 ./core 15472 - @angular/core,@angular/forms/signals
 ./date 50380 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
-./datetime 82673 ./core,./date,./icon,./time @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./datetime 102662 ./core,./date,./icon,./time,./wheel @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./description 9843 ./core @angular/core,@angular/forms/signals
 ./dialog 23821 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core,@angular/forms/signals
 ./drawer 23028 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
@@ -83,12 +83,12 @@ before an application ships them.
 ./tabs 19925 ./core @angular/core,@angular/forms/signals
 ./testing 15822 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./time 53833 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
+./time 73803 ./core,./icon,./wheel @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms/signals
 ./toast 27495 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ./tooltip 17225 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core,@angular/forms/signals
 ./topbar 2371 - @angular/core
 ./tree 12928 ./icon @angular/common,@angular/core
-./wheel 30828 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
+./wheel 31002 ./core,./icon @angular/common,@angular/core,@angular/forms/signals
 ```
 
 And the second reading, for the entrypoints that carry more than one tag. The rows
@@ -157,7 +157,7 @@ single number this file had ever moved.
 ./stepper PctStep 2 17968 17970
 ./table PctDataTable 14 120174 389344
 ./tabs PctTab 2 19756 19759
-./time PctTime 2 51093 51094
+./time PctTime 2 71061 71062
 ./topbar PctTopbar 2 1685 2230
 ./tree PctTree 2 12783 12786
 ```

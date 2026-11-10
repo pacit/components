@@ -17,6 +17,7 @@ import {
 import { providePctTexts } from '@pacit/components/core';
 import { PctDay } from '@pacit/components/date';
 import { PctField } from '@pacit/components/field';
+import { PctTimePicker } from '@pacit/components/time';
 
 import { PctDateTime } from './datetime';
 import {
@@ -177,6 +178,7 @@ const errorOf = (f: ComponentFixture<unknown>) =>
     [min]="min()"
     [max]="max()"
     [step]="step()"
+    [picker]="picker()"
     [dateDisabled]="dateDisabled()"
     [datetimeDisabled]="datetimeDisabled()"
     [disabled]="disabled()"
@@ -197,6 +199,7 @@ class Host {
   readonly min = signal<string | undefined>(undefined);
   readonly max = signal<string | undefined>(undefined);
   readonly step = signal(60);
+  readonly picker = signal<PctTimePicker>('list');
   readonly dateDisabled = signal<((day: PctDay) => boolean) | null>(null);
   readonly datetimeDisabled = signal<PctDateTimePredicate | null>(null);
   readonly disabled = signal(false);
@@ -885,6 +888,110 @@ describe('PctDatetime — the panel', () => {
     expect(dayText(f).disabled).toBe(true);
     expect(timeText(f).disabled).toBe(true);
     expect(hostOf(f).hasAttribute('data-pct-disabled')).toBe(true);
+  });
+});
+
+describe('PctDatetime — the time as wheels (0089)', () => {
+  /** The listbox of a wheel in the panel — the element its keys and the focus are on. */
+  const wheelIn = (field: string) =>
+    document.querySelector(
+      `[data-pct-part="panel"] pct-wheel[data-pct-field="${field}"] [data-pct-part="list"]`,
+    ) as HTMLElement;
+
+  const asWheels = async () => {
+    const f = await render(Host);
+    f.componentInstance.picker.set('wheel');
+    await settle(f);
+    await open(f);
+    return f;
+  };
+
+  it('draws lists until it is asked for wheels', async () => {
+    expect(
+      TestBed.createComponent(PctDatetime).componentInstance.picker(),
+    ).toBe('list');
+    const f = await render(Host);
+    await open(f);
+    expect(panel()?.querySelector('pct-wheel')).toBeNull();
+    expect(columnIn('hour')).not.toBeNull();
+    await open(f);
+
+    f.componentInstance.picker.set('wheel');
+    await settle(f);
+    await open(f);
+    expect(panel()?.querySelectorAll('pct-wheel')).toHaveLength(2);
+    expect(columnIn('hour')).toBeNull();
+  });
+
+  it('opens with the wheels on the time held, and a day picked hands focus to the hour wheel', async () => {
+    const f = await asWheels();
+    expect(activeIn(wheelIn('hour'))).toBe('13');
+    expect(activeIn(wheelIn('minute'))).toBe('05');
+    expect(document.activeElement).toBe(cursorIn());
+
+    await key(f, gridIn(), 'ArrowRight');
+    await key(f, gridIn(), 'Enter');
+    expect(f.componentInstance.value()).toBe('2026-12-02T13:05');
+    expect(panel()).not.toBeNull();
+    expect(document.activeElement).toBe(wheelIn('hour'));
+  });
+
+  it('writes the time a wheel’s key moves to, and closes on Enter with focus back on the field', async () => {
+    const f = await asWheels();
+    await key(f, wheelIn('minute'), 'ArrowDown');
+    expect(f.componentInstance.value()).toBe('2026-12-01T13:06');
+    expect(shown(timeText(f))).toBe('13:06');
+    expect(panel()).not.toBeNull();
+
+    await key(f, wheelIn('minute'), 'Enter');
+    expect(panel()).toBeNull();
+    expect(document.activeElement).toBe(dayText(f));
+  });
+
+  it('with no time the wheels stand on now, chosen nowhere, and Enter takes the rows under the lines', async () => {
+    const f = await render(Host);
+    f.componentInstance.value.set(null);
+    f.componentInstance.picker.set('wheel');
+    await settle(f);
+    await open(f);
+    await key(f, gridIn(), 'Enter');
+    expect(f.componentInstance.value()).toBeNull();
+    expect(activeIn(wheelIn('hour'))).toBeDefined();
+    expect(
+      wheelIn('hour').querySelectorAll('[aria-selected="true"]'),
+    ).toHaveLength(0);
+
+    await key(f, wheelIn('hour'), 'Enter');
+    expect(f.componentInstance.value()).not.toBeNull();
+    expect(panel()).toBeNull();
+  });
+
+  it('walks Tab through the grid and a stop per wheel, and leaves off the last', async () => {
+    const f = await asWheels();
+    const stops = Array.from(
+      (panel() as HTMLElement).querySelectorAll<HTMLElement>(
+        'button:not(:disabled), [tabindex="0"]',
+      ),
+    );
+    expect(stops.map((s) => s.dataset['pctPart'])).toEqual([
+      'nav',
+      'nav',
+      'day',
+      'list',
+      'list',
+    ]);
+    expect(stops.slice(3)).toEqual([wheelIn('hour'), wheelIn('minute')]);
+
+    const inside = await key(f, wheelIn('hour'), 'Tab');
+    expect(inside.defaultPrevented).toBe(false);
+    const back = await key(f, wheelIn('hour'), 'Tab', { shiftKey: true });
+    expect(back.defaultPrevented).toBe(false);
+    expect(panel()).not.toBeNull();
+
+    const forward = await key(f, wheelIn('minute'), 'Tab');
+    expect(forward.defaultPrevented).toBe(true);
+    expect(panel()).toBeNull();
+    expect(document.activeElement).toBe(dayText(f));
   });
 });
 

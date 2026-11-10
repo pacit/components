@@ -114,6 +114,7 @@ const CARDS: ReadonlyArray<
   ['/date', 'demo-inline', 'date-calendar'],
   ['/time', 'demo-standalone', 'time-field'],
   ['/time', 'demo-inline', 'time-columns'],
+  ['/time', 'demo-wheel', 'time-wheel'],
   ['/datetime', 'demo-standalone', 'datetime-field'],
   ['/select', 'demo-in-field', 'select-in-wrapper'],
   ['/pagination', 'demo-many', 'pagination-fold'],

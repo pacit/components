@@ -194,11 +194,11 @@
         "$value": "{pct.space.2}",
         "$description": "Gap between the columns of the panel."
       },
-      "$comment-column": "One column — a listbox of one field of the time, which scrolls. Its height is a window of about seven rows at size md; the rows scale with the field's size and the window does not, so a smaller field shows a row more and a larger one a row less.",
+      "$comment-column": "One column — a listbox of one field of the time, which scrolls. Its window is a count of rows, the columns' rows input, of the option's height: a row in the middle at every size. The height below is what the window was before it was a count, shipped in 0.3.0 and kept for the skins that wrote it.",
       "column-height": {
         "$type": "dimension",
         "$value": "224px",
-        "$description": "Height of a column."
+        "$description": "Deprecated since the release after 0.3.0 — use the rows input of the columns. A value other than the shipped 224px is still the height of a list column; removed no earlier than two minors on."
       },
       "column-min-width": {
         "$type": "dimension",

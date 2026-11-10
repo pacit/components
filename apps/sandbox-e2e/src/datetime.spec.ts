@@ -339,6 +339,57 @@ test.describe('Datetime — the panel', () => {
   });
 });
 
+test.describe('Datetime — the time as wheels', () => {
+  test.beforeEach(async ({ page }) => {
+    await visit(page, '/datetime');
+  });
+
+  const wheelOf = (scope: Locator, field: string) =>
+    scope.locator(
+      `pct-wheel[data-pct-field="${field}"] [data-pct-part="list"]`,
+    );
+
+  /**
+   * `picker="wheel"` changes the shape of the columns and nothing of the panel's road (0089):
+   * the grid still asks the first question and hands focus to the hours — a wheel now, its
+   * listbox the stop — and a time taken there still completes the pair and closes.
+   */
+  test('a day picked hands focus to the hour wheel, its keys write the time, and Enter closes', async ({
+    page,
+  }) => {
+    await toggleOf(page, 'datetime-wheel').click();
+    const panel = panelOf(page);
+    await expect.poll(() => focusedName(page)).toContain('1 décembre 2026');
+    await expect(panel.locator('pct-wheel')).toHaveCount(2);
+    await expect(columnOf(panel, 'hour')).toHaveCount(0);
+    expect(await activeIn(wheelOf(panel, 'hour'))).toBe('13');
+    expect(await activeIn(wheelOf(panel, 'minute'))).toBe('05');
+
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Enter');
+    await expect(dayOf(page, 'datetime-wheel')).toHaveValue('02/12/2026');
+    await expect(wheelOf(panel, 'hour')).toBeFocused();
+
+    await page.keyboard.press('ArrowDown');
+    await expect(timeOf(page, 'datetime-wheel')).toHaveValue('14:05');
+    // Tab is the panel's: the next wheel, one stop each, and back to the grid the other way.
+    await page.keyboard.press('Tab');
+    await expect(wheelOf(panel, 'minute')).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await expect(timeOf(page, 'datetime-wheel')).toHaveValue('14:04');
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Shift+Tab');
+    await expect.poll(() => focusedName(page)).toContain('2 décembre 2026');
+    await page.keyboard.press('Tab');
+    await expect(wheelOf(panel, 'hour')).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(panel).toHaveCount(0);
+    await expect(dayOf(page, 'datetime-wheel')).toBeFocused();
+    await expect(timeOf(page, 'datetime-wheel')).toHaveValue('14:04');
+  });
+});
+
 test.describe('Datetime — the bounds and the slots', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/datetime');

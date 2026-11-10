@@ -7,8 +7,28 @@
 
   The list is also the element that SCROLLS, and it is focusable, so axe's
   `scrollable-region-focusable` has nothing to say about it.
+
+  The `wheel` shape is the same columns with a `PctWheel` each (0089): the wheel is the listbox
+  and the tab stop, the row under its line is the row the walk stands on, and it holds a value
+  only where the time's own field is that row — so a column that opens on the time it is now
+  has a row under the line and none chosen. A column shorter than its window is no ring: a
+  ring's copies would show a row twice.
 -->
-@for (column of columns(); track column.field) {
+@if (picker() === 'wheel') { @for (column of columns(); track column.field) {
+<pct-wheel
+  class="pct-time-columns__wheel"
+  [attr.data-pct-field]="column.field"
+  [ariaLabel]="column.name"
+  [options]="optionsOf(column.field)"
+  [value]="valueOf(column)"
+  [startAt]="lineOf(column)"
+  [rows]="rows()"
+  [wrap]="column.rows.length >= rows()"
+  [size]="size()"
+  [disabled]="disabled()"
+  (valueChange)="turned(column, $event)"
+/>
+} } @else { @for (column of columns(); track column.field) {
 <div
   #column
   class="pct-time-columns__column"
@@ -47,4 +67,4 @@
   </div>
   }
 </div>
-}
+} }
