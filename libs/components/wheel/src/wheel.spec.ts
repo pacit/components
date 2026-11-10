@@ -196,6 +196,17 @@ class BareHost {
   options = DAYS;
 }
 
+/** One input written and nothing else — what is left is the default of every other. */
+@Component({
+  imports: [PctWheel],
+  template: `<pct-wheel class="only-invalid" [options]="options" invalid />
+    <pct-wheel class="only-touched" [options]="options" touched />
+    <pct-wheel class="no-options" />`,
+})
+class OneInputHost {
+  options = DAYS;
+}
+
 @Component({
   imports: [PctWheel, FormField],
   template: `<pct-wheel
@@ -284,7 +295,11 @@ class EntityHost {
     { value: { id: 1, name: 'Slow' }, label: 'Slow' },
     { value: { id: 2, name: 'Fast' }, label: 'Fast' },
   ];
-  same: PctCompareWith<Speed> = (a, b) => a?.id === b?.id;
+  asked = 0;
+  same: PctCompareWith<Speed> = (a, b) => {
+    this.asked++;
+    return a?.id === b?.id;
+  };
   // Another object than the option's own — equal by key alone.
   value = signal<Speed | null>({ id: 2, name: 'Fast, read from a server' });
 }
@@ -457,6 +472,33 @@ describe('PctWheel', () => {
         fixture.componentInstance.options[0].value,
       );
     });
+
+    it.each([null, undefined])(
+      'a value of %s is compared with no row',
+      async (empty) => {
+        const fixture = await render(EntityHost);
+        const host = fixture.componentInstance;
+        host.asked = 0;
+
+        host.value.set(empty as null);
+        await settle(fixture);
+
+        expect(host.asked).toBe(0);
+        expect(
+          rowsOf(fixture).map((row) => row.getAttribute('aria-selected')),
+        ).toEqual(['false', 'false']);
+      },
+    );
+
+    it('the row already chosen keeps the object the application gave', async () => {
+      const fixture = await render(EntityHost);
+      const given = fixture.componentInstance.value();
+
+      press(fixture, 'Enter');
+      rowsOf(fixture)[1].click();
+
+      expect(fixture.componentInstance.value()).toBe(given);
+    });
   });
 
   describe('the defaults, which the other host here binds over', () => {
@@ -507,6 +549,33 @@ describe('PctWheel', () => {
       expect(list.getAttribute('aria-activedescendant')).toBe(
         rowsOf(fixture)[0].id,
       );
+    });
+
+    it('invalid without touched, and touched without invalid, light nothing', async () => {
+      const fixture = await render(OneInputHost);
+      const root = fixture.nativeElement as HTMLElement;
+
+      for (const wheel of ['.only-invalid', '.only-touched']) {
+        const host = root.querySelector(wheel) as HTMLElement;
+        expect(host.hasAttribute('data-pct-invalid')).toBe(false);
+        expect(
+          host.querySelector('[role="listbox"]')?.hasAttribute('aria-invalid'),
+        ).toBe(false);
+      }
+    });
+
+    it('a wheel given no options draws no row and points at none', async () => {
+      const fixture = await render(OneInputHost);
+      const host = (fixture.nativeElement as HTMLElement).querySelector(
+        '.no-options',
+      ) as HTMLElement;
+
+      expect(host.querySelectorAll('[role="option"]').length).toBe(0);
+      expect(
+        host
+          .querySelector('[role="listbox"]')
+          ?.hasAttribute('aria-activedescendant'),
+      ).toBe(false);
     });
   });
 
@@ -804,6 +873,13 @@ describe('PctWheel', () => {
       expect(host.value()).toBe('thu');
       expect(down.defaultPrevented).toBe(true);
       await settle(fixture);
+      press(fixture, 'PageDown');
+      expect(host.value()).toBe('sun');
+      await settle(fixture);
+      // Three rows back and not the first one: PageUp is not Home.
+      press(fixture, 'PageUp');
+      expect(host.value()).toBe('thu');
+      await settle(fixture);
       press(fixture, 'PageUp');
       expect(host.value()).toBe('mon');
     });
@@ -894,6 +970,20 @@ describe('PctWheel', () => {
 
       expect(fixture.componentInstance.value()).toBeNull();
       expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('a key with a name is no letter, where a row begins with the name too', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.options.set([
+        { value: 'run', label: 'Run' },
+        { value: 'escape', label: 'Escape' },
+      ]);
+      await settle(fixture);
+
+      const named = press(fixture, 'Escape');
+
+      expect(fixture.componentInstance.value()).toBeNull();
+      expect(named.defaultPrevented).toBe(false);
     });
 
     it('a letter typed with Shift is a letter', async () => {
