@@ -258,6 +258,8 @@ describe('PctTableRemote — a tree the source holds', () => {
     expect(asked[1].request).toEqual({
       parent: 'f1',
       path: ['f1'],
+      groupBy: [],
+      group: [],
       from: 0,
       to: 50,
       sort: [],
@@ -326,6 +328,7 @@ describe('PctTableRemote — a tree the source holds', () => {
       index: 51,
       level: 1,
       parent: 'f0',
+      group: null,
       at: 50,
     });
   });

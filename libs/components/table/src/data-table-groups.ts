@@ -21,6 +21,10 @@ import type { PctColumns } from './model/columns';
  * **Typed by the columns.** The list is the directive's own input, as a cell template's is,
  * so `groupBy` takes only the ids the columns hold.
  *
+ * **A remote source makes its own.** With `pctTableRemote`, the source is asked for the groups
+ * a level at a time, with their counts and sums, and the table groups none of the rows it was
+ * sent ([0123](../../../../docs/decisions/0123-a-group-of-a-remote-source-is-the-sources.md)).
+ *
  * @example
  * <pct-data-table [pctTableGroups]="columns" [groupBy]="['room']" [(collapsed)]="closed" …>
  *
