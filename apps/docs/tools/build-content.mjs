@@ -125,6 +125,7 @@ const CARD_ORDER = [
   'switch',
   'chips',
   'slider',
+  'wheel',
   'calendar',
   'columns',
   // Overlays

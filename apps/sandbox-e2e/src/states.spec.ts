@@ -16,6 +16,7 @@ const CONTROLS = [
   'radio',
   'switch',
   'slider',
+  'wheel',
   'date',
   'time',
   'datetime',
@@ -24,13 +25,14 @@ const CONTROLS = [
 /**
  * The element that really takes focus and the disabled state. No single selector
  * points at it: `[pctText]` and `[pctNumber]` **are** the native input (the testid
- * sits on it), the select has a trigger, and the checkbox and the radio group keep
- * their native inputs inside.
+ * sits on it), the select has a trigger, the wheel is its listbox, and the checkbox and
+ * the radio group keep their native inputs inside.
  */
 function focusTarget(card: Locator, state: string, control: string): Locator {
   const host = card.getByTestId(`${state}-${control}`);
   if (control === 'text' || control === 'number') return host;
   if (control === 'select') return host.locator('[data-pct-part="trigger"]');
+  if (control === 'wheel') return host.getByRole('listbox');
   // The date, time and datetime fields are text controls the library formats itself, so the
   // element that takes focus is an `<input>` inside — and it is the FIRST one, the button that
   // opens the calendar or the columns standing beside it in the same row, and the datetime's

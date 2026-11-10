@@ -7554,3 +7554,28 @@ The wider reading: a silence in a record is a measurement only when the instrume
 for the whole of what it measures. A recording tool's default is chosen for its own tests — one
 assertion on the first phrase — not for a record of everything a reader says, and a claim that a
 reader omits something has to name how long the record listened after the key.
+
+### <a id="lesson-259"></a>`lesson-259` — The end of a scroll is heard after the rows have stopped, and a key fits in between
+
+The wheel's first run on three engines failed once, in firefox: the hours of the ring, `Home`,
+`ArrowUp`, `ArrowDown`, and the wheel at rest on `23` with the value `0:30`. A probe that pressed
+the second key a given time after the rows came within a pixel of 23 (never merged) read the
+engine's order: the last `scroll` of a smooth travel, then `scrollend` some 180 ms later. A key
+40 to 100 ms into that tail started a travel to 00, and the `scrollend` of the travel before
+landed on it: the handler read a settle on the turn before the middle one and put it right by a
+whole turn — a write to `scrollTop` that ended the travel under way on the row it had left.
+
+The fix found the other half. A key pressed 10 to 30 ms after the first finds the scroll where
+it was, since the travel has not moved a row the main thread can read, and that is where the new
+value's row is. Firefox takes no travel back for a scroll that moves nothing: after an instant
+`scrollTo` to that position the travel ran on to 23, and a smooth one ended it a pixel short, at
+23.97 rows. So the wheel keeps the row it sent its scroll to until it hears a settle there, and a
+settle anywhere else that no gesture made is answered by sending the scroll to that row again,
+with nothing read from it. The probe's 138 runs over three engines rest on 00, with at most four
+`scrollend`s in a run. Nor was it firefox's alone: four keys with no rest between them, the case
+`wheel.spec.ts` keeps, left the wheel as it was before on `23` in two runs of four in webkit.
+
+The wider reading: `scrollend` says the engine has finished, not that the rows have stopped, and
+the two are further apart than two presses of a key. A handler of it that moves the scroll has
+to know which scroll it hears the end of — the one it asked for last, or one before — and the
+position does not say: what the main thread reads is behind what the compositor is doing.

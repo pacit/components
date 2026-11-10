@@ -54,6 +54,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   toast: () => import('./toast.demo').then((m) => m.ToastDemo),
   tooltip: () => import('./tooltip.demo').then((m) => m.TooltipDemo),
   tree: () => import('./tree.demo').then((m) => m.TreeDemo),
+  wheel: () => import('./wheel.demo').then((m) => m.WheelDemo),
 };
 
 /** One example of a card: the key names the file `<id>.<key>.demo.ts`, the content pass reads its title line. */
@@ -548,6 +549,12 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       load: () => import('./slider.range.demo').then((m) => m.SliderRangeDemo),
     },
   ],
+  wheel: [
+    {
+      key: 'ring',
+      load: () => import('./wheel.ring.demo').then((m) => m.WheelRingDemo),
+    },
+  ],
   select: [
     {
       key: 'groups',
@@ -674,4 +681,5 @@ export const CARD_DEMOS: Readonly<
   theme: () => import('./cards/theme.card').then((m) => m.ThemeCardScene),
   toast: () => import('./cards/toast.card').then((m) => m.ToastCardScene),
   tooltip: () => import('./cards/tooltip.card').then((m) => m.TooltipCardScene),
+  wheel: () => import('./cards/wheel.card').then((m) => m.WheelCardScene),
 };

@@ -610,7 +610,7 @@
     {
       "id": "2.5.1",
       "conformance": "Supports",
-      "remarks": "No component needs a path or a multipoint gesture: the slider is the native range (a press lands the thumb, the keys move it) and everything else is a press.",
+      "remarks": "No component needs a path or a multipoint gesture: the slider is the native range (a press lands the thumb, the keys move it), the wheel turns on the platform's own scroll and a press on a row chooses the same row, and everything else is a press.",
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/slider.spec.ts",
@@ -621,6 +621,12 @@
         {
           "spec": "apps/sandbox-e2e/src/tooltip.spec.ts",
           "titles": ["a long press opens it, a tap does not"]
+        },
+        {
+          "spec": "apps/sandbox-e2e/src/wheel.spec.ts",
+          "titles": [
+            "a click on a row chooses it and brings it to the line; a refused row takes no click"
+          ]
         }
       ]
     },
@@ -669,12 +675,18 @@
     {
       "id": "2.5.7",
       "conformance": "Supports",
-      "remarks": "The slider is the only dragging there is, and a press on the track or the arrow keys do the same without a drag.",
+      "remarks": "The slider is the only dragging of ours, and a press on the track or the arrow keys do the same without a drag. A wheel is turned by the platform's scroll, which is no dragging of the library's, and a press on a row chooses it all the same.",
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/slider.spec.ts",
           "titles": [
             "a press lands the drawn thumb where the pointer is, and a drag keeps it there"
+          ]
+        },
+        {
+          "spec": "apps/sandbox-e2e/src/wheel.spec.ts",
+          "titles": [
+            "a click on a row chooses it and brings it to the line; a refused row takes no click"
           ]
         }
       ]

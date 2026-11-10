@@ -96,3 +96,33 @@ export function pctAfterTransition(
     clearTimeout(timer);
   };
 }
+
+/**
+ * How a scroll the code asks for is to travel on `element`: `smooth` where the motion axis
+ * gives a transition a duration, `instant` where it does not.
+ *
+ * A scroll written in code is motion the library starts, and it answers to the same axis as a
+ * transition does (`req-a11y-motion`). `scroll-behavior` in a sheet would need a rule under
+ * `prefers-reduced-motion` to take it back, which is the rule the token build exists to keep
+ * out of every sheet: the build answers the preference by writing `0.01ms` into
+ * `--pct-motion-transition-duration`, and this reads that one answer — so does a theme that
+ * sets the duration to nothing for its own reasons.
+ *
+ * Under a millisecond there is nothing to see on the way, and the reduced duration is not
+ * zero only so that `transitionend` still fires (`motion.reduced.json`). An element that
+ * answers nothing — detached, or in an environment with no cascade — is not animated: the
+ * unreadable counts as none, as it does for `pctAfterTransition`.
+ *
+ * @example
+ * list.scrollTo({ top, behavior: pctScrollBehavior(list) });
+ *
+ * @since next
+ */
+export function pctScrollBehavior(element: HTMLElement): ScrollBehavior {
+  const view = element.ownerDocument?.defaultView;
+  const style = view?.getComputedStyle(element);
+  const duration = longest(
+    style?.getPropertyValue('--pct-motion-transition-duration'),
+  );
+  return duration >= 1 ? 'smooth' : 'instant';
+}

@@ -189,7 +189,8 @@
     "libs/components/toast/src/toaster.ts",
     "libs/components/tooltip/src/tooltip.ts",
     "libs/components/topbar/src/topbar.ts",
-    "libs/components/tree/src/tree.ts"
+    "libs/components/tree/src/tree.ts",
+    "libs/components/wheel/src/wheel.ts"
   ],
   "// noMutants": "A file inside the measurement out of which Stryker can make not one mutant does NOT appear in the report. Without this list it would be indistinguishable from a file that dropped out of the measurement — and those are two different things, only one of them in order. An entry requires a reason and stops being true on the day the file gets its first mutant: the gate fires then.",
   "noMutants": [

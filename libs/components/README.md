@@ -3,9 +3,9 @@
 Accessible Angular component library: standalone, zoneless, signal forms, SSR and design-token
 theming.
 
-> **Status: early, and the API still moves.** Thirty-two entrypoints ship today: the form
+> **Status: early, and the API still moves.** Thirty-three entrypoints ship today: the form
 > controls (a field wrapper with text, textarea, number, prefix/suffix affixes; checkbox,
-> radio group, select and multi-select, switch, slider, date, time, datetime), the overlays (dialog, tooltip,
+> radio group, select and multi-select, switch, slider, wheel, date, time, datetime), the overlays (dialog, tooltip,
 > popover, menu, toast), the page's own structures (tabs, accordion, drawer, pagination,
 > progress, skeleton, chips, avatar, badge, breadcrumb, stepper, tree, table), an
 > application's frame (top bar, navigation, description list), the layout
@@ -93,6 +93,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/tabs`        | `PctTabs`, `PctTab`                                                                                                                                             |
 | `@pacit/components/toast`       | `PctToaster`, `PctToastViewport`, `providePctToastConfig`                                                                                                       |
 | `@pacit/components/tooltip`     | `PctTooltip`                                                                                                                                                    |
+| `@pacit/components/wheel`       | `PctWheel` — one value under a line: a listbox on the platform's scroll, a ring with `wrap`                                                                     |
 | `@pacit/components/testing`     | `PctButtonHarness` and its fifty siblings on the CDK's `ComponentHarness`, `part`, `allParts`, `query` — for tests only                                         |
 | `@pacit/components/core`        | what the controls share: `PCT_FIELD`, `PctAnnouncer`, template slots, id helpers, the reader's digits                                                           |
 

@@ -1,0 +1,176 @@
+<h2 class="view__title">Wheel</h2>
+<p class="muted view__intro">
+  One value out of a list, chosen by the row that rests on the line. The list is
+  a <code>listbox</code> on the platform's own scroll: the momentum, the snap
+  and the finger are the engine's, and the wheel reads where the scroll came to
+  rest.
+</p>
+
+<sbx-demo
+  heading="A list"
+  summary="One tab stop; the arrows, Page Up/Down, Home, End and a letter move the line, and the row under it becomes the value. A row that cannot be chosen is passed over, and a scroll that settles on it goes on to the nearest one that can."
+  [reqs]="['req-api-no-wrapper', 'req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-list"
+>
+  <div class="wheel-view__line">
+    <pct-wheel
+      label="Weekday"
+      hint="Saturday is closed"
+      [options]="days"
+      [(value)]="day"
+      data-testid="wheel-day"
+    />
+    <pct-wheel
+      label="No value yet"
+      hint="The line holds the first row, and nothing is chosen"
+      [options]="days"
+      [(value)]="unset"
+      data-testid="wheel-unset"
+    />
+  </div>
+  <p class="muted">
+    Weekday: <output data-testid="day-value">{{ day() ?? '—' }}</output> · no
+    value yet: <output data-testid="unset-value">{{ unset() ?? '—' }}</output>
+  </p>
+  <div class="row">
+    <button type="button" data-testid="write-fri" (click)="write('fri')">
+      Write Friday
+    </button>
+    <button type="button" data-testid="write-mon" (click)="write('mon')">
+      Write Monday
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A ring"
+  summary="wrap draws the rows three times and puts the scroll back on the middle turn where it settles, so the last row is followed by the first. Only the middle turn is a reader's; the copies are runway."
+  [reqs]="['req-api-platform', 'req-a11y-motion']"
+  data-testid="demo-ring"
+>
+  <div class="wheel-view__clock">
+    <pct-wheel
+      ariaLabel="Hour"
+      wrap
+      [options]="hours"
+      [(value)]="hour"
+      data-testid="wheel-hour"
+    />
+    <span aria-hidden="true">:</span>
+    <pct-wheel
+      ariaLabel="Minute"
+      wrap
+      [options]="minutes"
+      [(value)]="minute"
+      data-testid="wheel-minute"
+    />
+  </div>
+  <p class="muted">
+    <output data-testid="clock-value"
+      >{{ hour() ?? '—' }}:{{ minute() ?? '—' }}</output
+    >
+  </p>
+</sbx-demo>
+
+<sbx-demo
+  heading="In a form"
+  summary="A signal-forms control: the schema's required reaches aria-required, the error takes the message line once the wheel is left, and a key that chooses a row clears it."
+  [reqs]="['req-api-signal-forms', 'req-api-message']"
+  data-testid="demo-form"
+>
+  <pct-wheel
+    label="Delivery day"
+    [options]="days"
+    [formField]="dayForm.day"
+    data-testid="wheel-form"
+  />
+  <p class="muted">
+    Model: <output data-testid="form-value">{{ model().day ?? '—' }}</output>
+  </p>
+</sbx-demo>
+
+<sbx-demo
+  heading="Inside the wrapper"
+  summary="pct-field names and describes the listbox; the wheel declares the bare appearance, so the wrapper draws no border around it."
+  [reqs]="['req-api-wrapper', 'req-api-frame']"
+  data-testid="demo-in-field"
+>
+  <div class="stack">
+    <pct-field
+      label="Delivery day"
+      hint="Drawn by the wrapper"
+      data-testid="field-day"
+    >
+      <pct-wheel
+        [options]="days"
+        [formField]="wrappedForm.day"
+        data-testid="wheel-in-field"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Sizes and rows"
+  summary="The size is the height of a row; rows is how many of them show — always an odd count, so the line has a row to stand on."
+  [reqs]="['req-api-size', 'req-token-density']"
+  data-testid="demo-sizes"
+>
+  <div class="wheel-view__line">
+    <pct-wheel
+      label="Small, three rows"
+      size="sm"
+      rows="3"
+      [options]="quarters"
+      [(value)]="quarter"
+      data-testid="wheel-sm"
+    />
+    <pct-wheel
+      label="Medium"
+      [options]="quarters"
+      [(value)]="quarter"
+      data-testid="wheel-md"
+    />
+    <pct-wheel
+      label="Large, seven rows"
+      size="lg"
+      rows="7"
+      wrap
+      [options]="hours"
+      [value]="12"
+      data-testid="wheel-lg"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="States"
+  summary="A disabled wheel is out of the tab order; a read-only one keeps its place in it and does not turn. Neither takes a value from a key, a click or a scroll."
+  [reqs]="['req-api-attributes', 'req-a11y-forced-colors']"
+  data-testid="demo-states"
+>
+  <div class="wheel-view__line">
+    <pct-wheel
+      label="Disabled"
+      disabled
+      [options]="days"
+      value="tue"
+      data-testid="wheel-disabled"
+    />
+    <pct-wheel
+      label="Read-only"
+      readonly
+      [options]="days"
+      value="thu"
+      data-testid="wheel-readonly"
+    />
+    <pct-wheel
+      label="Invalid"
+      invalid
+      touched
+      [options]="days"
+      value="mon"
+      data-testid="wheel-invalid"
+    />
+  </div>
+</sbx-demo>

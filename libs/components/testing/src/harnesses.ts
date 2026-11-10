@@ -1622,3 +1622,26 @@ export class PctTreeItemHarness extends PctHarness<'arrow' | 'label'> {
   static override hostSelector = 'pct-tree-item';
   static override readonly parts = ['arrow', 'label'] as const;
 }
+
+// ── @pacit/components/wheel ─────────────────────────────────────────────────────
+
+/**
+ * `pct-wheel` — `PctWheel`.
+ *
+ * @since next
+ */
+export class PctWheelHarness extends PctHarness<
+  'band' | 'error' | 'hint' | 'label' | 'list' | 'option' | 'view' | 'warning'
+> {
+  static override hostSelector = 'pct-wheel';
+  static override readonly parts = [
+    'band',
+    'error',
+    'hint',
+    'label',
+    'list',
+    'option',
+    'view',
+    'warning',
+  ] as const;
+}
