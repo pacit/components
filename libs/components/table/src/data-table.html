@@ -554,7 +554,7 @@
             class="pct-data-table__toggle pct-data-table__node"
             data-pct-part="disclosure"
             [attr.aria-expanded]="row.expanded"
-            [attr.aria-label]="row.expanded ? texts().tableNodeClose : texts().tableNodeOpen"
+            [attr.aria-label]="(row.expanded ? texts().tableNodeClose : texts().tableNodeOpen) + ' ' + cell.text"
             (click)="toggleNode(row.id)"
           >
             <pct-icon name="chevron-down" class="pct-data-table__chevron">

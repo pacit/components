@@ -351,7 +351,7 @@ describe('PctTableTree — the rows as a tree', () => {
     expect(names()).toEqual(['Ground floor', 'Upstairs']);
     const open = button('Ground floor') as HTMLButtonElement;
     expect(open.getAttribute('aria-expanded')).toBe('false');
-    expect(open.getAttribute('aria-label')).toBe('Expand');
+    expect(open.getAttribute('aria-label')).toBe('Expand Ground floor');
     // Alone, the tree says nothing a row's attributes mean outside a treegrid.
     expect(table().hasAttribute('role')).toBe(false);
     expect(rows()[0].hasAttribute('aria-level')).toBe(false);
@@ -373,7 +373,7 @@ describe('PctTableTree — the rows as a tree', () => {
     expect(levels()).toEqual(['0', '1', '1', '0']);
     const open = button('Ground floor') as HTMLButtonElement;
     expect(open.getAttribute('aria-expanded')).toBe('true');
-    expect(open.getAttribute('aria-label')).toBe('Collapse');
+    expect(open.getAttribute('aria-label')).toBe('Collapse Ground floor');
     // A leaf holds the button's place and no button.
     (button('Kitchen') as HTMLButtonElement).click();
     await settle(fixture);
