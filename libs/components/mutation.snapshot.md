@@ -256,6 +256,6 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-libs/components/wheel/src/wheel.ts 93.71 268(2) 18 0 0 7
-TOTAL 90.72 22742/25068
+libs/components/wheel/src/wheel.ts 94.08 286(2) 18 0 0 7
+TOTAL 90.73 22760/25086
 ```
