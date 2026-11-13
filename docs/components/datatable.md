@@ -764,11 +764,13 @@ directive).
   that came, and `matched` is the count the source gave (with groups, the rows of the groups
   at the top). In a tree the server holds, a
   branch's checkbox picks the rows below it that came, not those still on the server.
-- **A remote source's answer is read over the whole list.** Each block that comes makes the
-  table's lines and the window's heights again, every one of the `total`: measured on
-  2026-10-31 by the sandbox's `remote` demo, a block of a million registers costs 140 to
-  230 ms of the main thread in a dev build in chromium, so a fling across a million rows
-  stutters as its blocks come.
+- **A block of a remote source is a copy of the list.** A block that comes is written into a
+  copy of the rows and of the lines, each `total` long, and the window's heights are set again
+  where its lines changed; a block asked for or let go with no rows changes nothing. Measured
+  on 2026-11-13 by the sandbox's `remote` demo in a production build in chromium: a jump across
+  a million registers took two tasks of 220 to 300 ms before, and now a scroll of 55 to 70 ms,
+  its block under a long task's 50 ms in three jumps of four and 55 ms in the fourth. A list with groups, a tree or a row's details open is
+  made whole again for each block.
 - **A remote source's rows stay once they came.** A block the view left keeps its rows, so a
   scroll across a million rows holds every block it passed until a new order, a new
   question, `refresh()` or `invalidate()` lets them go. A refreshed block whose new answer

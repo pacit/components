@@ -147,13 +147,26 @@ export function pctGroupKey(values: readonly unknown[]): string {
  * not lines at all, so the count of lines is the count a reader can reach. An `undefined` in
  * `rows` is a hole: only a remote source writes one, and nothing sorts or filters it.
  *
+ * `before` are the lines drawn under the same options for rows as long, which a remote
+ * source's block changed in place: while every line was a row's or a hole's, each place whose
+ * row is a different one is written again in a copy, and the same rows give the same lines
+ * back. A row that brings a line of its own — details, children, a group — makes them all
+ * again.
+ *
  * @since 0.3.0
  */
 export function pctLines<T>(
   rows: readonly (T | undefined)[],
   rowId: (row: T) => PctRowId,
   options: PctLinesOptions<T> = {},
+  before?: {
+    readonly rows: readonly (T | undefined)[];
+    readonly lines: readonly PctTableLine<T>[];
+  },
 ): readonly PctTableLine<T>[] {
+  const patched =
+    before === undefined ? null : patch(rows, rowId, options, before);
+  if (patched !== null) return patched;
   const {
     details,
     children,
@@ -173,7 +186,8 @@ export function pctLines<T>(
     places?: readonly number[],
     group: string | null = null,
   ): void => {
-    for (const [i, row] of list.entries()) {
+    for (let i = 0; i < list.length; i++) {
+      const row = list[i];
       if (row === undefined) {
         const at = places?.[i] ?? i;
         lines.push({
@@ -275,6 +289,61 @@ export function pctLines<T>(
     );
   }
   return lines;
+}
+
+/**
+ * The lines of `before` with the places whose row changed written again, or `null` where a
+ * place or a row needs more than its one line: the lines are then made whole.
+ */
+function patch<T>(
+  rows: readonly (T | undefined)[],
+  rowId: (row: T) => PctRowId,
+  { details, children, expanded, groups = [], sourced }: PctLinesOptions<T>,
+  before: {
+    readonly rows: readonly (T | undefined)[];
+    readonly lines: readonly PctTableLine<T>[];
+  },
+): readonly PctTableLine<T>[] | null {
+  // As many lines as rows, with no groups: each a row's or a hole's, at its row's place.
+  if (
+    groups.length > 0 ||
+    sourced !== undefined ||
+    rows.length !== before.rows.length ||
+    before.lines.length !== rows.length
+  )
+    return null;
+  let lines: PctTableLine<T>[] | null = null;
+  for (let at = 0; at < rows.length; at++) {
+    const row = rows[at];
+    if (row === before.rows[at]) continue;
+    lines ??= before.lines.slice();
+    if (row === undefined) {
+      lines[at] = {
+        kind: 'hole',
+        key: at,
+        index: at,
+        level: 0,
+        parent: null,
+        group: null,
+        at,
+      };
+      continue;
+    }
+    const key = rowId(row);
+    const kids = children?.(row);
+    const branch = kids !== undefined && kids.length > 0;
+    const open = branch && (expanded?.has(key) ?? false);
+    if (open || details?.has(key)) return null;
+    lines[at] = {
+      kind: 'row',
+      key,
+      row,
+      index: at,
+      level: 0,
+      expanded: branch ? open : null,
+    };
+  }
+  return lines ?? before.lines;
 }
 
 /**

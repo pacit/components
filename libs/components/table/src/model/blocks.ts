@@ -35,25 +35,58 @@ export function pctBlocksFor(
   return blocks;
 }
 
+/** The rows a list of blocks was drawn as, and what they were drawn from. */
+export interface PctBlockRows<T> {
+  readonly blocks: ReadonlyMap<number, PctBlock<T>>;
+  readonly total: number;
+  readonly size: number;
+  readonly rows: readonly (T | undefined)[];
+}
+
 /**
  * The source's rows as the table draws them: `total` long, each block's rows at their place
  * and `undefined` — a hole — wherever no block has delivered. A block's rows past `total` are
  * dropped, a count that shrank being the newer word, and so are those past `size`, which are
  * the next block's place.
+ *
+ * Given the rows drawn `before` at the same total and size, only the blocks whose rows changed
+ * are written again, into a copy; and when none did — a block asked for, or let go with no
+ * rows — the rows before are the answer, the same list, so nothing that reads them is made
+ * again. A block of a list of a million is a copy, not a million writes.
  */
 export function pctBlockRows<T>(
   blocks: ReadonlyMap<number, PctBlock<T>>,
   total: number,
   size: number,
+  before?: PctBlockRows<T>,
 ): readonly (T | undefined)[] {
-  const rows = new Array<T | undefined>(total).fill(undefined);
-  for (const [block, { rows: delivered }] of blocks) {
-    if (delivered === null) continue;
-    const from = block * size;
-    const count = Math.min(delivered.length, size, total - from);
-    for (let at = 0; at < count; at++) rows[from + at] = delivered[at];
+  if (before?.total === total && before.size === size) {
+    let rows: (T | undefined)[] | null = null;
+    for (const block of new Set([...before.blocks.keys(), ...blocks.keys()])) {
+      const delivered = blocks.get(block)?.rows ?? null;
+      if (delivered === (before.blocks.get(block)?.rows ?? null)) continue;
+      rows ??= before.rows.slice();
+      place(rows, block, delivered, total, size);
+    }
+    return rows ?? before.rows;
   }
+  const rows = new Array<T | undefined>(total).fill(undefined);
+  for (const [block, { rows: delivered }] of blocks)
+    place(rows, block, delivered, total, size);
   return rows;
+}
+
+/** Writes a block's rows at its place, and a hole wherever it delivered none. */
+function place<T>(
+  rows: (T | undefined)[],
+  block: number,
+  delivered: readonly T[] | null,
+  total: number,
+  size: number,
+): void {
+  const from = block * size;
+  const to = Math.min(from + size, total);
+  for (let at = from; at < to; at++) rows[at] = delivered?.[at - from];
 }
 
 /**
