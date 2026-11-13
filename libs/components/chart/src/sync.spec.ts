@@ -94,6 +94,9 @@ const sync = (fixture: ComponentFixture<unknown>) =>
 describe('PctChartSync', () => {
   beforeAll(() => vi.stubGlobal('ResizeObserver', QuietObserver));
   afterAll(() => vi.unstubAllGlobals());
+  // The spies sit on prototypes every later file reads, and `components:test` runs files
+  // in one environment: what is not put back is a layout the next file never asked for.
+  afterEach(() => vi.restoreAllMocks());
   beforeEach(() => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(
       function (this: HTMLElement) {

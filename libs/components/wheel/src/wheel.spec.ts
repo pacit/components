@@ -101,14 +101,20 @@ function layout(): { calls: ScrollCall[]; restore: () => void } {
       HTMLElement.prototype,
       'offsetHeight',
     ),
-    scrollTop: Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop'),
-    scrollTo: Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTo'),
+    scrollTop: Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'scrollTop',
+    ),
+    scrollTo: Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'scrollTo',
+    ),
   };
   Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
     configurable: true,
     get: () => ROW,
   });
-  Object.defineProperty(Element.prototype, 'scrollTop', {
+  Object.defineProperty(HTMLElement.prototype, 'scrollTop', {
     configurable: true,
     get(this: Element) {
       return tops.get(this) ?? 0;
@@ -117,7 +123,7 @@ function layout(): { calls: ScrollCall[]; restore: () => void } {
       tops.set(this, top);
     },
   });
-  Object.defineProperty(Element.prototype, 'scrollTo', {
+  Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
     configurable: true,
     writable: true,
     value(this: Element, options: ScrollToOptions) {
@@ -140,8 +146,8 @@ function layout(): { calls: ScrollCall[]; restore: () => void } {
     calls,
     restore: () => {
       put(HTMLElement.prototype, 'offsetHeight');
-      put(Element.prototype, 'scrollTop');
-      put(Element.prototype, 'scrollTo');
+      put(HTMLElement.prototype, 'scrollTop');
+      put(HTMLElement.prototype, 'scrollTo');
     },
   };
 }
