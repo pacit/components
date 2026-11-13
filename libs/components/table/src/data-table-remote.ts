@@ -25,6 +25,7 @@ import {
   pctBlocksFor,
   pctFailedBlock,
   type PctBlock,
+  type PctBlockRows,
 } from './model/blocks';
 import type { PctRowId } from './model/columns';
 import type { PctAnyColumnFilter } from './model/filters';
@@ -588,6 +589,8 @@ export class PctTableRemote<T, Id extends string = string> {
   ): List<T> {
     const blocks = signal<ReadonlyMap<number, PctBlock<Item<T>>>>(new Map());
     const counted = signal(count);
+    // The rows last drawn: a block that comes is written into a copy of them.
+    let drawn: PctBlockRows<Item<T>> | undefined;
     const list: List<T> = {
       key: listKey(parent, group),
       parent,
@@ -598,9 +601,12 @@ export class PctTableRemote<T, Id extends string = string> {
       count: counted,
       rows: computed(() => {
         const total = counted();
-        return total === null
-          ? UNASKED
-          : pctBlockRows(blocks(), total, this.size());
+        if (total === null) return UNASKED;
+        const held = blocks();
+        const size = this.size();
+        const rows = pctBlockRows(held, total, size, drawn);
+        drawn = { blocks: held, total, size, rows };
+        return rows;
       }),
       flying: new Map(),
       failures: new Map(),

@@ -176,17 +176,44 @@ export class PctTableWindow {
     { equal: (a, b) => a.offset === b.offset && a.view === b.view },
   );
 
-  /** The lines' heights, made again when the lines or the estimate change. */
-  private readonly heights = computed(() => {
-    const lines = this.table.lines();
-    const heights = new PctLineHeights(lines.length, this.estimate());
-    // A plain map, not a signal: a measurement writes the heights in place.
-    if (!this.measured.empty())
-      lines.forEach((line, index) => {
-        const height = this.measured.get(line);
-        if (height !== undefined) heights.set(index, height);
-      });
-    return heights;
+  /**
+   * The lines' heights, made again when the lines or the estimate change. Lines as many as
+   * before at the same estimate — a remote source's block, which writes its own lines in the
+   * place of its holes — set again only the lines that changed, in place, as a measurement
+   * does: a block of a list of a million is not a million heights made anew. Never equal, so
+   * what reads them reads them again.
+   */
+  private readonly heights = linkedSignal<
+    { lines: readonly PctTableLine<unknown>[]; estimate: number },
+    PctLineHeights
+  >({
+    source: () => ({ lines: this.table.lines(), estimate: this.estimate() }),
+    computation: ({ lines, estimate }, previous) => {
+      const was = previous?.source;
+      if (was?.estimate === estimate && was.lines.length === lines.length) {
+        const heights = (previous as { value: PctLineHeights }).value;
+        for (let index = 0; index < lines.length; index++) {
+          if (lines[index] === was.lines[index]) continue;
+          // A line measured in the place of one that was, or of one that was not.
+          const height = this.measured.get(lines[index]);
+          if (
+            height !== undefined ||
+            this.measured.get(was.lines[index]) !== undefined
+          )
+            heights.set(index, height);
+        }
+        return heights;
+      }
+      const heights = new PctLineHeights(lines.length, estimate);
+      // A plain map, not a signal: a measurement writes the heights in place.
+      if (!this.measured.empty())
+        lines.forEach((line, index) => {
+          const height = this.measured.get(line);
+          if (height !== undefined) heights.set(index, height);
+        });
+      return heights;
+    },
+    equal: () => false,
   });
 
   /**

@@ -112,6 +112,103 @@ describe('pctBlockRows', () => {
   });
 });
 
+describe('pctBlockRows — from the rows before', () => {
+  const blocks = (
+    entries: readonly (readonly [number, PctBlock<string>])[],
+  ): ReadonlyMap<number, PctBlock<string>> => new Map(entries);
+  const loaded = (rows: string[]): PctBlock<string> => ({
+    state: 'loaded',
+    rows,
+  });
+  /** The rows drawn from `held`, as the remote directive keeps them. */
+  const drawn = (
+    held: ReadonlyMap<number, PctBlock<string>>,
+    total: number,
+    size: number,
+  ) => ({ blocks: held, total, size, rows: pctBlockRows(held, total, size) });
+
+  it('writes a block that came into a copy, and leaves the rows before as they were', () => {
+    const before = drawn(blocks([[0, loaded(['a', 'b'])]]), 5, 2);
+    const rows = pctBlockRows(
+      blocks([...before.blocks, [1, loaded(['c', 'd'])]]),
+      5,
+      2,
+      before,
+    );
+    expect(rows).toEqual(['a', 'b', 'c', 'd', undefined]);
+    expect(before.rows).toEqual(['a', 'b', undefined, undefined, undefined]);
+  });
+
+  it('gives the rows before back when no block’s rows changed', () => {
+    const rows = ['a', 'b'];
+    const before = drawn(
+      blocks([
+        [0, loaded(rows)],
+        [1, { state: 'loading', rows: null }],
+      ]),
+      4,
+      2,
+    );
+    // A block asked for, one let go with no rows, and one asked again that keeps its rows.
+    const now = blocks([
+      [0, { state: 'loading', rows }],
+      [2, { state: 'loading', rows: null }],
+    ]);
+    expect(pctBlockRows(now, 4, 2, before)).toBe(before.rows);
+  });
+
+  it('draws holes where a block let go had rows, and past the end of a shorter answer', () => {
+    const before = drawn(
+      blocks([
+        [0, loaded(['a', 'b'])],
+        [1, loaded(['c', 'd'])],
+      ]),
+      4,
+      2,
+    );
+    const rows = pctBlockRows(blocks([[1, loaded(['e'])]]), 4, 2, before);
+    expect(rows).toEqual([undefined, undefined, 'e', undefined]);
+  });
+
+  it('writes no row past the total, nor past the block’s size', () => {
+    const before = drawn(blocks([]), 3, 2);
+    const rows = pctBlockRows(
+      blocks([
+        [0, loaded(['a', 'b', 'x'])],
+        [1, loaded(['c', 'd'])],
+      ]),
+      3,
+      2,
+      before,
+    );
+    expect(rows).toEqual(['a', 'b', 'c']);
+    expect(rows).toHaveLength(3);
+  });
+
+  it('draws the rows anew at another total or another size', () => {
+    // Rows before that no block wrote: a copy of them would keep the stray ones.
+    const stray = (total: number, size: number) => ({
+      blocks: blocks([]),
+      total,
+      size,
+      rows: new Array<string>(total).fill('stray'),
+    });
+    const held = blocks([[0, loaded(['a', 'b'])]]);
+    expect(pctBlockRows(held, 3, 2, stray(4, 2))).toEqual([
+      'a',
+      'b',
+      undefined,
+    ]);
+    expect(pctBlockRows(held, 3, 2, stray(3, 3))).toEqual([
+      'a',
+      'b',
+      undefined,
+    ]);
+    // The same total and size: the stray rows are the rows before, and stay.
+    expect(pctBlockRows(held, 3, 2, stray(3, 2))).toEqual(['a', 'b', 'stray']);
+  });
+});
+
 describe('pctFailedBlock', () => {
   const blocks = new Map<number, PctBlock<string>>([
     [0, { state: 'loading', rows: null }],

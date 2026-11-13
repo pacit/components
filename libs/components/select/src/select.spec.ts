@@ -2909,6 +2909,21 @@ describe('PctSelect', () => {
      * length of one case, because the three numbers the window runs on are read from the DOM
      * and there is no other way to give a DOM without layout a height.
      */
+    /**
+     * Puts a property of the prototype back as it was: its own descriptor, or none. jsdom keeps
+     * `clientHeight` on `Element.prototype`, so `HTMLElement.prototype` has none of its own; one
+     * left there answered for every element in the files its worker ran after this one — the
+     * time columns' lists read a height of 0 on CI, and only where the files fell that way.
+     */
+    const putBack = (
+      proto: object,
+      name: string,
+      descriptor: PropertyDescriptor | undefined,
+    ) => {
+      if (descriptor) Object.defineProperty(proto, name, descriptor);
+      else delete (proto as Record<string, unknown>)[name];
+    };
+
     const withLayout = (row: number, viewport: number, heading = 0) => {
       const proto = HTMLElement.prototype;
       const offset = Object.getOwnPropertyDescriptor(proto, 'offsetHeight');
@@ -2948,8 +2963,8 @@ describe('PctSelect', () => {
         },
       });
       return () => {
-        if (offset) Object.defineProperty(proto, 'offsetHeight', offset);
-        if (client) Object.defineProperty(proto, 'clientHeight', client);
+        putBack(proto, 'offsetHeight', offset);
+        putBack(proto, 'clientHeight', client);
         proto.getBoundingClientRect = rect;
       };
     };
@@ -3182,7 +3197,7 @@ describe('PctSelect', () => {
         // application's question.
         expect(optionsInPanel().length).toBeGreaterThan(0);
       } finally {
-        if (offset) Object.defineProperty(proto, 'offsetHeight', offset);
+        putBack(proto, 'offsetHeight', offset);
         warn.mockRestore();
       }
     });
@@ -3346,7 +3361,7 @@ describe('PctSelect', () => {
         await fixture.whenStable();
         expect(warn).not.toHaveBeenCalled();
       } finally {
-        if (offset) Object.defineProperty(proto, 'offsetHeight', offset);
+        putBack(proto, 'offsetHeight', offset);
         warn.mockRestore();
       }
     });
@@ -3399,7 +3414,7 @@ describe('PctSelect', () => {
         expect(tail(list())).not.toBe(`${(1000 - 11) * 36}px`);
       } finally {
         proto.getBoundingClientRect = rect;
-        if (client) Object.defineProperty(proto, 'clientHeight', client);
+        putBack(proto, 'clientHeight', client);
       }
     });
 
