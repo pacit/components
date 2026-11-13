@@ -420,17 +420,6 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - binds at: **the first carrier or message part in a template stamped more than once at a
     time** — by an outlet under an `@for`, or by two side by side — beyond the three panels
 
-- [ ] **4.78 — Orca says nothing when the modal takes focus**
-  - the `open` row of `/dialog` is a silence for Orca in every reading taken — the desk on
-    2026-09-17, the runner on 2026-09-28, twice — with the browser's focus on the dialog's close
-    button; on the same act NVDA says `Project settings, dialog` and VoiceOver names the dialog,
-    its size and the close button. Orca speaks again on Escape, so it is the arrival it misses
-  - a popover taking focus and a menu opening are both announced by the same reader, so the modal
-    is the odd one: `showModal()`, the page made inert behind it, or focus moved before the dialog
-    is drawn — three suspects, none measured. A desk with Orca asks in two minutes
-    (`AT_PASS_ROUTES=/dialog tools/at-pass.sh`)
-  - binds at: **the dialog card's reading**, which says the silence rather than explaining it
-
 - [ ] **4.75 — one name, several declarations, and only the first date is read**
   - a name TypeScript lets several declarations carry — a class merged with an interface, an
     overload set — is one item to `check-since`, and its `@since` is the first one written:
@@ -444,6 +433,17 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - found by the third review of the gate's own repair, 2026-09-18; no exported overload and no
     merged name exists in the library today, which is why nothing reads wrong yet
   - binds at: **the first exported name with two declarations dated differently**
+
+- [x] **4.78 — Orca says nothing when the modal takes focus** — **closed 2026-11-13**
+  - the `open` row of `/dialog` was a silence for Orca on the desk (2026-09-17) and the runner
+    (2026-09-28, 2026-10-02), with focus on the close button, where NVDA and VoiceOver named
+    the dialog; three suspects — `showModal()`, the inert page, focus moved before the draw
+  - read again at the dialog card's reading: Orca has spoken on that row in every one of the 27
+    logs since 2026-10-08 — `Project settings`, the description, `Close · button` — on the same
+    Orca 50.2, and nothing in the dialog, the modal background or the walk's act changed
+    between the last silence and the first reading. The cause is not established; the
+    suspects stay unmeasured, and the card records what each reader says, the role Orca leaves
+    out included
 
 - [x] **4.81 — the warning line is not heard on the stop it appears** — **closed 2026-11-13**
   - the pass of 2026-10-08 (run 37733848017) and every weekly pass after it: NVDA and VoiceOver
