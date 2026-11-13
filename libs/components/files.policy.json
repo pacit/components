@@ -46,6 +46,11 @@
       "file": "libs/components/table/src/model/blocks.ts",
       "type": "PctBlock",
       "reason": "One block of a remote source as `pctTableRemote` holds it — loading, failed or loaded, with the rows it had. No public signature carries it: the directive's public face is `total`, `loading` and `error`, and the rows reach the table through its feature as holes and rows. Publishing it would turn the directive's bookkeeping, which the next phase's cache may change, into a contract. The entry retires if a public API ever takes or returns a block."
+    },
+    {
+      "file": "libs/components/table/src/model/blocks.ts",
+      "type": "PctBlockRows",
+      "reason": "The rows a remote source's list was last drawn as, with the blocks, the total and the size they were drawn from, which `pctTableRemote` keeps so that a block that comes is written into a copy of them rather than a million rows anew. No public signature carries it: it is the directive's memory between two of its own computations, and `pctBlockRows`, which reads it, is not exported either. The entry retires if a public API ever takes or returns the rows drawn."
     }
   ]
 }

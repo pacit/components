@@ -414,6 +414,9 @@ const HYSTERESIS = 8;
 /** How many placeholder rows stand in for rows that are still coming. */
 const PLACEHOLDER_ROWS = [0, 1, 2, 3, 4];
 
+/** The levels a remote source's rows are grouped by in the table: none, the same list each time. */
+const NO_GROUPS: readonly never[] = [];
+
 /**
  * The least a column with no width of its own is laid out at, when the frame leaves less: its
  * header's padding, chevron and buttons, about 90 px, and a word of eight letters beside them.
@@ -1327,24 +1330,48 @@ export class PctDataTable<
     const id = this.rowId();
     const remote = this.remote();
     const sourced = this.madeGroups();
-    const rows = sourced ? this.top() : remote ? this.given() : this.ordered();
+    const rows = (
+      sourced ? this.top() : remote ? this.given() : this.ordered()
+    ) as readonly (T | undefined)[];
     const tree = this.tree();
-    const lines = pctLines(rows as readonly (T | undefined)[], id, {
-      details: this.disclosure() ? new Set(this.openDetails()()) : undefined,
-      children: tree?.children,
-      expanded: tree ? new Set(this.treeFeature()?.expanded()) : undefined,
-      // A remote source's groups are its own to make: the table groups none of its rows.
-      groups: remote ? [] : this.grouping(),
-      collapsed: new Set(this.contributed().groups?.collapsed()),
-      sourced: sourced ?? undefined,
-    });
-    this.warnOnTwins(
-      tree
-        ? tree.rows.map((row) => id(row))
-        : lines.flatMap((line) => (line.kind === 'row' ? [line.key] : [])),
+    const details = this.disclosure() ? this.openDetails()() : undefined;
+    const expanded = tree ? this.treeFeature()?.expanded() : undefined;
+    // A remote source's groups are its own to make: the table groups none of its rows.
+    const groups = remote ? NO_GROUPS : this.grouping();
+    const collapsed = this.contributed().groups?.collapsed();
+    // What the lines are drawn from besides the rows: while it is the same, a block that came
+    // writes its own lines into the last ones rather than a million of them anew.
+    const basis = [id, sourced, details, tree, expanded, groups, collapsed];
+    const drawn = this.drawnLines;
+    const lines = pctLines(
+      rows,
+      id,
+      {
+        details: details && new Set(details),
+        children: tree?.children,
+        expanded: tree ? new Set(expanded) : undefined,
+        groups,
+        collapsed: new Set(collapsed),
+        sourced: sourced ?? undefined,
+      },
+      drawn?.basis.every((part, at) => part === basis[at]) ? drawn : undefined,
     );
+    this.drawnLines = { basis, rows, lines };
+    if (tree) this.warnOnTwins(tree.rows.length, (at) => id(tree.rows[at]));
+    else if (lines !== drawn?.lines)
+      this.warnOnTwins(lines.length, (at) => {
+        const line = lines[at];
+        return line.kind === 'row' ? line.key : null;
+      });
     return lines;
   });
+
+  /** The lines last drawn, the rows they were drawn for, and what else they were drawn from. */
+  private drawnLines: {
+    readonly basis: readonly unknown[];
+    readonly rows: readonly (T | undefined)[];
+    readonly lines: readonly PctTableLine<T>[];
+  } | null = null;
 
   /**
    * The ids of the columns the rows are grouped by, outermost first: the groups directive's
@@ -1477,10 +1504,16 @@ export class PctDataTable<
   /**
    * Every group's heading, by its line, and for each line the line of the heading whose body
    * it stands in, or -1: written when the lines change, so a window that moves reads them and
-   * walks only the lines it draws.
+   * walks only the lines it draws. With no groups there is no heading, and a list of a million
+   * is not walked to find none: `owner` is then `null`.
    */
-  private readonly outline = computed(() => {
+  private readonly outline = computed<{
+    readonly headings: ReadonlyMap<number, Heading>;
+    readonly owner: Int32Array | null;
+  }>(() => {
     const lines = this.lines();
+    if (this.groupedBy().length === 0 && this.sourced() === null)
+      return { headings: new Map(), owner: null };
     const summarize = this.summarize();
     const count = new Intl.NumberFormat(this.resolvedLocale());
     const said = this.texts().tableGroupCount;
@@ -1567,7 +1600,7 @@ export class PctDataTable<
       // A row's details are drawn with the row.
       if (row === undefined) continue;
       if (current === null) {
-        const head = owner[at];
+        const head = owner?.[at] ?? -1;
         current = {
           key: head < 0 ? 'rows' : pctLineKey(lines[head]),
           group: null,
@@ -1740,10 +1773,16 @@ export class PctDataTable<
    * Two rows with one id are one row to `@for`, and that is a bug in the rows, said once: over
    * the rows drawn, or every row of a tree, whose closed branches hold rows too.
    */
-  private warnOnTwins(keys: readonly PctRowId[]): void {
+  private warnOnTwins(
+    count: number,
+    keyAt: (at: number) => PctRowId | null,
+  ): void {
     if (!isDevMode() || this.warnedTwins) return;
     const seen = new Set<unknown>();
-    for (const key of keys) {
+    for (let at = 0; at < count; at++) {
+      const key = keyAt(at);
+      // A line that is not a row's.
+      if (key === null) continue;
       if (!seen.has(key)) {
         seen.add(key);
         continue;

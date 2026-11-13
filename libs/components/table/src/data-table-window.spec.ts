@@ -643,6 +643,20 @@ describe('PctTableWindow', () => {
     );
   });
 
+  it('counts a line at the estimate again where a row measured once left it, out of the window', async () => {
+    heightOf = (index) => (index === 30 ? 100 : 40);
+    const fixture = await render();
+    await scroll(fixture, 1200);
+    await scroll(fixture, 0);
+    fixture.componentInstance.rows.update((rows) => [...rows].reverse());
+    heightOf = () => 40;
+    await settle(fixture);
+    // Line 30 holds another row, never measured; the row of 100 px stands at line 969.
+    expect(table(fixture).style.getPropertyValue('--_tail')).toBe(
+      `${(1000 - 17) * 40 + 60}px`,
+    );
+  });
+
   it('draws a row with its details and details with their row, at either edge', async () => {
     const fixture = await render((host) => host.open.set([17, 92]));
     // Line 16 is row 17, whose details are line 17: the first not drawn.

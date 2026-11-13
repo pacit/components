@@ -150,6 +150,135 @@ describe('pctLines', () => {
   });
 });
 
+describe('pctLines — from the lines before', () => {
+  type Rows = readonly (Node | undefined)[];
+  const hole = (at: number) => ({
+    kind: 'hole' as const,
+    key: at,
+    index: at,
+    level: 0,
+    parent: null,
+    group: null,
+    at,
+  });
+  /** Lines no rows make: what a copy of them keeps shows the lines were copied. */
+  const stray = (rows: Rows, count = rows.length) => ({
+    rows,
+    lines: Array.from({ length: count }, () => ({
+      kind: 'hole' as const,
+      key: -1,
+      index: -1,
+      level: 9,
+      parent: null,
+      group: null,
+      at: -1,
+    })),
+  });
+
+  it('writes the lines of the places whose row changed into a copy, and keeps the rest', () => {
+    const rows: Rows = [a, undefined, undefined];
+    const before = { rows, lines: pctLines(rows, id) };
+    const lines = pctLines([a, b, undefined], id, {}, before);
+    expect(lines).toEqual(pctLines([a, b, undefined], id));
+    expect(lines[0]).toBe(before.lines[0]);
+    expect(lines[2]).toBe(before.lines[2]);
+    expect(before.lines[1]).toEqual(hole(1));
+  });
+
+  it('gives the lines before back for the same rows', () => {
+    const rows: Rows = [a, undefined];
+    const before = { rows, lines: pctLines(rows, id) };
+    expect(pctLines([a, undefined], id, {}, before)).toBe(before.lines);
+  });
+
+  it('draws a hole again where a row went', () => {
+    const before = stray([a, b]);
+    expect(pctLines([a, undefined], id, {}, before)[1]).toEqual(hole(1));
+  });
+
+  it('reads a row that came as a leaf or as a closed branch', () => {
+    const branch: Node = { id: 'p', kids: [c] };
+    const empty: Node = { id: 'e', kids: [] };
+    const lines = pctLines(
+      [branch, empty],
+      id,
+      { children: kids, expanded: new Set() },
+      stray([undefined, undefined]),
+    );
+    expect(lines).toEqual([
+      {
+        kind: 'row',
+        key: 'p',
+        row: branch,
+        index: 0,
+        level: 0,
+        expanded: false,
+      },
+      { kind: 'row', key: 'e', row: empty, index: 1, level: 0, expanded: null },
+    ]);
+  });
+
+  it('keeps the other lines for a branch that came with nothing expanded, and for a leaf whose id is', () => {
+    const branch: Node = { id: 'p', kids: [c] };
+    const before = stray([a, undefined]);
+    const closed = pctLines([a, branch], id, { children: kids }, before);
+    expect(closed[0]).toBe(before.lines[0]);
+    expect(closed[1]).toEqual({
+      kind: 'row',
+      key: 'p',
+      row: branch,
+      index: 1,
+      level: 0,
+      expanded: false,
+    });
+    const leaf = pctLines(
+      [a, b],
+      id,
+      { children: kids, expanded: new Set(['b']) },
+      before,
+    );
+    expect(leaf[0]).toBe(before.lines[0]);
+    expect(leaf[1]).toEqual({
+      kind: 'row',
+      key: 'b',
+      row: b,
+      index: 1,
+      level: 0,
+      expanded: null,
+    });
+  });
+
+  it('makes the lines whole for a row that brings a line of its own', () => {
+    const branch: Node = { id: 'p', kids: [c] };
+    const open = { children: kids, expanded: new Set(['p']) };
+    expect(pctLines([a, branch], id, open, stray([a, undefined]))).toEqual(
+      pctLines([a, branch], id, open),
+    );
+    const details = { details: new Set(['b']) };
+    expect(pctLines([a, b], id, details, stray([a, undefined]))).toEqual(
+      pctLines([a, b], id, details),
+    );
+  });
+
+  it('makes the lines whole when the lines before were not one a row', () => {
+    // Rows of another count, lines of another count, groups, and groups a source made.
+    expect(pctLines([a, b], id, {}, stray([a], 2))).toEqual(
+      pctLines([a, b], id),
+    );
+    expect(pctLines([a, b], id, {}, stray([a, undefined], 3))).toEqual(
+      pctLines([a, b], id),
+    );
+    const groups = { groups: [{ value: () => 1, label: () => 'One' }] };
+    expect(pctLines([a, b], id, groups, stray([a, undefined]))).toEqual(
+      pctLines([a, b], id, groups),
+    );
+    const sourced = { sourced: () => undefined };
+    expect(pctLines([a, b], id, sourced, stray([a, undefined]))).toEqual(
+      pctLines([a, b], id, sourced),
+    );
+  });
+});
+
 describe('pctLines — groups', () => {
   interface Light {
     id: string;
