@@ -196,5 +196,9 @@ textbox is not a combobox),
   `null`; a form that then writes `null` again — `ctrl.reset()`, `setValue(null)` — writes
   what the model already holds, the model does not move, and the field keeps the text and the
   report. A time written from outside does take it back.
+- **Two Escapes from a column under NVDA.** A listbox puts NVDA in focus mode, and its first
+  Escape leaves that mode; the second closes the panel. Orca and VoiceOver close it on one.
+  A column whose option holds the focus measured the same, and a grid — which NVDA lets
+  through — would say `table` where a list of hours is what there is (plan finding 4.82).
 - **The sentence comes first.** A control's own error stands ahead of the form's, always —
   there is no knob to let "required" win over "not a time" (0070).

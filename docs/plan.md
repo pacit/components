@@ -152,7 +152,7 @@ form exists and is a condition of entering a release. Forty-two cards are filled
   - `PctTimeColumns` took `timeDisabled` and `PctCalendar` `startAt`, the two inputs 0090 named;
     the chrome hands its label's id to a control the label points at, for the two texts' names
   - the panel in three engines and the three readers on it — the grid's Escape on `/datetime`,
-    a column's on `/time`, the same listbox (4.82)
+    a column's on `/time`, the same listbox (4.82, closed: two under NVDA)
   - a signal form gives the field its bounds through `pctDateTimeBounds` since 2026-10-15 (0093,
     amended), and none where its rules meet in no datetime
 
@@ -415,21 +415,6 @@ and every one is held by a **binds at** rather than by anybody's mood.
     `PctAnnouncer` carrying the sentence the line already shows (0026)
   - binds at: **the weekly pass of 2026-10-12** — read again, and a decision if it holds
 
-- [ ] **4.82 — the time panel takes two Escapes under NVDA**
-  - the pass of 2026-10-08 (run 37795534533): on `/time` the act opens the columns and NVDA
-    says `Choisir une heure, dialog`; its Escape left the panel open, where the same walk closed
-    the date's panel, the menu and the popover. A `role="listbox"` puts NVDA in focus mode, and
-    focus mode keeps the first Escape for itself — so a person presses it twice
-  - the columns follow 0086's E1 reading, focus on the listbox; E2 — the option focused by a
-    roving `tabindex` — is the other reading axe passed, and whether NVDA keeps Escape there too
-    is unmeasured. VoiceOver closed no panel in that pass at all, so it says nothing here
-  - measured on the datetime field's panel on 2026-10-12 (run 38261445493): its grid's Escape
-    closes it under all three readers, while the same pass left NVDA's `/time` panel open on a
-    column's — so under NVDA one panel now closes one way from one half and another from the
-    other, as 0090 §4 foresaw
-  - binds at: **the time panel's shape (1.7)**, which rebuilds the columns' list — E2, the option
-    focused by a roving `tabindex`, measured there under NVDA
-
 - [ ] **4.83 — an `<ng-template>` stamped in two places is read as standing in one**
   - `check-aria` points 4 and 6 read an `@for` body as repeating and a template as standing
     once. Five are named by two outlets: the calendar's and the pagination's chevron side by
@@ -475,6 +460,19 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - found by the third review of the gate's own repair, 2026-09-18; no exported overload and no
     merged name exists in the library today, which is why nothing reads wrong yet
   - binds at: **the first exported name with two declarations dated differently**
+
+- [x] **4.82 — the time panel takes two Escapes under NVDA** — **closed 2026-11-13**
+  - the pass of 2026-10-08 (run 37795534533): NVDA's first Escape left `/time`'s panel open
+    where the same walk closed the date's, the menu and the popover — a `role="listbox"` puts
+    NVDA in focus mode, and focus mode keeps the first Escape. The 1.7 pass read it again
+  - measured on a probe of three panels closed by Escape (`probe/escape-4.82`, run
+    43398981776): a listbox focused itself (E1, the columns), one with its option focused by a
+    roving `tabindex` (0086's E2), and a grid with its cell focused, the date's shape, as the
+    control. NVDA kept the first Escape on both listboxes and let the grid's through; Orca and
+    VoiceOver closed all three on one. Both built panels reproduced, so E2 saves nothing
+  - the columns stay a listbox: a grid of one column says `table` where a list of hours is what
+    there is, to save one key NVDA's users press on every listbox in focus mode. The three
+    cards say it under their limits, and 0090 §4 the reading
 
 - [x] **4.74 — one case in 2532 wobbled, and a sample of three is not its rate** — **closed 2026-09-27**
   - the first flake record (4.58) named one case, the list panel of `forced-colors.spec.ts` on

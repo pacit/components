@@ -184,6 +184,9 @@ texts are not comboboxes),
   the pair into an instant, and choosing what the skipped and the repeated minute mean, is the
   application's: `Temporal.PlainDateTime.from(value).toZonedDateTime(zone, { disambiguation })`
   where the engine has it.
+- **One Escape from the day, two from a column under NVDA.** The grid lets its Escape through;
+  a column is a listbox, and NVDA's first Escape there leaves focus mode. Orca and VoiceOver
+  close the panel on one from either half (plan finding 4.82).
 - **A `null` from outside does not clear a half-filled field.** A day typed with no time is
   `null` already, so a model or a form writing `null` over it changes nothing the field can see,
   and the day stays on the screen with its sentence; `reset()` — which a signal form's reset
