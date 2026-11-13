@@ -18,7 +18,7 @@ person has made it.
 
 - Orca version 50.3, AT-SPI2 version: 2.60.4
 - Firefox 155.0 (the Playwright build), drawn on gnome-shell 50.1 headless, virtual monitor 1280x900, its own Wayland socket (wayland-at) — the browser's connection to it read off ss(8); speech synthesised into a null device
-- 827 steps over 64 views, at most 12 stops of a view's own
+- 816 steps over 64 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -30,10 +30,10 @@ for, and the row beneath it is what leaving sounds like. A block deeper in a vie
 cap reaches is a heading of its own, `/view#block`: `enter` puts focus on its first stop,
 the keys a person presses there follow under their names, then Tab stops while focus stays
 inside it. `(silence)` is a stop the reader said nothing
-at — 9 of 827 here. 18 view(s) hit the cap, and each says so.
+at — 8 of 816 here. 18 view(s) hit the cap, and each says so.
 
-**A phrase repeated at one stop is written once.** This reader's log handed back 3391
-phrases, and 3385 of them are distinct within their own stop; the rest are the same
+**A phrase repeated at one stop is written once.** This reader's log handed back 3358
+phrases, and 3352 of them are distinct within their own stop; the rest are the same
 sequence read again, cycled rather than repeated, which is the poller and not the reader. The
 cost of the rule is stated rather than hidden: a reader that truly said one thing twice at one
 stop is recorded here saying it once.
@@ -230,7 +230,7 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ```
 enter   div[list] "Heures"                                   Alarm · Heures · List with 24 items · 06
-down    div[list] "Heures"                                   07
+down    div[list] "Heures"                                   Alarm · Heures · List with 24 items · 07
 home    div[list] "Heures"                                   00
 up      div[list] "Heures"                                   23
 tab 1   div[list] "Minutes"                                  Minutes · List with 60 items · 30
@@ -281,7 +281,7 @@ tab 1   —                                                    Theme · panel ·
 ### `/radio`
 
 ```
-arrive  a "Radio"                                            leaving main content. · navigation · Sandbox views · List with 40 items · Radio · link.
+arrive  a "Radio"                                            leaving main content. · navigation · Sandbox views · List with 40 items · Radio · visited link.
 enter   input[control]                                       Plan · panel · Free · not selected radio button.
 tab 1   —                                                    leaving panel. · Theme · panel · light · selected radio button. · alert. · Pick a plan
 ```
@@ -310,7 +310,7 @@ Tab moved nothing — focus had left the page.
 ### `/wheel`
 
 ```
-arrive  a "Wheel"                                            navigation · Sandbox views · List with 40 items · Wheel · link. · Browse mode
+arrive  a "Wheel"                                            navigation · Sandbox views · List with 40 items · Wheel · visited link. · Browse mode
 enter   div[list] "Monday"                                   Weekday · List with 7 items · Wednesday · Focus mode
 tab 1   div[list] "Monday"                                   No value yet · List with 7 items · Monday · not selected.
 tab 2   button "Write Friday"                                Write Friday · button. · Browse mode
@@ -324,27 +324,14 @@ tab 9   input[control]                                       Theme · panel · l
 tab 10  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
 tab 11  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 12  div[list] "Monday"                                   leaving panel. · Delivery day · List with 7 items · Monday · Focus mode
-tab 13  input[control]                                       main content · alert. · Pick a day · Theme · panel · light · selected radio button. · Browse mode
-tab 14  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 15  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 16  div[list] "Monday"                                   leaving panel. · Delivery day · List with 7 items · Tuesday · Focus mode
-tab 17  input[control]                                       Theme · panel · light · selected radio button. · Browse mode
-tab 18  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
-tab 19  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
-tab 20  div[list] "00"                                       leaving panel. · Small, three rows · List with 4 items · 15 · Focus mode
-tab 21  div[list] "00"                                       Medium · List with 4 items · 15
-tab 22  div[list] "00"                                       Large, seven rows · List with 24 items · 12
-tab 23  input[control]                                       Theme · panel · light · selected radio button. · Browse mode
-tab 24  input[control]                                       leaving panel. · Size · panel · md · selected radio button.
+tab 13  —                                                    Theme · panel · light · selected radio button. · Browse mode · alert. · Pick a day
 ```
-
-24 presses reached, 11 of them this view's own.
 
 ### `/wheel#demo-list`
 
 ```
 enter   div[list] "Monday"                                   Weekday · List with 7 items · Wednesday · Focus mode
-down    div[list] "Monday"                                   Thursday
+down    div[list] "Monday"                                   Weekday · List with 7 items · Thursday
 down    div[list] "Monday"                                   Friday
 end     div[list] "Monday"                                   Sunday
 tab 1   div[list] "Monday"                                   No value yet · List with 7 items · Monday · not selected.
@@ -358,8 +345,8 @@ the section: `ArrowDown`, `ArrowDown`, `End` in `demo-list`, to read the row a k
 ### `/wheel#demo-ring`
 
 ```
-enter   div[list] "Hour"                                     Hour · List with 24 items · 09 · Focus mode
-home    div[list] "Hour"                                     00
+enter   div[list] "Hour"                                     leaving panel. · Hour · List with 24 items · 09 · Focus mode
+home    div[list] "Hour"                                     Hour · List with 24 items · 00
 up      div[list] "Hour"                                     23
 tab 1   div[list] "Minute"                                   Minute · List with 60 items · 30
 tab 2   input[control]                                       Theme · panel · light · selected radio button. · Browse mode
@@ -370,7 +357,7 @@ the section: `Home`, `ArrowUp` in `demo-ring`, to read a ring coming round at it
 ### `/switch`
 
 ```
-arrive  a "Switch"                                           leaving panel. · leaving main content. · navigation · Sandbox views · List with 40 items · Switch · visited link.
+arrive  a "Switch"                                           leaving panel. · leaving main content. · navigation · Sandbox views · List with 40 items · Switch · link.
 enter   input[control]                                       Backups · switch not pressed. · Runs every night at 03:00.
 tab 1   —                                                    Theme · panel · light · selected radio button. · alert. · Backups have to stay on
 ```
@@ -406,14 +393,14 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/dialog`
 
 ```
-arrive  a "Dialog"                                           leaving main content. · navigation · Sandbox views · List with 40 items · Dialog · visited link. · Browse mode
+arrive  a "Dialog"                                           leaving main content. · navigation · Sandbox views · List with 40 items · Dialog · link. · Browse mode
 enter   button "Open the dialog"                             Open the dialog · button.
 tab 1   button "Delete the project"                          Delete the project · button.
 tab 2   button "Open the insistent one"                      Open the insistent one · button.
 tab 3   button "Open a form dialog"                          Open a form dialog · button.
 tab 4   button "Open a long one"                             Open a long one · button.
 tab 5   button "Open a long one"                             Dialog · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Open the dialog"                             main content · A modal: focus is trapped in the panel and given back on close, the background goes   link. · Browse mode · Open the dialog · button.
+reach   button "Open the dialog"                             main content · Open the dialog · button. · Browse mode
 open    button[close] "Close"                                Project settings  The panel is an overlay, so it inherits nothing from the tree — the theme, the typeface and the writing direction are carried over by hand. · Close · button.
 close   button "Open the dialog"                             main content · Open the dialog · button.
 ```
@@ -427,7 +414,7 @@ the act: `Enter` on `[data-testid="open-basic"]`, to open a modal dialog (the ge
 ### `/tooltip`
 
 ```
-arrive  a "Tooltip"                                          leaving main content. · navigation · Sandbox views · List with 40 items · Tooltip · visited link.
+arrive  a "Tooltip"                                          leaving main content. · navigation · Sandbox views · List with 40 items · Tooltip · link.
 enter   button "Delete the project"                          Delete the project · button.
 tab 1   button "Publish"                                     Publish · button. · Runs every check before publishing.
 tab 2   button "Approve the release"                         Approve the release · button.
@@ -447,7 +434,7 @@ Tab moved nothing — focus had left the page.
 ### `/popover`
 
 ```
-arrive  a "Popover"                                          navigation · Sandbox views · List with 40 items · Popover · visited link. · Browse mode
+arrive  a "Popover"                                          navigation · Sandbox views · List with 40 items · Popover · link. · Browse mode
 enter   button "Filters"                                     Filters · collapsed button. · opens dialog · Focus mode
 tab 1   button "start"                                       start · collapsed button. · opens dialog
 tab 2   button "top"                                         top · collapsed button. · opens dialog
@@ -470,7 +457,7 @@ the act: `Enter` on `[data-testid="panel-trigger"]`, to open a non-modal dialog 
 ### `/menu`
 
 ```
-arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 40 items · Menu · visited link. · Browse mode
+arrive  a "Menu"                                             leaving main content. · navigation · Sandbox views · List with 40 items · Menu · link. · Browse mode
 enter   button "Actions"                                     Actions · collapsed button. · opens menu · Focus mode
 tab 1   button "Count up"                                    Count up · button. · Browse mode
 tab 2   button "File"                                        File · collapsed button. · opens menu · Focus mode
@@ -503,7 +490,7 @@ tab 8   input[control]                                       leaving panel. · S
 tab 9   input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 10  button "Open the bare one"                           leaving panel. · Open the bare one · collapsed button. · Focus mode
 tab 11  button "Open the bare one"                           Drawer · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Sections"                                    main content · Sections · collapsed button. · Focus mode
+reach   button "Sections"                                    main content · A panel docked to an edge of the window. It is not an overlay: it is drawn where it stands in · Browse mode · Sections · collapsed button. · Focus mode
 open    button "Sections"                                    expanded
 close   button "Sections"                                    (silence)
 ```
@@ -557,7 +544,7 @@ the act: `Enter` on `[data-testid="item-payment"] [data-pct-part="heading"]`, to
 ### `/tabs`
 
 ```
-arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 40 items · Tabs · visited link. · Browse mode
+arrive  a "Tabs"                                             leaving main content. · navigation · Sandbox views · List with 40 items · Tabs · link. · Browse mode
 enter   button[tab] "General"                                General · page tab. · Focus mode
 tab 1   pct-tab[panel] "The general settings, and a word that…" General · scroll pane clickable. · Browse mode
 tab 2   pct-tab[panel]                                       Network · scroll pane clickable.
@@ -616,7 +603,7 @@ tab 20  input[control]                                       leaving panel. · S
 tab 21  input[control]                                       leaving panel. · Direction · panel · ltr · selected radio button.
 tab 22  button "Open the settings"                           leaving panel. · Open the settings · button.
 tab 23  button "Open the settings"                           Toast · @pacit/components · page tab. · JUGGLER <window>.
-reach   button "Copy (a shorter clock)"                      main content · A message that arrives on top of the page. There is no   link to put in a template — · Browse mode · Copy (a shorter clock) · button.
+reach   button "Copy (a shorter clock)"                      main content · Copy (a shorter clock) · button. · Browse mode
 open    button "Copy (a shorter clock)"                      Notifications. Copied to the clipboard.
 close   button "Copy (a shorter clock)"                      (silence)
 ```
@@ -966,7 +953,7 @@ Tab moved nothing — focus had left the page.
 
 ```
 arrive  a "Table"                                            navigation · Sandbox views · List with 40 items · Table · link. · Browse mode
-enter   button[toggle] "Name"                                table with 5 rows 3 columns · column header. · row 1. · column 1 · Name · button.
+enter   button[toggle] "Name"                                Polling rules. · table with 5 rows 3 columns · column header. · row 1. · column 1 · Name · button.
 tab 1   button[toggle] "Address"                             column header. · column 2 · Address · button.
 tab 2   input[control]                                       leaving table. · Theme · panel · light · selected radio button.
 tab 3   input[control]                                       leaving panel. · Size · panel · md · selected radio button.
@@ -1056,9 +1043,9 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ### `/datatable#demo-layout`
 
 ```
-enter   div[separator] "Resize Name"                         table with 21 rows 8 columns · Name · column header. · row 1. · column 3 · vertical splitter · Resize Name. · clickable.
+enter   div[separator] "Resize Name"                         leaving panel. · table with 21 rows 8 columns · Name · column header. · row 1. · column 3 · vertical splitter · Resize Name. · clickable.
 right   div[separator] "Resize Name"                         (silence)
-back    button[options] "Options for Name"                   Options for Name · collapsed button. · opens menu · Focus mode
+back    button[options] "Options for Name"                   table with 21 rows 8 columns · Name · column header. · row 1. · column 3 · Options for Name · collapsed button. · opens menu · Focus mode
 tab 1   div[separator] "Resize Name"                         vertical splitter · Resize Name. · clickable. · Browse mode
 tab 2   button[toggle] "Room"                                column header. · column 4 · Room · button.
 tab 3   button[options] "Options for Room"                   Options for Room · collapsed button. · opens menu · Focus mode
@@ -1130,9 +1117,9 @@ the section: `ArrowRight`, `ArrowDown`, `ArrowRight`, `ArrowDown` in `demo-remot
 ### `/datatable#demo-remote-groups`
 
 ```
-enter   button[disclosure] "Meter 1 (120)"                   leaving panel. · table with 1033 rows 4 columns · row header. · row 2. · column 1 · Meter 1 (120) · expanded button. · Focus mode
-act     button[disclosure] "Meter 1 (120)"                   (silence)
-tab 1   button[disclosure] "Meter 2 (120)"                   table with 913 rows 4 columns · row header. · row 3. · column 1 · Meter 2 (120) · expanded button.
+enter   button[disclosure] "Meter 1 (120)"                   table with 1033 rows 4 columns · row header. · row 2. · column 1 · Meter 1 (120) · expanded button. · Focus mode
+act     pct-table-frame "Meter readings on the server"       collapsed · clickable. · Browse mode
+tab 1   button[disclosure] "Meter 5 (120)"                   Meter readings on the server. · table with 913 rows 4 columns · row header. · row 366. · column 1 · Meter 5 (120) · expanded button. · Focus mode
 tab 2   input[control]                                       leaving table. · Theme · panel · light · selected radio button. · Browse mode
 ```
 
@@ -1232,7 +1219,7 @@ Tab moved nothing — focus had left the page.
 ### `/tree`
 
 ```
-arrive  a "Tree"                                             navigation · Sandbox views · List with 40 items · Tree · visited link. · Browse mode
+arrive  a "Tree"                                             navigation · Sandbox views · List with 40 items · Tree · link. · Browse mode
 enter   pct-tree-item "README.md"                            README.md. · tree level 1 · Focus mode
 tab 1   pct-tree-item "README.md"                            Tree · @pacit/components · page tab. · JUGGLER <window>.
 ```

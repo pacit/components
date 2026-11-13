@@ -17,7 +17,7 @@ person has made it.
 **Taken with**, because a reading is only ever true of one stack:
 
 - VoiceOver with Safari on macOS
-- 445 steps over 64 views, at most 12 stops of a view's own
+- 465 steps over 64 views, at most 12 stops of a view's own
 
 A stop reads: the label, what the browser had focused, and what the reader said. `arrive` is
 the sandbox's own navigation to the view — the document is loaded once, before the first —
@@ -29,7 +29,7 @@ for, and the row beneath it is what leaving sounds like. A block deeper in a vie
 cap reaches is a heading of its own, `/view#block`: `enter` puts focus on its first stop,
 the keys a person presses there follow under their names, then Tab stops while focus stays
 inside it. `(silence)` is a stop the reader said nothing
-at — 128 of 445 here. 6 view(s) hit the cap, and each says so.
+at — 123 of 465 here. 6 view(s) hit the cap, and each says so.
 
 **Every view spoke.** No view of the 64 went unread, so nothing below is
 missing because the reader was not listening. Where this reading ends instead is the cap:
@@ -58,7 +58,7 @@ tab 7   input[control]                                       ltr selected radio 
 tab 8   button "danger"                                      danger button main
 tab 9   button "danger"                                      danger button
 tab 10  button "danger"                                      (silence)
-tab 11  button "danger"                                      You are currently on a button. To click this button, press Control-Option-Space.
+tab 11  button "danger"                                      danger button
 tab 12  button "warning"                                     warning button
 tab 13  button "warning"                                     (silence)
 tab 14  button "warning"                                     warning button
@@ -83,7 +83,7 @@ tab 9   input                                                1 499,90 Price Th
 tab 10  button[field-suffix-item] "Clear the price"          Clear the price button
 tab 11  input                                                Search the catalogue The icon belongs to the surface of the field; the button is welded into the corner of the border edit text
 tab 12  button[field-suffix-item] "Search"                   Search button
-tab 13  input[control]                                       You are currently on a selected radio button, 1 of 2.
+tab 13  input[control]                                       light selected radio button, 1 of 2 Theme radio group
 tab 14  input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 15  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 16  button[trigger] "Sélectionner…"                      , Sélectionn Country A click in the padding opens the list list box pop up collapsed combo box main
@@ -92,8 +92,8 @@ tab 18  input[control]                                       light selected radi
 tab 19  input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 20  input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 21  input                                                25 000 Amount Transfers above 10 000 are reviewed by hand stepper main
-tab 22  input                                                Phone Optional — the form would rather have it telephone number field
-tab 23  input[control]                                       light selected radio button, 1 of 2 Theme radio group
+tab 22  input                                                Warning: Unusually large — it will be reviewed by hand
+tab 23  input[control]                                       Warning: Without a number we cannot call you back
 tab 24  input[control]                                       md selected radio button, 2 of 3 Size radio group
 ```
 
@@ -352,46 +352,55 @@ the act: `Enter` on `[data-testid="open-basic"]`, to open a modal dialog (the ge
 ### `/tooltip`
 
 ```
-arrive  —                                                    heading level 2 Tooltip
+arrive  —                                                    banner
 enter   button "Delete the project"                          (silence)
-tab 1   button "Delete the project"                          Delete the project Removes the project and everything in it button
+tab 1   button "Publish"                                     Publish Runs every check before publishing button
+tab 2   button "Approve the release"                         Approve the release button
+tab 3   button "Close the panel"                             Close the panel button
+tab 4   button "start"                                       start On the starting side button
+tab 5   button "top"                                         top Above the control button
+tab 6   button "bottom"                                      bottom Below the control button
+tab 7   button "end"                                         end On the ending side button
+tab 8   input                                                Release note Shown in the changelog Markdown is allowed here edit text
+tab 9   button "Hover me"                                    Hover me This one can be taken away button
+tab 10  button "Take it away"                                Take it away button
+tab 11  —                                                    (silence)
 ```
 
 the pointer's way to the nav stood under `div` when this view was asked for, and the link was reached through its own click event.
 
-Tab moved nothing — focus had left the page.
-
 ### `/popover`
 
 ```
-arrive  —                                                    heading level 2 Popover
+arrive  —                                                    banner
 enter   button "Filters"                                     (silence)
-tab 1   button "Filters"                                     Filters dialog pop up button
+tab 1   button "start"                                       start dialog pop up button
+tab 2   button "top"                                         top dialog pop up button
+tab 3   button "bottom"                                      bottom dialog pop up button
+tab 4   button "end"                                         end dialog pop up button
+tab 5   button "Open the panel"                              Open the panel dialog pop up button
+tab 6   button "Count up"                                    Count up button
+tab 7   —                                                    You are currently on a button. To click this button, press Control-Option-Space.
 reach   button "Filters"                                     (silence)
 open    div[panel] "Filters"                                 Filters web dialog with 5 items heading level 2 Filters
-close   div[panel] "Filters"                                 (silence)
+close   button "Filters"                                     Filters dialog pop up button
 ```
-
-Tab moved nothing — focus had left the page.
-
-the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
 
 the act: `Enter` on `[data-testid="panel-trigger"]`, to open a non-modal dialog (the gesture belongs to `apps/sandbox-e2e/src/popover.spec.ts`).
 
 ### `/menu`
 
 ```
-arrive  —                                                    heading level 2 Menu
+arrive  —                                                    banner
 enter   button "Actions"                                     (silence)
-tab 1   button "Actions"                                     Actions menu pop up button
+tab 1   button "Count up"                                    Count up button
+tab 2   button "File"                                        File menu pop up button
+tab 3   button "Language"                                    Language menu pop up button
+tab 4   —                                                    (silence)
 reach   button "Actions"                                     (silence)
 open    button[item] "Rename"                                Rename menu item (1 of 4)
-close   button[item] "Rename"                                (silence)
+close   button "Actions"                                     Actions menu pop up button
 ```
-
-Tab moved nothing — focus had left the page.
-
-the walk had Tabbed out of the page into the browser's own chrome, so a pointer click on the view's title gave the document the window's focus back before the control was focused — a reader's key follows the window, not the page.
 
 the act: `Enter` on `[data-testid="actions-trigger"]`, to open a menu (the gesture belongs to `apps/sandbox-e2e/src/menu.spec.ts`).
 
@@ -474,9 +483,9 @@ the act: `Enter` on `[data-testid="raise-brief"]`, to open a message in a live r
 ### `/pagination`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Pagination
 enter   button[page] "1"                                     (silence)
-tab 1   button[page] "1"                                     You are currently on a button. To click this button, press Control-Option-Space.
+tab 1   button[page] "1"                                     1 current page button list 5 items
 ```
 
 Tab moved nothing — focus had left the page.
@@ -484,9 +493,9 @@ Tab moved nothing — focus had left the page.
 ### `/progress`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Progress
 enter   button "−10"                                         (silence)
-tab 1   button "−10"                                         −10 button main
+tab 1   button "−10"                                         −10 button
 ```
 
 Tab moved nothing — focus had left the page.
@@ -494,9 +503,9 @@ Tab moved nothing — focus had left the page.
 ### `/sparkline`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Sparkline
 enter   button "Next hour"                                   (silence)
-tab 1   button "Next hour"                                   Next hour button main
+tab 1   button "Next hour"                                   Next hour button
 ```
 
 Tab moved nothing — focus had left the page.
@@ -506,7 +515,7 @@ Tab moved nothing — focus had left the page.
 ```
 arrive  —                                                    Skeleton · @pacit/components web content
 enter   button "The content arrives"                         (silence)
-tab 1   button "The content arrives"                         You are currently on a button. To click this button, press Control-Option-Space.
+tab 1   button "The content arrives"                         The content arrives button
 ```
 
 Tab moved nothing — focus had left the page.
@@ -514,7 +523,7 @@ Tab moved nothing — focus had left the page.
 ### `/chips`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Chips
 enter   button[remove] "Remove"                              (silence)
 tab 1   button[remove] "Remove"                              Remove In stock button list Active filters 5 items
 ```
@@ -524,9 +533,9 @@ Tab moved nothing — focus had left the page.
 ### `/avatar`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Avatar
 enter   button "Swap the source"                             (silence)
-tab 1   button "Swap the source"                             Swap the source button main
+tab 1   button "Swap the source"                             Swap the source button
 ```
 
 Tab moved nothing — focus had left the page.
@@ -534,7 +543,7 @@ Tab moved nothing — focus had left the page.
 ### `/badge`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Badge
 enter   input[control]                                       (silence)
 tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 ```
@@ -544,9 +553,9 @@ Tab moved nothing — focus had left the page.
 ### `/icon`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Icon
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       Done checked checkbox main
+tab 1   input[control]                                       Done checked checkbox
 ```
 
 Tab moved nothing — focus had left the page.
@@ -554,7 +563,7 @@ Tab moved nothing — focus had left the page.
 ### `/breadcrumb`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Breadcrumb
 enter   a "Home"                                             (silence)
 tab 1   a "Home"                                             link Home list 3 items
 ```
@@ -564,9 +573,9 @@ Tab moved nothing — focus had left the page.
 ### `/chart`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Chart
 enter   input[range] "Heat recovery on 25 October 2026"      (silence)
-tab 1   input[range] "Heat recovery on 25 October 2026"      No reading selected Heat recovery on 25 October 2026 Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. slider main
+tab 1   input[range] "Heat recovery on 25 October 2026"      No reading selected Heat recovery on 25 October 2026 Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. slider
 ```
 
 Tab moved nothing — focus had left the page.
@@ -575,10 +584,10 @@ Tab moved nothing — focus had left the page.
 
 ```
 enter   input[range] "Heat recovery on 25 October 2026"      (silence)
-right   input[range] "Heat recovery on 25 October 2026"      No reading selected Heat recovery on 25 October 2026 Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. slider
 right   input[range] "Heat recovery on 25 October 2026"      (silence)
+right   input[range] "Heat recovery on 25 October 2026"      No reading selected Heat recovery on 25 October 2026 Arrow keys move from reading to reading, Page Up and Page Down a tenth of the view, Home and End to the first and last; Enter selects the bar under the cursor; Escape clears the cursor. slider
 end     button "Recount"                                     Recount button
-tab 1   —                                                    (silence)
+tab 1   —                                                    You are currently on a slider. Press Control-Option-Command-Slash to bring up the more content menu.To start interacting with the slider, press Control-Option-Shift-Down Arrow.
 ```
 
 the section: `ArrowRight`, `ArrowRight`, `End` in `demo-pattern`, to read the cursor moved by the arrows (the keys belong to `chart.spec.ts › the arrows walk the cursor from reading to reading, Home and End go to the ends`).
@@ -591,7 +600,7 @@ right   input[range] "Heat pump energy by day, March 2026"   Sun 1: March 14.7 k
 right   input[range] "Heat pump energy by day, March 2026"   Mon 2: March 16.4 kWh, February 15.1 kWh, Difference +8.6%
 Enter   input[range] "Heat pump energy by day, March 2026"   Mon 2: March 16.4 kWh, February 15.1 kWh, Difference +8.6%, selected
 tab 1   button[zoom] "Zoom in"                               Zoom in button
-tab 2   input[control]                                       (silence)
+tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 ```
 
 the section: `ArrowRight`, `ArrowRight`, `Enter` in `demo-bars`, to read a bar's band picked at the cursor (the keys belong to `chart.spec.ts › a press selects a bar's band, and Enter at the cursor does the same`).
@@ -633,9 +642,9 @@ the section: `activate` in `demo-live`, to read a reading added to a live chart 
 ### `/card`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Card
 enter   input[control]                                       (silence)
-tab 1   input[control]                                       You are currently on a switch. To toggle this switch, press Control-Option-Space.
+tab 1   input[control]                                       Enabled on switch
 ```
 
 Tab moved nothing — focus had left the page.
@@ -643,9 +652,9 @@ Tab moved nothing — focus had left the page.
 ### `/frame`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Frame
 enter   button "Sign out"                                    (silence)
-tab 1   button "Sign out"                                    You are currently on a button. To click this button, press Control-Option-Space.
+tab 1   button "Sign out"                                    Sign out button
 ```
 
 Tab moved nothing — focus had left the page.
@@ -653,10 +662,10 @@ Tab moved nothing — focus had left the page.
 ### `/table`
 
 ```
-arrive  —                                                    heading level 1 @pacit/components — sandbox
+arrive  —                                                    heading level 2 Table
 enter   button[toggle] "Name"                                (silence)
 tab 1   button[toggle] "Address"                             Address button
-tab 2   input[control]                                       You are currently on a selected radio button, 1 of 2.
+tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 tab 3   input[control]                                       md selected radio button, 2 of 3 Size radio group
 tab 4   input[control]                                       ltr selected radio button, 1 of 2 Direction radio group
 tab 5   input[control]                                       light selected radio button, 1 of 2 Theme radio group
@@ -675,13 +684,13 @@ tab 1   pct-table-frame "Polling rules"                      Filter rules search
 tab 2   button[toggle] "Name"                                Polling rules region
 tab 3   button[toggle] "Room"                                Name button Polling rules table 6 columns, 21 rows
 tab 4   button[toggle] "Address"                             You are currently on a button, inside of a cell. To click this button, press Control-Option-Space.
-tab 5   button[toggle] "Energy"                              Address button
+tab 5   button[toggle] "Energy"                              (silence)
 tab 6   button[toggle] "Next run"                            You are currently on a button, inside of a cell. To click this button, press Control-Option-Space.
 tab 7   input[control] "Enabled: Supply fan"                 Next run button
-tab 8   input[control] "Enabled: Heater"                     You are currently on a switch, inside of a cell. To toggle this switch, press Control-Option-Space.
+tab 8   input[control] "Enabled: Heater"                     Enabled: Supply fan on switch
 tab 9   input[control] "Enabled: Bypass"                     Enabled: Heater off switch
 tab 10  input[control] "Enabled: Exhaust fan"                Enabled: Bypass on switch
-tab 11  input[control] "Enabled: Boiler"                     You are currently on a switch, inside of a cell. To toggle this switch, press Control-Option-Space.
+tab 11  input[control] "Enabled: Boiler"                     Enabled: Exhaust fan on switch
 ```
 
 The cap bit here: 12 stops of this view's own were read, and it has more.
@@ -690,18 +699,18 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ```
 enter   button[filter] "Filter Name"                         (silence)
-act     button[filter] "Filter Name"                         Playwright is not responding
-escape  button[filter] "Filter Name"                         Filter Name dialog pop up button Rules table 6 columns, 21 rows
-tab 1   button[toggle] "Room"                                (silence)
+act     div[panel] "Filter Name"                             (silence)
+escape  button[filter] "Filter Name"                         Filter Name web dialog with 4 items heading level 2 Filter Name
+tab 1   button[toggle] "Room"                                Room button
 tab 2   button[filter] "Filter Room"                         Filter Room dialog pop up button
 tab 3   button[toggle] "Address"                             (silence)
-tab 4   button[filter] "Filter Address"                      You are currently on a button, inside of a cell. To click this button, press Control-Option-Space.
-tab 5   button[toggle] "Energy"                              Filter Address dialog pop up button
+tab 4   button[filter] "Filter Address"                      Filter Address dialog pop up button
+tab 5   button[toggle] "Energy"                              (silence)
 tab 6   button[filter] "Filter Energy"                       Filter Energy dialog pop up button
 tab 7   button[toggle] "Next run"                            Next run button
-tab 8   button[filter] "Filter Next run"                     (silence)
-tab 9   button[toggle] "Enabled"                             You are currently on a button, inside of a cell. To display a list of options, press Control-Option-Space.
-tab 10  button[filter] "Filter Enabled"                      Filter Enabled dialog pop up button
+tab 8   button[filter] "Filter Next run"                     Filter Next run dialog pop up button
+tab 9   button[toggle] "Enabled"                             Enabled button
+tab 10  button[filter] "Filter Enabled"                      You are currently on a button, inside of a cell. To display a list of options, press Control-Option-Space.
 tab 11  input[control]                                       (silence)
 enter   input[control]                                       (silence)
 space   input[control]                                       on A row of filters switch
@@ -713,22 +722,22 @@ tab 5   button[filter] "Filter Room"                         Filter Room dialog 
 tab 6   button[toggle] "Address"                             (silence)
 tab 7   button[filter] "Filter Address"                      Filter Address dialog pop up button
 tab 8   button[toggle] "Energy"                              (silence)
-tab 9   button[filter] "Filter Energy"                       You are currently on a button, inside of a cell. To display a list of options, press Control-Option-Space.
+tab 9   button[filter] "Filter Energy"                       Filter Energy dialog pop up button
 tab 10  button[toggle] "Next run"                            Next run button
-tab 11  button[filter] "Filter Next run"                     Filter Next run dialog pop up button
+tab 11  button[filter] "Filter Next run"                     You are currently on a button, inside of a cell. To display a list of options, press Control-Option-Space.
 tab 12  button[toggle] "Enabled"                             Enabled button
 enter   input "Filter Name"                                  (silence)
-tab 1   button[trigger] "Filter Room"                        (silence)
+tab 1   button[trigger] "Filter Room"                        Filter Name edit text
 tab 2   button "Below 4128"                                  You are currently on a combo box, inside of a cell. Type text or, to display a list of choices, press Control-Option-Space.
 tab 3   button "From 4128"                                   From 4128 toggle button
 tab 4   input "Energy from"                                  50% Energy from stepper Rules table 6 columns, 22 rows
 tab 5   input "Energy to"                                    50% Energy to stepper
 tab 6   input[control] "Next run from"                       (silence)
-tab 7   button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
+tab 7   button[toggle] "Choisir une date"                    You are currently on a text field, inside of a cell. To enter text in this field, type.
 tab 8   input[control] "Next run to"                         Next run to jj/mm/aaaa edit text
-tab 9   button[toggle] "Choisir une date"                    Choisir une date dialog pop up button
-tab 10  button[trigger] "Filter Enabled"                     (silence)
-tab 11  input[control]                                       (silence)
+tab 9   button[toggle] "Choisir une date"                    You are currently on a text field, inside of a cell. To enter text in this field, type.
+tab 10  button[trigger] "Filter Enabled"                     Choisir une date dialog pop up button
+tab 11  input[control]                                       You are currently on a combo box, inside of a cell. Type text or, to display a list of choices, press Control-Option-Space.
 ```
 
 the section: `activate`, `Escape` in `demo-filters`, to read a column's filter (the keys belong to `datatable.spec.ts › a header’s button opens its filter, a text keeps the rows it is found in, and Escape goes back to the button`).
@@ -743,16 +752,16 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 
 ```
 enter   div[separator] "Resize Name"                         (silence)
-right   div[separator] "Resize Name"                         208 pixels
+right   div[separator] "Resize Name"                         table
 back    button[options] "Options for Name"                   Options for Name menu pop up button
-tab 1   div[separator] "Resize Name"                         vertical splitter 208 pixels Resize Name
+tab 1   div[separator] "Resize Name"                         (silence)
 tab 2   button[toggle] "Room"                                Room button
-tab 3   button[options] "Options for Room"                   You are currently on a button, inside of a cell. To click this button, press Control-Option-Space.
-tab 4   div[separator] "Resize Room"                         vertical splitter 150 pixels Resize Room
-tab 5   button[toggle] "Address"                             (silence)
+tab 3   button[options] "Options for Room"                   Options for Room menu pop up button
+tab 4   div[separator] "Resize Room"                         (silence)
+tab 5   button[toggle] "Address"                             Address button
 tab 6   button[options] "Options for Address"                Options for Address menu pop up button
-tab 7   div[separator] "Resize Address"                      vertical splitter 150 pixels Resize Address
-tab 8   button[toggle] "Energy"                              Energy button
+tab 7   div[separator] "Resize Address"                      (silence)
+tab 8   button[toggle] "Energy"                              vertical splitter 150 pixels Resize Address
 tab 9   button[options] "Options for Energy"                 Options for Energy menu pop up button
 tab 10  div[separator] "Resize Energy"                       vertical splitter 140 pixels Resize Energy
 tab 11  button[toggle] "Next run"                            (silence)
@@ -769,8 +778,9 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 enter   input[select]                                        (silence)
 right   button[disclosure] "Show details"                    Select Supply fan unchecked checkbox Rules table 9 columns, 21 rows
 down    button[disclosure] "Show details"                    Show details collapsed button
-end     input[control] "Enabled: Heater"                     Enabled: Heater off switch
-tab 1   input[control]                                       (silence)
+end     table "Rules"                                        end of table
+tab 1   input[control] "Enabled: Heater"                     (silence)
+tab 2   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 ```
 
 the section: `ArrowRight`, `ArrowDown`, `End` in `demo-grid`, to read the grid (the keys belong to `datatable.spec.ts › the arrows move cell to cell, Home and End along the row, Ctrl with them to the ends`).
@@ -780,7 +790,7 @@ the section: `ArrowRight`, `ArrowDown`, `End` in `demo-grid`, to read the grid (
 ```
 enter   td "Supply fan"                                      (silence)
 Enter   input "Edit Name"                                    Supply fan Insertion on word: Supply , between characters: and Edit Name edit text
-escape  td "Supply fan"                                      Supply fan
+escape  td "Supply fan"                                      You are currently on a text field, inside of a cell. To enter text in this field, type.
 down    td "Heater"                                          Heater
 tab 1   input[control]                                       You are currently on a cell, inside of a table. To navigate the cells within this table press Control-Option, and then Up Arrow, Down Arrow, Left Arrow, or Right Arrow.
 ```
@@ -794,7 +804,7 @@ enter   button[disclosure] "Collapse Ground floor"           (silence)
 down    button[disclosure] "Expand Kitchen"                  Collapse Ground floor expanded button Home table 3 columns, 6 rows
 right   button[disclosure] "Collapse Kitchen"                row 3 expanded
 down    td "Kettle"                                          Kettle
-left    button[disclosure] "Collapse Kitchen"                You are currently on a cell, inside of a table. To navigate the cells within this table press Control-Option, and then Up Arrow, Down Arrow, Left Arrow, or Right Arrow.
+left    button[disclosure] "Collapse Kitchen"                Collapse Kitchen expanded button
 tab 1   input[control]                                       light selected radio button, 1 of 2 Theme radio group
 ```
 
@@ -805,9 +815,9 @@ the section: `ArrowDown`, `ArrowRight`, `ArrowDown`, `ArrowLeft` in `demo-tree`,
 ```
 enter   button[disclosure] "Expand Meter 1"                  (silence)
 right   button[disclosure] "Collapse Meter 1"                row 3 expanded
-down    button[disclosure] "Expand 2017"                     Collapse Meter 1 expanded button
-right   button[disclosure] "Collapse 2017"                   row 4 expanded
-down    td "January"                                         January
+down    button[disclosure] "Expand 2017"                     Expand 2017 collapsed button
+right   button[disclosure] "Collapse 2017"                   row 20 collapsed
+down    td "January"                                         Collapse 2017 expanded button
 tab 1   input[control]                                       You are currently on a cell, inside of a table. To navigate the cells within this table press Control-Option, and then Up Arrow, Down Arrow, Left Arrow, or Right Arrow.
 ```
 
@@ -818,8 +828,8 @@ the section: `ArrowRight`, `ArrowDown`, `ArrowRight`, `ArrowDown` in `demo-remot
 ```
 enter   button[disclosure] "Meter 1 (120)"                   (silence)
 act     button[disclosure] "Meter 1 (120)"                   (silence)
-tab 1   button[disclosure] "Meter 2 (120)"                   Meter 1 (120) collapsed button
-tab 2   input[control]                                       Meter 2 (120) expanded button
+tab 1   button[disclosure] "Meter 2 (120)"                   Meter 2 (120) expanded button
+tab 2   input[control]                                       (silence)
 ```
 
 the section: `activate` in `demo-remote-groups`, to read the groups a server made (the keys belong to `datatable.spec.ts › a collapsed group asks nothing, and shows its readings when it opens`).
@@ -833,16 +843,16 @@ down    button[item] "Remove"                                Remove menu item (2
 escape  button[actions]                                      (silence)
 tab 1   input[select]                                        Actions Supply fan menu pop up button
 tab 2   button[actions]                                      Actions Heater menu pop up button
-tab 3   input[select]                                        Select Bypass unchecked checkbox
-tab 4   button[actions]                                      (silence)
-tab 5   input[select]                                        Select Exhaust fan unchecked checkbox
+tab 3   input[select]                                        (silence)
+tab 4   button[actions]                                      Select Bypass unchecked checkbox
+tab 5   input[select]                                        Actions Bypass menu pop up button
 tab 6   button[actions]                                      Actions Exhaust fan menu pop up button
-tab 7   input[select]                                        (silence)
-tab 8   button[actions]                                      Select Boiler unchecked checkbox
-tab 9   input[select]                                        Select Floor heating unchecked checkbox
-tab 10  button[actions]                                      (silence)
-tab 11  input[select]                                        Actions Floor heating menu pop up button
-tab 12  button[actions]                                      Select Lamp unchecked checkbox
+tab 7   input[select]                                        Select Boiler unchecked checkbox
+tab 8   button[actions]                                      (silence)
+tab 9   input[select]                                        Actions Boiler menu pop up button
+tab 10  button[actions]                                      Select Floor heating unchecked checkbox
+tab 11  input[select]                                        Select Lamp unchecked checkbox
+tab 12  button[actions]                                      (silence)
 ```
 
 the section: `activate`, `ArrowDown`, `Escape` in `demo-row-menu`, to read a row's menu (the keys belong to `datatable.spec.ts › Shift+F10 opens a row’s menu at its first item, and Escape gives the focus back to the row’s button`).
@@ -854,18 +864,18 @@ The cap bit here: 12 stops of this view's own were read, and it has more.
 ```
 enter   input[select]                                        (silence)
 space   input[select]                                        checked Select Kettle checkbox
-back    button[disclosure] "Collapse Kitchen"                (silence)
+back    button[disclosure] "Collapse Kitchen"                Collapse Kitchen expanded button
 back    input[select]                                        Select Kitchen mixed checkbox
-tab 1   button[disclosure] "Collapse Kitchen"                Collapse Kitchen expanded button
-tab 2   input[select]                                        (silence)
-tab 3   input[select]                                        Select Fridge unchecked checkbox
-tab 4   input[select]                                        (silence)
+tab 1   button[disclosure] "Collapse Kitchen"                (silence)
+tab 2   input[select]                                        Collapse Kitchen expanded button
+tab 3   input[select]                                        Select Kettle checked checkbox
+tab 4   input[select]                                        Select Fridge unchecked checkbox
 tab 5   input[select]                                        Select Lamp unchecked checkbox
-tab 6   button[disclosure] "Expand Hall"                     Expand Hall collapsed button
-tab 7   input[select]                                        Select Garage unchecked checkbox
-tab 8   input[select]                                        (silence)
-tab 9   button[disclosure] "Expand Upstairs"                 Expand Upstairs collapsed button
-tab 10  input[control]                                       (silence)
+tab 6   button[disclosure] "Expand Hall"                     Select Hall unchecked checkbox
+tab 7   input[select]                                        Expand Hall collapsed button
+tab 8   input[select]                                        Select Garage unchecked checkbox
+tab 9   button[disclosure] "Expand Upstairs"                 Select Upstairs unchecked checkbox
+tab 10  input[control]                                       Expand Upstairs collapsed button
 ```
 
 the section: `Space`, `Shift+Tab`, `Shift+Tab` in `demo-tree-picks`, to read a branch's mixed checkbox (the keys belong to `datatable.spec.ts › a device half picks its room and floor, a room picks its devices, and a floor all it holds`).
