@@ -211,4 +211,34 @@ export const SECTIONS: Readonly<Record<string, readonly Section[]>> = {
         'time.spec.ts › the keys are the columns’ own — an arrow comes round, a digit goes to its row, Enter takes the time',
     },
   ],
+  '/field': [
+    {
+      block: 'probe-inserted',
+      what: 'a line that appears as focus leaves a field, a status entering with its text',
+      on: '[data-probe="before"]',
+      keys: ['Tab'],
+      owner: 'PROBE 4.81',
+    },
+    {
+      block: 'probe-standing',
+      what: 'a line that appears as focus leaves a field, a status standing before its text',
+      on: '[data-probe="before"]',
+      keys: ['Tab'],
+      owner: 'PROBE 4.81',
+    },
+    {
+      block: 'probe-channel',
+      what: 'a line that appears as focus leaves a field, said on the polite channel',
+      on: '[data-probe="before"]',
+      keys: ['Tab'],
+      owner: 'PROBE 4.81',
+    },
+    {
+      block: 'probe-alert',
+      what: 'a line that appears as focus leaves a field, an alert entering with its text',
+      on: '[data-probe="before"]',
+      keys: ['Tab'],
+      owner: 'PROBE 4.81',
+    },
+  ],
 };

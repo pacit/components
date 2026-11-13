@@ -10,6 +10,7 @@ import {
 import { PctButton } from '@pacit/components/button';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import { pctWarn } from '@pacit/components/core';
+import { SbxWarningProbe } from './warning-probe';
 import {
   PctField,
   PctLabelAux,
@@ -31,6 +32,7 @@ import { SbxDemo } from '../../ui/demo';
 @Component({
   selector: 'sbx-field-view',
   imports: [
+    SbxWarningProbe,
     SbxDemo,
     PctField,
     PctText,
