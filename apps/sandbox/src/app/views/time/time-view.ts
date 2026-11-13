@@ -8,6 +8,7 @@ import {
   pctTimeBounds,
 } from '@pacit/components/time';
 import { SbxDemo } from '../../ui/demo';
+import { SbxEscapeProbe } from './escape-probe';
 
 /**
  * Time: a text field the library formats and parses per locale, with columns of hours and
@@ -15,7 +16,14 @@ import { SbxDemo } from '../../ui/demo';
  */
 @Component({
   selector: 'sbx-time-view',
-  imports: [SbxDemo, PctTime, PctTimeColumns, PctField, FormField],
+  imports: [
+    SbxDemo,
+    PctTime,
+    PctTimeColumns,
+    PctField,
+    FormField,
+    SbxEscapeProbe,
+  ],
   templateUrl: './time-view.html',
   styleUrl: './time-view.scss',
 })

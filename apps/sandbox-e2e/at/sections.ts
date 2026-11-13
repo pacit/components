@@ -210,5 +210,26 @@ export const SECTIONS: Readonly<Record<string, readonly Section[]>> = {
       owner:
         'time.spec.ts › the keys are the columns’ own — an arrow comes round, a digit goes to its row, Enter takes the time',
     },
+    {
+      block: 'probe-e1',
+      what: 'what Escape does in a panel focused on its listbox',
+      on: '[role="listbox"]',
+      keys: ['Escape', 'Escape'],
+      owner: 'PROBE 4.82',
+    },
+    {
+      block: 'probe-e2',
+      what: 'what Escape does in a panel focused on its option',
+      on: '[role="option"][tabindex="0"]',
+      keys: ['Escape', 'Escape'],
+      owner: 'PROBE 4.82',
+    },
+    {
+      block: 'probe-grid',
+      what: 'what Escape does in a panel focused on its cell',
+      on: '[role="gridcell"][tabindex="0"]',
+      keys: ['Escape', 'Escape'],
+      owner: 'PROBE 4.82',
+    },
   ],
 };
