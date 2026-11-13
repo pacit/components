@@ -152,7 +152,7 @@ libs/components/chips/src/chips.ts 89.47 51(0) 6 0 0 2
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0 0
 libs/components/core/src/config.ts 100.00 8(0) 0 0 0 0
 libs/components/core/src/digits.ts 100.00 44(0) 0 0 0 0
-libs/components/core/src/field.ts 98.31 58(0) 1 0 0 0
+libs/components/core/src/field.ts 98.46 64(0) 1 0 0 0
 libs/components/core/src/focus.ts 100.00 1(0) 0 0 0 0
 libs/components/core/src/id.ts 100.00 5(0) 0 0 0 0
 libs/components/core/src/instant.ts 100.00 151(0) 0 0 0 0
@@ -257,5 +257,5 @@ libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 72.73 208(0) 73 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
 libs/components/wheel/src/wheel.ts 94.32 299(2) 18 0 0 7
-TOTAL 90.91 23002/25301
+TOTAL 90.92 23008/25307
 ```

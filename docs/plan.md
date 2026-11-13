@@ -399,22 +399,6 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - `/datatable`'s tables that wrote Polish relative times write French ones, the third
     language a record may quote; the walk of 2026-11-10 read the frames and quoted none
 
-- [ ] **4.81 — the warning line is not heard on the stop it appears**
-  - the dispatched pass on `/field` (2026-10-08, run 37733848017, the first reading of 0087's
-    line): NVDA and VoiceOver reach the amount at stop 21 and the phone at 22, each with its
-    label, role and hint, the amount with its value — and the `status` line that enters the
-    DOM on leaving the amount is in neither reader's stop 22, nor the phone's in stop 23. The
-    `alert` that enters on leaving the e-mail: Orca heard it at stop 1 in both readings and
-    leaves `main` there, so it never arrives at the warned stops; VoiceOver heard it on 09-16
-    and not on 10-08; NVDA's log carries it in neither — so the one stable datum is Orca's
-    alert, and the `status` line has not been heard by any yet
-  - one reading each of two stacks, and VoiceOver wavers between runs; a `status` region inserted
-    with its text is a known silence for readers that announce a change, not an arrival, where
-    an `alert` is an event. Two roads if the weekly pass confirms it: a region standing before
-    the text, which `check-aria` point 6 refuses as a second row, or the polite channel of
-    `PctAnnouncer` carrying the sentence the line already shows (0026)
-  - binds at: **the weekly pass of 2026-10-12** — read again, and a decision if it holds
-
 - [ ] **4.83 — an `<ng-template>` stamped in two places is read as standing in one**
   - `check-aria` points 4 and 6 read an `@for` body as repeating and a template as standing
     once. Five are named by two outlets: the calendar's and the pagination's chevron side by
@@ -460,6 +444,18 @@ and every one is held by a **binds at** rather than by anybody's mood.
   - found by the third review of the gate's own repair, 2026-09-18; no exported overload and no
     merged name exists in the library today, which is why nothing reads wrong yet
   - binds at: **the first exported name with two declarations dated differently**
+
+- [x] **4.81 — the warning line is not heard on the stop it appears** — **closed 2026-11-13**
+  - the pass of 2026-10-08 (run 37733848017) and every weekly pass after it: NVDA and VoiceOver
+    read the amount and the phone, and neither heard the `status` line that enters the DOM as
+    the amount is left — a polite region entering with its text is one no reader registered
+  - a probe of four lines appearing as Tab leaves a field (`probe/warning-4.81`, run
+    43402848075): the `status` entering with its text, heard by none; a `status`
+    standing before its text and the polite channel of `PctAnnouncer`, each heard by NVDA and
+    VoiceOver; an `alert`, the control, by all three. Orca heard neither polite shape on the turn
+  - the channel, since a standing region is a second row under `check-aria` point 6 or a region
+    per field: `pctFieldMessages` says the line while it is lit and takes it back as it goes
+    out, for every control that draws one. 0087 and 0026 carry the amendment
 
 - [x] **4.82 — the time panel takes two Escapes under NVDA** — **closed 2026-11-13**
   - the pass of 2026-10-08 (run 37795534533): NVDA's first Escape left `/time`'s panel open

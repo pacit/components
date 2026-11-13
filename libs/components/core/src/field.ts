@@ -1,10 +1,13 @@
 import {
   computed,
   DestroyRef,
+  effect,
   inject,
   InjectionToken,
   Signal,
 } from '@angular/core';
+import { PctAnnouncer } from './announce';
+import { PCT_TEXTS } from './texts';
 
 /**
  * Minimal structural shape of a validation error — keeps `core` free of any forms API.
@@ -178,6 +181,11 @@ export function pctAttachToField(
  * about the LINE — it is free of an error — and not about the field's validity: a field
  * invalid under an error with no sentence shows its warning, as it shows its hint today.
  *
+ * The warning is also SAID, on the polite channel of `PctAnnouncer`, from the moment the line
+ * lights until it goes out: a `status` that enters the document with its text is a region no
+ * reader has registered, and three of three said nothing at it (plan finding 4.81). The line
+ * keeps its role; the words a reader hears are the line's, its hidden word first.
+ *
  * @since 0.1.0
  */
 export function pctFieldMessages(src: {
@@ -206,6 +214,14 @@ export function pctFieldMessages(src: {
   const showWarning = computed(
     () => !showError() && src.touched() && warningText() !== '',
   );
+  const announcer = inject(PctAnnouncer);
+  const texts = inject(PCT_TEXTS);
+  effect((onCleanup) => {
+    if (!showWarning()) return;
+    const said = `${texts().fieldWarning} ${warningText()}`;
+    announcer.announce(said);
+    onCleanup(() => announcer.retract(said));
+  });
   return { errorText, showInvalid, showError, warningText, showWarning };
 }
 
