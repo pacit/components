@@ -184,6 +184,16 @@ schema(required))` for a warning, and a validator of its own is one function eit
   did not; NVDA's log carries it in neither. So the `status` line has one reading each on two
   stacks and no reading at all on the third — held open as a finding until the weekly pass
   reads the view again, and a decision if the silence holds._
+  _Amended 2026-11-13: **the silence held, and the warning is said on the polite channel.**
+  The weekly passes kept it, and a probe of four lines appearing as Tab leaves a field (run 43402848075) read the shapes apart: a `status` entering with its text was
+  heard by none of three readers; the same `status` standing empty before its text and the
+  polite channel of `PctAnnouncer` were each heard by NVDA and VoiceOver and not by Orca, whose
+  reading of the field Tab arrives at took the turn; an `alert`, the control, by all three. A
+  standing region is a second row under `check-aria` point 6, or a region per field, which is
+  what 0026 was written against; the channel is neither. So `pctFieldMessages` says the line,
+  hidden word first, while it is lit and takes it back as it goes out, for every control that
+  draws one, and the line keeps `role="status"`. Orca's reading of the warned fields is
+  still not taken: its walk leaves `main` at the e-mail's alert, before it reaches them._
 
 ## What this costs us
 

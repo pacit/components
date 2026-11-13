@@ -70,6 +70,14 @@ panel open. It is the same pair as `attach` / `detach` in the field chrome, and 
 for the same reason ([`lesson-68`](../lessons.md#lesson-68)): the half that speaks is the half
 somebody writes first.
 
+_Amended 2026-11-13: **a polite line that enters with its text has no home to announce from.**
+A `status` is a region, and a region that enters the document together with its words is the
+one this decision says nobody has registered: the field's warning line was heard by none of
+three readers as it appeared (plan finding 4.81). So the warning is drawn where it stands and
+also said on the polite channel — the one sentence in the library written twice, which is
+the cost of a message whose home is not there before the message. An error keeps its `alert`,
+which readers do say as it enters._
+
 **The hiding travels with the element.** The regions are clipped by their own declaration
 block, not by a class, because a class is a promise about a stylesheet the consumer includes —
 and that promise is measurably broken in the utility this would otherwise have reused

@@ -25,7 +25,7 @@ import { pctOverlay, PctOverlayInherited, PctOverlayPanel } from './overlay';
 import { pctPlacementPositions } from './placement';
 import { PCT_REGIONS } from './regions';
 import { pctReportOrphanSlot } from './template';
-import { PCT_TEXTS } from './texts';
+import { PCT_TEXTS, providePctTexts } from './texts';
 
 /**
  * The inside of `@pacit/components/core` checked DIRECTLY, not through the
@@ -55,9 +55,12 @@ describe('@pacit/components/core', () => {
       touched: signal(opts?.touched ?? false),
       errors: signal(opts?.errors ?? []),
     });
+    /** It injects the announcer and the texts, so it runs where a control's fields do. */
+    const messages = (src: Parameters<typeof pctFieldMessages>[0]) =>
+      TestBed.runInInjectionContext(() => pctFieldMessages(src));
 
     it('the error text is the message of the FIRST error', () => {
-      const { errorText } = pctFieldMessages(
+      const { errorText } = messages(
         source({
           errors: [{ message: 'Too short' }, { message: 'And one more' }],
         }),
@@ -67,7 +70,7 @@ describe('@pacit/components/core', () => {
     });
 
     it('no errors is empty text, not undefined', () => {
-      const { errorText } = pctFieldMessages(source());
+      const { errorText } = messages(source());
 
       // An empty string, because the value goes into the template: `undefined`
       // would print as the word "undefined" where the message belongs.
@@ -75,7 +78,7 @@ describe('@pacit/components/core', () => {
     });
 
     it('an error with no message also gives empty text', () => {
-      const { errorText } = pctFieldMessages(source({ errors: [{}] }));
+      const { errorText } = messages(source({ errors: [{}] }));
 
       // A validator may carry no sentence — the schema then describes the fact of
       // the violation, and the application supplies the wording.
@@ -88,7 +91,7 @@ describe('@pacit/components/core', () => {
      */
     it("the control's own error comes first, and is gated by nothing", () => {
       const own = signal<readonly { message?: string }[]>([]);
-      const { errorText, showInvalid, showError } = pctFieldMessages({
+      const { errorText, showInvalid, showError } = messages({
         ...source({ invalid: true, errors: [{ message: 'Required' }] }),
         own,
       });
@@ -108,7 +111,7 @@ describe('@pacit/components/core', () => {
 
     it('the error state lights up only after a touch', () => {
       const src = source({ invalid: true, errors: [{ message: 'Required' }] });
-      const { showInvalid, showError } = pctFieldMessages(src);
+      const { showInvalid, showError } = messages(src);
 
       expect(showInvalid()).toBe(false);
       expect(showError()).toBe(false);
@@ -125,7 +128,7 @@ describe('@pacit/components/core', () => {
     describe('a warning', () => {
       it('is the message of the FIRST warning, and empty text when there is none', () => {
         const warnings = signal<readonly { message?: string }[]>([]);
-        const { warningText } = pctFieldMessages({ ...source(), warnings });
+        const { warningText } = messages({ ...source(), warnings });
 
         expect(warningText()).toBe('');
 
@@ -138,7 +141,7 @@ describe('@pacit/components/core', () => {
 
       it('without the channel the text is empty and nothing shows', () => {
         const src = source({ touched: true });
-        const { warningText, showWarning } = pctFieldMessages(src);
+        const { warningText, showWarning } = messages(src);
 
         expect(warningText()).toBe('');
         expect(showWarning()).toBe(false);
@@ -146,7 +149,7 @@ describe('@pacit/components/core', () => {
 
       it('shows once touched, and leaves the field valid', () => {
         const src = source();
-        const { showWarning, showInvalid, showError } = pctFieldMessages({
+        const { showWarning, showInvalid, showError } = messages({
           ...src,
           warnings: signal([{ message: 'Unusually large' }]),
         });
@@ -167,7 +170,7 @@ describe('@pacit/components/core', () => {
           errors: [{ message: 'Required' }],
         });
         const own = signal<readonly { message?: string }[]>([]);
-        const { showWarning, showError } = pctFieldMessages({
+        const { showWarning, showError } = messages({
           ...src,
           own,
           warnings: signal([{ message: 'Unusually large' }]),
@@ -186,8 +189,107 @@ describe('@pacit/components/core', () => {
         expect(showWarning()).toBe(false);
       });
 
+      describe('is said on the polite channel', () => {
+        const spied = () => {
+          const announcer = TestBed.inject(PctAnnouncer);
+          return {
+            announce: vi.spyOn(announcer, 'announce'),
+            retract: vi.spyOn(announcer, 'retract'),
+          };
+        };
+
+        it('as the line lights, its hidden word first, and taken back as it goes out', () => {
+          const { announce, retract } = spied();
+          const src = source();
+          const errors = src.errors;
+          messages({
+            ...src,
+            warnings: signal([{ message: 'Unusually large' }]),
+          });
+
+          TestBed.tick();
+          expect(announce).not.toHaveBeenCalled();
+
+          src.touched.set(true);
+          TestBed.tick();
+          expect(announce).toHaveBeenCalledExactlyOnceWith(
+            'Warning: Unusually large',
+          );
+          expect(retract).not.toHaveBeenCalled();
+
+          // The error takes the line, and the warning's words leave the channel with it.
+          src.invalid.set(true);
+          errors.set([{ message: 'Required' }]);
+          TestBed.tick();
+          expect(retract).toHaveBeenCalledExactlyOnceWith(
+            'Warning: Unusually large',
+          );
+          expect(announce).toHaveBeenCalledTimes(1);
+        });
+
+        it('a new sentence takes the old one back and says its own', () => {
+          const { announce, retract } = spied();
+          const warnings = signal([{ message: 'Unusually large' }]);
+          messages({ ...source({ touched: true }), warnings });
+          TestBed.tick();
+
+          warnings.set([{ message: 'And odd' }]);
+          TestBed.tick();
+          expect(retract).toHaveBeenCalledExactlyOnceWith(
+            'Warning: Unusually large',
+          );
+          expect(announce).toHaveBeenLastCalledWith('Warning: And odd');
+        });
+
+        it('in the application language, through the texts', () => {
+          TestBed.configureTestingModule({
+            providers: [providePctTexts({ fieldWarning: 'Achtung:' })],
+          });
+          const { announce } = spied();
+          messages({
+            ...source({ touched: true }),
+            warnings: signal([{ message: 'Ungewöhnlich hoch' }]),
+          });
+          TestBed.tick();
+
+          expect(announce).toHaveBeenCalledExactlyOnceWith(
+            'Achtung: Ungewöhnlich hoch',
+          );
+        });
+
+        it('says nothing of a line with no sentence, and nothing when there is none', () => {
+          const { announce } = spied();
+          messages({ ...source({ touched: true }), warnings: signal([{}]) });
+          messages(source({ touched: true }));
+          TestBed.tick();
+
+          expect(announce).not.toHaveBeenCalled();
+        });
+
+        it('takes its words back when the control is destroyed', () => {
+          const { retract } = spied();
+          const injector = createEnvironmentInjector(
+            [],
+            TestBed.inject(EnvironmentInjector),
+          );
+          runInInjectionContext(injector, () =>
+            pctFieldMessages({
+              ...source({ touched: true }),
+              warnings: signal([{ message: 'Unusually large' }]),
+            }),
+          );
+          TestBed.tick();
+          expect(retract).not.toHaveBeenCalled();
+
+          injector.destroy();
+          expect(retract).toHaveBeenCalledExactlyOnceWith(
+            'Warning: Unusually large',
+          );
+        });
+      });
+
       it('a warning with no sentence lights nothing', () => {
-        const { showWarning } = pctFieldMessages({
+        const { showWarning } = messages({
           ...source({ touched: true }),
           warnings: signal([{}]),
         });
@@ -197,7 +299,7 @@ describe('@pacit/components/core', () => {
     });
 
     it('an error with no sentence paints the control but writes no empty message', () => {
-      const { showInvalid, showError } = pctFieldMessages(
+      const { showInvalid, showError } = messages(
         source({ invalid: true, touched: true, errors: [{}] }),
       );
 
