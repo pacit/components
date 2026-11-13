@@ -152,7 +152,9 @@ interface ScrollCall {
  * jsdom lays nothing out, so the scroll code finds columns that are not on the screen. This
  * gives it one — every row `ROW` high and stacked in its parent, a window of seven rows, a
  * `scrollTop` that keeps what is written and a `scrollTo` that moves it at once — and takes
- * it back.
+ * it back. All of it on `HTMLElement.prototype`, the nearest prototype the columns share: a
+ * spy another file left there shadows a stub on `Element.prototype`, and `components:test`
+ * runs every file in one environment — a window read as 0 rows high moved six cases.
  */
 function layout(): { calls: ScrollCall[]; restore: () => void } {
   const calls: ScrollCall[] = [];
@@ -170,9 +172,9 @@ function layout(): { calls: ScrollCall[]; restore: () => void } {
         },
       },
     ],
-    [Element.prototype, 'clientHeight', { get: () => 7 * ROW }],
+    [HTMLElement.prototype, 'clientHeight', { get: () => 7 * ROW }],
     [
-      Element.prototype,
+      HTMLElement.prototype,
       'scrollHeight',
       {
         get(this: Element) {
@@ -181,7 +183,7 @@ function layout(): { calls: ScrollCall[]; restore: () => void } {
       },
     ],
     [
-      Element.prototype,
+      HTMLElement.prototype,
       'scrollTop',
       {
         get(this: Element) {
@@ -193,7 +195,7 @@ function layout(): { calls: ScrollCall[]; restore: () => void } {
       },
     ],
     [
-      Element.prototype,
+      HTMLElement.prototype,
       'scrollTo',
       {
         writable: true,
