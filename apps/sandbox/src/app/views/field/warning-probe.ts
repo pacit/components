@@ -4,7 +4,8 @@ import { PctAnnouncer } from '@pacit/components/core';
 type Shape = 'inserted' | 'standing' | 'channel' | 'alert';
 
 /**
- * PROBE for plan finding 4.81, never merged: four lines that appear when focus leaves a field,
+ * PROBE for plan finding 4.81, never merged: four lines that appear when Tab leaves a field (a key, not a blur: the walk clicks a heading
+ * before it enters a block, and a blur would fire there),
  * as the field's warning does. `inserted` is the line today — a `status` entering with its
  * text; `standing` is a `status` standing empty before the text arrives; `channel` draws the
  * line with no role and says it on the polite channel of `PctAnnouncer` (0026); `alert` enters
@@ -18,7 +19,7 @@ type Shape = 'inserted' | 'standing' | 'channel' | 'alert';
         <input
           data-probe="before"
           [attr.aria-label]="'Before ' + shape"
-          (blur)="leave(shape)"
+          (keydown.tab)="leave(shape)"
         />
         @switch (shape) {
           @case ('inserted') {
