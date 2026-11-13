@@ -155,6 +155,10 @@ two shapes of a column, and the window as a count of rows),
   carries the wheel as well: the `./time` and `./datetime` rows of
   `libs/components/size.snapshot.md` bring `./wheel` in whichever shape a form asks for (0089,
   amended).
+- **Two Escapes from a column under NVDA.** A listbox puts NVDA in focus mode, and its first
+  Escape leaves that mode; the second closes the panel. Orca and VoiceOver close it on one.
+  A column whose option holds the focus measured the same, and a grid — which NVDA lets
+  through — would say `table` where a list of hours is what there is (plan finding 4.82).
 - **A ring only where the column fills its window.** 0089 asked for `wrap` on every wheel; a
   column with fewer rows than the window shows — the two halves of a day, four quarters —
   would show a row twice, so it is a wheel with two ends.

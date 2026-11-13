@@ -297,6 +297,12 @@ columns keep their second Escape there, 0086's E2 — the option focused by a ro
 rather than the column — is the other reading axe passed, to be measured in the columns' own
 entrypoint, and the datetime card says what was found either way.
 
+_Measured 2026-11-13: **two Escapes from a column under NVDA, one from the grid, and E2 changes
+nothing.**_ Three panels side by side, closed by Escape (run 43398981776): NVDA kept the first
+Escape on a listbox focused itself and on one whose option holds the focus, and let a grid's
+through; Orca and VoiceOver closed all three on one. The probe reproduced both halves of the
+built panel, so the columns stay a listbox and the card says the count.
+
 ### 5. The contract: bounds on the pair, the time's step, the day's predicate — and the one 0086 deferred
 
 - **`min` and `max` are `PctDateTime`s**, on the `FormUiControl` contract as the day's and the
@@ -410,8 +416,8 @@ pattern as every card's does.
   on the same page, 0086's cost, paid here on the day half as well.
 - **One letter's case between the value and the field.** `PctDateTime` and `PctDatetime` are
   told apart by the compiler, not by the eye.
-- **The panel's two halves may close two ways under one reader.** 4.82 is measured on the
-  built field, not settled here.
+- **The panel's two halves close two ways under one reader.** Under NVDA one Escape from the
+  grid, two from a column (4.82, measured 2026-11-13).
 
 ## The road not taken
 
